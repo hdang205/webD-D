@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: dd-fashion-erp
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production

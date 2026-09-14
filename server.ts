@@ -29,7 +29,7 @@ try {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   app.use(express.json({ limit: '10mb' }));
 
@@ -148,7 +148,7 @@ Nhiệm vụ cụ thể: Hãy phân tích mô tả giao dịch hoặc thông tin
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log("Server kế toán mini đang chạy tại: http://localhost:3000");
+    console.log(`Server D&D Fashion ERP đang chạy tại: http://localhost:${PORT}`);
   });
 }
 
