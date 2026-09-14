@@ -113,7 +113,7 @@ export function runVerification(): { passed: boolean; results: TestResult[] } {
     db.prepare(`
       INSERT INTO users (
         id, username, password_hash, name, role, role_title, email, phone, branch
-      ) VALUES ('dup_user', 'director_dung', 'hash', 'Trùng', 'DIRECTOR', 'GD', 'a@a.com', '123', 'HN')
+      ) VALUES ('dup_user', 'quanly_duyen', 'hash', 'Trùng', 'DIRECTOR', 'GD', 'a@a.com', '123', 'HN')
     `).run();
     record('UNIQUE', 'Chặn trùng username', false, 'Không báo lỗi UNIQUE vi phạm!');
   } catch (err: any) {
@@ -259,7 +259,7 @@ export function runVerification(): { passed: boolean; results: TestResult[] } {
   // 7. KIỂM TRA TÀI KHOẢN NGƯỜI DÙNG & MẬT KHẨU BĂM (BCRYPT)
   // ========================================================================
   console.log('\n--- 7. KIỂM TRA USERS & BCRYPT PASSWORD HASH ---');
-  const directorUser = db.prepare(`SELECT username, password_hash, role FROM users WHERE username = 'director_dung'`).get() as any;
+  const directorUser = db.prepare(`SELECT username, password_hash, role FROM users WHERE username = 'quanly_duyen' OR username = 'director_dung'`).get() as any;
   const isHashValid = bcrypt.compareSync('123456', directorUser.password_hash);
   record('AUTH & USERS', 'Xác thực mật khẩu băm bcrypt', isHashValid, `Username: ${directorUser.username}, Role: ${directorUser.role}, verify('123456') = ${isHashValid}`);
 

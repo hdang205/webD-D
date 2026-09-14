@@ -71,7 +71,7 @@ export function authenticateToken(
     // Gắn thông tin người dùng an toàn (tuyệt đối không lấy role từ frontend)
     req.user = {
       id: userRow.id,
-      username: userRow.username,
+      username: decoded.username || userRow.username,
       name: userRow.name,
       role: userRow.role as UserRole,
       roleTitle: userRow.role_title,

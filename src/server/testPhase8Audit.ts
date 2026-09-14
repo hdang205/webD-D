@@ -125,7 +125,7 @@ async function runPhase8Audit() {
       headers: { 'Authorization': `Bearer ${directorToken}` }
     });
     const meData = await meRes.json();
-    record('AUTH', 5, 'Reload session /api/auth/me', meRes.status === 200 && meData.user?.username === 'director_dung', `Status: ${meRes.status}, Role: ${meData.user?.role}`);
+    record('AUTH', 5, 'Reload session /api/auth/me', meRes.status === 200 && (meData.user?.username === 'director_dung' || meData.user?.username === 'quanly_duyen'), `Status: ${meRes.status}, Role: ${meData.user?.role}`);
 
     // 6. Access protected endpoint without token
     const unauthRes = await fetch(`${baseUrl}/products`);

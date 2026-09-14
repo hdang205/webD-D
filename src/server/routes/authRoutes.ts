@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, getCurrentUser, logout } from '../controllers/authController.js';
+import { login, getCurrentUser, logout, changePassword } from '../controllers/authController.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
 const router = Router();
@@ -12,6 +12,9 @@ router.get('/me', authenticateToken, getCurrentUser);
 
 // Endpoint đăng xuất
 router.post('/logout', logout);
+
+// Endpoint đổi mật khẩu tài khoản hiện tại (Yêu cầu Authentication Token)
+router.put('/password', authenticateToken, changePassword);
 
 // Endpoint kiểm tra phân quyền RBAC: Chỉ dành cho Giám đốc
 router.get('/test-role-director', authenticateToken, requireRole('DIRECTOR'), (req: any, res) => {

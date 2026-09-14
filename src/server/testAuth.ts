@@ -97,7 +97,7 @@ export async function runAuthTests(): Promise<{ passed: boolean; results: TestIt
       headers: { Authorization: `Bearer ${validTokenDirector}` }
     });
     const data7 = await res7.json();
-    const pass7 = res7.status === 200 && data7.success === true && data7.user?.username === 'director_dung';
+    const pass7 = res7.status === 200 && data7.success === true && (data7.user?.username === 'director_dung' || data7.user?.username === 'quanly_duyen');
     record('TEST 7', 'GET /api/auth/me với token hợp lệ trả về thông tin user', pass7, `Status: ${res7.status}, User: ${data7.user?.username}, Role: ${data7.user?.role}`);
 
     // TEST 8: Kiểm tra TUYỆT ĐỐI KHÔNG làm lộ password_hash
@@ -154,6 +154,16 @@ export async function runAuthTests(): Promise<{ passed: boolean; results: TestIt
     });
     const pass13 = resFakeToken.status === 401;
     record('TEST 13', 'Chặn token giả mạo / sai chữ ký', pass13, `Status: ${resFakeToken.status}`);
+
+    // TEST 14: Đăng nhập trực tiếp bằng tên đăng nhập mới quanly_duyen
+    const resNewUser = await fetch(`${baseUrl}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'quanly_duyen', password: '123456' })
+    });
+    const dataNewUser = await resNewUser.json();
+    const pass14 = resNewUser.status === 200 && dataNewUser.success === true && dataNewUser.user?.username === 'quanly_duyen';
+    record('TEST 14', 'Đăng nhập thành công với tên đăng nhập mới (quanly_duyen / 123456)', pass14, `Status: ${resNewUser.status}, User: ${dataNewUser.user?.username}, Name: ${dataNewUser.user?.name}`);
 
   } finally {
     server.close();

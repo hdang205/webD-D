@@ -17,7 +17,7 @@ export const INITIAL_COMPANY_INFO: CompanyInfo = {
   email: 'contact@dndfashion.vn',
   bankAccount: '1903888291001',
   bankName: 'Ngân hàng Techcombank - CN Chợ Mơ, Hà Nội',
-  directorName: 'Đỗ Đức Dũng',
+  directorName: 'Lê Thị Duyên',
   chiefAccountant: 'Phạm Minh Trang',
   treasurerName: 'Lê Hoài Nam',
   accountingStandard: 'TT133',
@@ -468,7 +468,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     bankAccount: '1903888291001',
     bankName: 'Techcombank',
     status: 'ACTIVE',
-    username: 'director_dung',
+    username: 'quanly_duyen',
     notes: 'Đại diện pháp luật & phụ trách định hướng chiến lược kinh doanh chuỗi thời trang',
   },
   {
@@ -494,7 +494,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     bankAccount: '1029384756',
     bankName: 'Vietcombank',
     status: 'ACTIVE',
-    username: 'wh_hung',
+    username: 'thukho_hai',
     notes: 'Quản lý phiếu xuất nhập kho, kiểm kê định kỳ và đối soát công nợ kho xưởng may',
   },
   {
@@ -520,7 +520,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     bankAccount: '0987654321',
     bankName: 'MBBank',
     status: 'ACTIVE',
-    username: 'cpa_trang',
+    username: 'ketoan_dung',
     notes: 'Phụ trách sổ sách kế toán, quyết toán thuế GTGT, TNDN và báo cáo tài chính VAS',
   },
   {
@@ -624,7 +624,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     bankAccount: '19037776665',
     bankName: 'Techcombank',
     status: 'ACTIVE',
-    username: 'muahang_dat',
+    username: 'muahang_phong',
     notes: 'Chuyên trách liên hệ xưởng may Garment Vina, nhà cung cấp vải lụa, lập đơn đề xuất mua hàng và theo dõi tiến độ nhập kho',
   },
   {
@@ -650,7 +650,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     bankAccount: '0451000389211',
     bankName: 'Vietcombank',
     status: 'ACTIVE',
-    username: 'sales_lan',
+    username: 'banhang_my',
     notes: 'Tư vấn chọn size & vóc dáng cho khách hàng VIP, theo dõi chăm sóc sau mua và đề xuất nhập hàng khi khách yêu cầu size/mẫu mới',
   }
 ];
@@ -706,7 +706,7 @@ export const INITIAL_REQUISITIONS: any[] = [
     totalEstimatedAmount: 18600000,
     status: 'APPROVED',
     approverId: 'emp_1',
-    approverName: 'Đỗ Đức Dũng (Tổng Giám Đốc)',
+    approverName: 'Lê Thị Duyên (Tổng Giám Đốc)',
     approvalDate: '2026-08-19',
     approvalNotes: 'Đã duyệt nhập gấp lô hàng này, NV Mua hàng liên hệ xưởng Garment Vina giao trước thứ Sáu.',
     createdDocumentRef: 'HDM002',

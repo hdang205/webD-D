@@ -87,46 +87,42 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
 
   const sections = [
     {
-      title: 'Bán Hàng POS & Khách Hàng',
+      title: 'DASHBOARD',
       items: [
-        { id: 'pos' as TabKey, label: 'Trạm Thu Ngân POS Quầy', icon: Store, badge: undefined, color: 'text-pink-500' },
-        { id: 'crm' as TabKey, label: 'Tư Vấn & CSKH VIP', icon: HeartHandshake, badge: careRemindersCount, color: 'text-rose-500' },
-        { id: 'sales' as TabKey, label: 'Hóa Đơn & Đơn Bán Hàng', icon: ShoppingBag, badge: undefined, color: 'text-indigo-500' },
-        { id: 'customers' as TabKey, label: 'Danh Bạ Khách Hàng', icon: Users, badge: customerCount, color: 'text-purple-500' },
+        { id: 'dashboard' as TabKey, label: 'Tổng Quan ERP', icon: LayoutDashboard, badge: undefined, color: 'text-purple-400' },
       ]
     },
     {
-      title: 'Mua Hàng & Xưởng May Gia Công',
+      title: 'QUẢN LÝ',
       items: [
-        { id: 'requisitions' as TabKey, label: 'Đề Xuất & Duyệt Nhập/Xuất', icon: ClipboardCheck, badge: pendingRequisitionsCount, color: 'text-amber-500' },
-        { id: 'purchases' as TabKey, label: 'Nhập Hàng Từ Xưởng (HDM)', icon: ShoppingBag, badge: unpaidInvoiceCount, color: 'text-emerald-500' },
-        { id: 'suppliers' as TabKey, label: 'Danh Bạ Xưởng & Nhà CC', icon: Building2, badge: supplierCount, color: 'text-blue-500' },
+        { id: 'products' as TabKey, label: 'Sản Phẩm', icon: Tag, badge: productCount, color: 'text-rose-400' },
+        { id: 'categories' as TabKey, label: 'Danh Mục Hàng', icon: ListTree, badge: undefined, color: 'text-purple-400' },
+        { id: 'customers' as TabKey, label: 'Khách Hàng VIP', icon: Users, badge: customerCount, color: 'text-blue-400' },
+        { id: 'suppliers' as TabKey, label: 'Nhà Cung Cấp / Xưởng', icon: Building2, badge: supplierCount, color: 'text-cyan-400' },
+        { id: 'employees' as TabKey, label: 'Người Dùng (Nhân Sự)', icon: UserCheck, badge: employeeCount, color: 'text-emerald-400' },
       ]
     },
     {
-      title: 'Kho Hàng & Sản Phẩm',
+      title: 'GIAO DỊCH',
       items: [
-        { id: 'inventory' as TabKey, label: 'Kho Hàng & Thẻ Kho (01/02-VT)', icon: Package, badge: lowStockCount, color: 'text-amber-600' },
-        { id: 'products' as TabKey, label: 'Mẫu Mã & Tồn Kho Từng Size', icon: Tag, badge: productCount, color: 'text-rose-600' },
-        { id: 'categories' as TabKey, label: 'Nhóm Hàng & Danh Mục', icon: ListTree, badge: undefined, color: 'text-purple-600' },
+        { id: 'sales' as TabKey, label: 'Bán Hàng (Hóa Đơn)', icon: ShoppingBag, badge: undefined, color: 'text-indigo-400' },
+        { id: 'pos' as TabKey, label: 'Bán Hàng POS Quầy', icon: Store, badge: undefined, color: 'text-pink-400' },
+        { id: 'purchases' as TabKey, label: 'Nhập Hàng Xưởng', icon: ShoppingBag, badge: unpaidInvoiceCount, color: 'text-emerald-400' },
+        { id: 'requisitions' as TabKey, label: 'Đề Xuất Nhập/Xuất', icon: ClipboardCheck, badge: pendingRequisitionsCount, color: 'text-amber-400' },
       ]
     },
     {
-      title: 'Tài Chính & Kế Toán Doanh Nghiệp',
+      title: 'KHO',
       items: [
-        { id: 'cashbook' as TabKey, label: 'Sổ Quỹ Tiền Mặt & Ngân Hàng', icon: Wallet, badge: undefined, color: 'text-emerald-600' },
-        { id: 'debts' as TabKey, label: 'Công Nợ Phải Thu/Trả (131/331)', icon: CreditCard, badge: undefined, color: 'text-rose-600' },
-        { id: 'reports' as TabKey, label: 'Báo Cáo Tài Chính & Lãi Lỗ', icon: PieChart, badge: undefined, color: 'text-indigo-600' },
-        { id: 'journal' as TabKey, label: 'Nhật Ký Chung (Sổ Cái VAS)', icon: BookOpenCheck, badge: undefined, color: 'text-slate-600' },
-        { id: 'accounts' as TabKey, label: 'Hệ Thống Tài Khoản Kế Toán', icon: ListTree, badge: undefined, color: 'text-teal-600' },
+        { id: 'inventory' as TabKey, label: 'Tồn Kho & Phiếu Kho', icon: Package, badge: lowStockCount, color: 'text-amber-400' },
       ]
     },
     {
-      title: 'Hệ Thống & Quản Trị',
+      title: 'KẾ TOÁN',
       items: [
-        { id: 'dashboard' as TabKey, label: 'Tổng Quan ERP', icon: LayoutDashboard, badge: undefined, color: 'text-purple-600' },
-        { id: 'employees' as TabKey, label: 'Nhân Sự & Bảng Lương', icon: UserCheck, badge: employeeCount, color: 'text-blue-600' },
-        { id: 'login' as TabKey, label: 'Đổi Tài Khoản / Quyền Trực', icon: Lock, badge: undefined, color: 'text-slate-700' },
+        { id: 'cashbook' as TabKey, label: 'Thu Chi (Sổ Quỹ)', icon: Wallet, badge: undefined, color: 'text-emerald-400' },
+        { id: 'debts' as TabKey, label: 'Quản Lý Công Nợ', icon: CreditCard, badge: undefined, color: 'text-rose-400' },
+        { id: 'reports' as TabKey, label: 'Báo Cáo Tài Chính', icon: PieChart, badge: undefined, color: 'text-indigo-400' },
       ]
     }
   ];

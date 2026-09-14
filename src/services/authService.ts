@@ -157,6 +157,47 @@ export const authService = {
     } finally {
       this.clearToken();
     }
+  },
+
+  /**
+   * Đổi mật khẩu tài khoản người dùng
+   * PUT /api/auth/password
+   */
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn.');
+    }
+
+    const res = await fetch('/api/auth/password', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+
+    const text = await res.text();
+    let data: any = null;
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        console.error('Lỗi parse JSON từ server khi đổi mật khẩu:', err);
+        throw new Error('Server trả về phản hồi không hợp lệ.');
+      }
+    }
+
+    if (!res.ok || !data || !data.success) {
+      const errorMsg = data?.message || data?.error || `Đổi mật khẩu thất bại (HTTP ${res.status}).`;
+      throw new Error(errorMsg);
+    }
+
+    return {
+      success: true,
+      message: data.message || 'Đổi mật khẩu thành công.'
+    };
   }
 };
 
