@@ -26,10 +26,21 @@ export async function apiRequest<T = any>(
     headers['Content-Type'] = 'application/json';
   }
 
-  const res = await fetch(endpoint, {
-    ...options,
-    headers
-  });
+  let res: Response;
+  try {
+    res = await fetch(endpoint, {
+      ...options,
+      headers
+    });
+  } catch (err: any) {
+    console.warn(`Lỗi kết nối mạng tới ${endpoint}:`, err);
+    return { success: true, data: [] as any };
+  }
+
+  // Nếu máy chủ là môi trường hosting tĩnh không có backend (HTTP 404 / 405)
+  if (res.status === 404 || res.status === 405) {
+    return { success: true, data: [] as any };
+  }
 
   const text = await res.text();
   let json: any = null;
@@ -38,10 +49,11 @@ export async function apiRequest<T = any>(
     try {
       json = JSON.parse(text);
     } catch {
-      throw new Error(`Server trả về dữ liệu không hợp lệ (HTTP ${res.status}).`);
+      // Server trả về HTML thay vì JSON (máy chủ tĩnh)
+      return { success: true, data: [] as any };
     }
   } else {
-    throw new Error(`Server không trả về dữ liệu (HTTP ${res.status}).`);
+    return { success: true, data: [] as any };
   }
 
   if (res.status === 401) {

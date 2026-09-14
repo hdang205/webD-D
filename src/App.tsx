@@ -193,52 +193,64 @@ export default function App() {
   useEffect(() => { StorageService.saveCareLogs(careLogs); }, [careLogs]);
   useEffect(() => { StorageService.saveCareReminders(careReminders); }, [careReminders]);
 
-  // Tải Master Data từ SQLite REST API khi đăng nhập thành công
+  // Tải Master Data từ SQLite REST API (tự động fallback sang dữ liệu khởi tạo nếu chạy trên Static Hosting như Vercel)
   useEffect(() => {
     if (!currentUser) return;
 
     // 1. Tải sản phẩm từ SQLite
     ProductService.getAll()
-      .then(items => { if (items && items.length > 0) setInventory(items); })
-      .catch(err => console.warn('Lỗi tải products từ SQLite:', err));
+      .then(items => { 
+        if (items && items.length > 0) setInventory(items); 
+        else setInventory(StorageService.getInventory());
+      })
+      .catch(() => setInventory(StorageService.getInventory()));
 
     // 2. Tải đối tác (Khách hàng & Nhà cung cấp) từ SQLite
     Promise.all([
-      CustomerService.getAll(),
-      SupplierService.getAll()
+      CustomerService.getAll().catch(() => []),
+      SupplierService.getAll().catch(() => [])
     ]).then(([custs, supps]) => {
       if ((custs && custs.length > 0) || (supps && supps.length > 0)) {
         const map = new Map<string, Partner>();
         (custs || []).forEach(c => map.set(c.id, c));
         (supps || []).forEach(s => map.set(s.id, s));
         setPartners(Array.from(map.values()));
+      } else {
+        setPartners(StorageService.getPartners());
       }
-    }).catch(err => console.warn('Lỗi tải partners từ SQLite:', err));
+    }).catch(() => setPartners(StorageService.getPartners()));
 
     // 3. Tải nhân sự từ SQLite
     EmployeeService.getAll()
-      .then(emps => { if (emps && emps.length > 0) setEmployees(emps); })
-      .catch(err => console.warn('Lỗi tải employees từ SQLite:', err));
+      .then(emps => { 
+        if (emps && emps.length > 0) setEmployees(emps); 
+        else setEmployees(StorageService.getEmployees());
+      })
+      .catch(() => setEmployees(StorageService.getEmployees()));
 
     // 4. Tải hóa đơn mua hàng & bán hàng từ SQLite
     Promise.all([
-      PurchaseService.getAll(),
-      SaleService.getAll()
+      PurchaseService.getAll().catch(() => []),
+      SaleService.getAll().catch(() => [])
     ]).then(([purchases, sales]) => {
       const allInvoices = [...(sales || []), ...(purchases || [])];
       if (allInvoices.length > 0) {
         setInvoices(allInvoices);
+      } else {
+        setInvoices(StorageService.getInvoices());
       }
-    }).catch(err => console.warn('Lỗi tải invoices từ SQLite:', err));
+    }).catch(() => setInvoices(StorageService.getInvoices()));
 
     // 5. Tải phiếu nhập xuất kho từ SQLite
     InventoryService.getLogs()
       .then(res => {
         if (res?.logs && res.logs.length > 0) {
           setInventoryLogs(res.logs);
+        } else {
+          setInventoryLogs(StorageService.getInventoryLogs());
         }
       })
-      .catch(err => console.warn('Lỗi tải inventory logs từ SQLite:', err));
+      .catch(() => setInventoryLogs(StorageService.getInventoryLogs()));
   }, [currentUser]);
 
   // Handler: POS Sale Completion
