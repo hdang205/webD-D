@@ -221,3 +221,17 @@ webD-D/
 - **Linting**: 100% sạch lỗi TypeScript (`npm run lint`).
 - **Production Build**: Build thành công mượt mà (`npm run build`).
 - **Persistence**: Toàn bộ dữ liệu lưu trữ bền vững trong SQLite, an toàn tuyệt đối khi reload hoặc khởi động lại server.
+
+---
+
+## 🚀 HƯỚNG DẪN DEPLOY CLOUD (RENDER.COM)
+
+1. Đăng nhập [Render.com](https://render.com) bằng tài khoản GitHub.
+2. Chọn **New +** -> **Web Service** -> Chọn repository `webD-D`.
+3. Cấu hình triển khai:
+   - **Runtime:** `Node`
+   - **Build Command:** `npm install && npm run build`
+   - **Start Command:** `npm start`
+   - **Region:** `Singapore`
+   - **Instance Type:** `Free`
+4. Bấm **Create Web Service** để hoàn tất triển khai.
