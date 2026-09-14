@@ -1,11 +1,24 @@
 import { apiRequest } from './apiClient.js';
 import { Category, InventoryItem, Partner, Employee } from '../types/accounting.js';
+import { StorageService } from './storage.js';
 
 export const CategoryService = {
   async getAll(search?: string): Promise<Category[]> {
-    const query = search ? `?search=${encodeURIComponent(search)}` : '';
-    const res = await apiRequest<Category[]>(`/api/categories${query}`);
-    return res.data || [];
+    try {
+      const query = search ? `?search=${encodeURIComponent(search)}` : '';
+      const res = await apiRequest<Category[]>(`/api/categories${query}`);
+      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        return res.data;
+      }
+    } catch {}
+
+    // Fallback sang StorageService (có đủ 12 danh mục từ SQLite)
+    let stored = StorageService.getCategories();
+    if (search) {
+      const s = search.toLowerCase();
+      stored = stored.filter(c => c.name.toLowerCase().includes(s) || c.code.toLowerCase().includes(s));
+    }
+    return stored;
   },
 
   async getById(id: string): Promise<Category | null> {
@@ -38,14 +51,29 @@ export const CategoryService = {
 
 export const ProductService = {
   async getAll(params?: { search?: string; categoryId?: string; stockStatus?: string }): Promise<InventoryItem[]> {
-    const searchParams = new URLSearchParams();
-    if (params?.search) searchParams.set('search', params.search);
-    if (params?.categoryId) searchParams.set('category_id', params.categoryId);
-    if (params?.stockStatus) searchParams.set('stock_status', params.stockStatus);
-    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    try {
+      const searchParams = new URLSearchParams();
+      if (params?.search) searchParams.set('search', params.search);
+      if (params?.categoryId) searchParams.set('category_id', params.categoryId);
+      if (params?.stockStatus) searchParams.set('stock_status', params.stockStatus);
+      const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
 
-    const res = await apiRequest<InventoryItem[]>(`/api/products${qs}`);
-    return res.data || [];
+      const res = await apiRequest<InventoryItem[]>(`/api/products${qs}`);
+      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        return res.data;
+      }
+    } catch {}
+
+    // Fallback sang StorageService (có đủ 160 sản phẩm từ SQLite)
+    let items = StorageService.getInventory();
+    if (params?.search) {
+      const s = params.search.toLowerCase();
+      items = items.filter(i => i.name.toLowerCase().includes(s) || i.code.toLowerCase().includes(s));
+    }
+    if (params?.categoryId) {
+      items = items.filter(i => i.categoryId === params.categoryId || i.category === params.categoryId);
+    }
+    return items;
   },
 
   async getById(id: string): Promise<InventoryItem | null> {
