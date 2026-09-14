@@ -82,19 +82,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
     loadStats();
   }, []);
 
-  // Cash transactions (sổ quỹ – localStorage)
-  const totalCashReceipts = cashTransactions
+  // Cash transactions (sổ quỹ – an toàn trước undefined)
+  const txList = Array.isArray(cashTransactions) ? cashTransactions : [];
+
+  const totalCashReceipts = txList
     .filter(t => t.type === 'CASH_RECEIPT' || t.type === 'BANK_DEPOSIT')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  const totalCashPayments = cashTransactions
+  const totalCashPayments = txList
     .filter(t => t.type === 'CASH_PAYMENT' || t.type === 'BANK_WITHDRAWAL')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  // Bar chart dùng dữ liệu thật từ /api/dashboard
-  const barChartData = stats.monthlyRevenue.length > 0
-    ? stats.monthlyRevenue
+  // Bar chart an toàn trước undefined
+  const monthlyRevenueList = Array.isArray(stats?.monthlyRevenue) ? stats.monthlyRevenue : [];
+  const barChartData = monthlyRevenueList.length > 0
+    ? monthlyRevenueList
     : [{ month: 'Chưa có dữ liệu', revenue: 0, purchases: 0 }];
+  
+  const unpaidInvoices = Array.isArray(stats?.unpaidInvoicesList) ? stats.unpaidInvoicesList : [];
 
   return (
     <div id="dashboard-view" className="space-y-6 pb-8">
@@ -407,7 +412,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       </button>
                     </div>
                     <div className="space-y-1.5 text-[#4e4447]">
-                      {stats.unpaidInvoicesList.filter(i => i.type === 'SALES').slice(0, 4).map(inv => (
+                      {unpaidInvoices.filter(i => i.type === 'SALES').slice(0, 4).map(inv => (
                         <div 
                           key={inv.id}
                           className="flex justify-between items-center p-2 rounded-lg bg-white hover:bg-pink-50/60 border border-pink-100 transition cursor-pointer text-[11px]"
@@ -460,7 +465,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               <div className="space-y-2.5">
-                {cashTransactions.length === 0 ? (
+                {txList.length === 0 ? (
                   <div className="text-center py-8 text-xs text-[#6c595f]">
                     Chưa có giao dịch thu chi nào. <br />
                     <button onClick={() => onOpenNewCashModal('CASH_RECEIPT')} className="text-[#a93054] font-semibold hover:underline cursor-pointer mt-1">
@@ -468,7 +473,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </button>
                   </div>
                 ) : (
-                  cashTransactions.slice(0, 5).map(t => (
+                  txList.slice(0, 5).map(t => (
                     <div key={t.id} className="flex items-center justify-between p-3 rounded-xl bg-[#fbf8ff] hover:bg-[#f4f2ff] border border-pink-50 transition">
                       <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${t.type === 'CASH_RECEIPT' || t.type === 'BANK_DEPOSIT' ? 'bg-emerald-50 text-emerald-600' : 'bg-[#ffe5ec] text-[#a93054]'}`}>
@@ -492,7 +497,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </div>
                   ))
                 )}
-                {cashTransactions.length > 0 && (
+                {txList.length > 0 && (
                   <div className="pt-1 text-[11px] text-[#6c595f] text-right">
                     Tổng thu: <strong className="text-emerald-700 font-mono">{formatCurrency(totalCashReceipts)}</strong>
                     {' · '}
