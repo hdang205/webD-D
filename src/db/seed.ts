@@ -19,18 +19,26 @@ import { DEFAULT_CHART_OF_ACCOUNTS } from '../data/defaultChartOfAccounts.js';
 
 // Khởi tạo danh mục nhóm hàng chuẩn hóa
 const INITIAL_CATEGORIES = [
-  { id: 'cat_somi', code: 'CAT_SOMI', name: 'Áo Sơ Mi', description: 'Sơ mi lụa tơ tằm, sơ mi công sở, sơ mi thiết kế cao cấp' },
-  { id: 'cat_jeans', code: 'CAT_JEANS', name: 'Quần Jeans', description: 'Quần bò denim dáng ôm, ống suông, cạp cao tôn dáng' },
-  { id: 'cat_vay', code: 'CAT_VAY', name: 'Váy & Đầm', description: 'Đầm dạ hội sang trọng, váy hoa nhí dạo phố, đầm lụa dự tiệc' },
-  { id: 'cat_blazer', code: 'CAT_BLAZER', name: 'Áo Khoác & Blazer', description: 'Blazer phong cách Hàn Quốc thanh lịch, vest nữ công sở' },
-  { id: 'cat_tshirt', code: 'CAT_TSHIRT', name: 'Áo T-Shirt', description: 'Áo thun cotton compact 100% thoáng mát cao cấp' },
-  { id: 'cat_giay', code: 'CAT_GIAY', name: 'Giày Dép', description: 'Giày cao gót, sneaker da thật VNXK' },
-  { id: 'cat_phukien', code: 'CAT_PHUKIEN', name: 'Phụ Kiện & Túi Xách', description: 'Túi xách da thật, thắt lưng, phụ kiện thời trang' }
+  { id: 'cat_aokhoac', code: 'CAT_AOKHOAC', name: 'Áo khoác', description: 'Áo khoác, măng tô, áo phao, blazer thời trang' },
+  { id: 'cat_damvay', code: 'CAT_DAMVAY', name: 'Đầm/Váy', description: 'Đầm xòe, đầm dạ hội, chân váy, váy công sở' },
+  { id: 'cat_jeans', code: 'CAT_JEANS', name: 'Quần jeans', description: 'Quần bò denim dáng ôm, ống suông, cạp cao tôn dáng' },
+  { id: 'cat_tuixach', code: 'CAT_TUIXACH', name: 'Túi xách', description: 'Túi xách da thật, clutch tiệc, túi đeo chéo' },
+  { id: 'cat_giaydepnu', code: 'CAT_GIAYDEPNU', name: 'Giày dép nữ', description: 'Giày cao gót, sandal, giày búp bê, sneaker nữ' },
+  { id: 'cat_aothun', code: 'CAT_AOTHUN', name: 'Áo thun', description: 'Áo phông thun cotton, áo polo, áo thun in họa tiết' },
+  { id: 'cat_somi', code: 'CAT_SOMI', name: 'Áo sơ mi', description: 'Sơ mi lụa tơ tằm, sơ mi công sở, sơ mi thiết kế cao cấp' }
 ];
 
 // Hàm map category text sang category id
 function mapCategoryToId(categoryName: string): string {
-  const match = INITIAL_CATEGORIES.find(c => c.name.toLowerCase() === categoryName.trim().toLowerCase());
+  const norm = categoryName.trim().toLowerCase();
+  if (norm.includes('khoác') || norm.includes('blazer')) return 'cat_aokhoac';
+  if (norm.includes('đầm') || norm.includes('váy')) return 'cat_damvay';
+  if (norm.includes('jean') || norm.includes('bò')) return 'cat_jeans';
+  if (norm.includes('túi') || norm.includes('phụ kiện')) return 'cat_tuixach';
+  if (norm.includes('giày') || norm.includes('dép') || norm.includes('sneaker')) return 'cat_giaydepnu';
+  if (norm.includes('thun') || norm.includes('t-shirt') || norm.includes('phông')) return 'cat_aothun';
+  if (norm.includes('sơ mi') || norm.includes('somi')) return 'cat_somi';
+  const match = INITIAL_CATEGORIES.find(c => c.name.toLowerCase() === norm);
   return match ? match.id : 'cat_somi';
 }
 

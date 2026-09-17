@@ -16,10 +16,17 @@ import {
   RotateCcw,
   User,
   Phone,
-  Barcode
+  Barcode,
+  X,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  MapPin,
+  Mail
 } from 'lucide-react';
-import { InventoryItem, Partner, Invoice, InvoiceItem } from '../../types/accounting';
+import { InventoryItem, Partner, Invoice, InvoiceItem, CustomerTier } from '../../types/accounting';
 import { formatCurrency } from '../../utils/accountingEngine';
+import { CustomerService } from '../../services/masterDataService';
 
 interface POSViewProps {
   inventory: InventoryItem[];
@@ -39,13 +46,15 @@ interface POSViewProps {
     note?: string;
   }) => void;
   onNavigateToERP: () => void;
+  onAddCustomer?: (customerData: Partial<Partner>) => Promise<Partner>;
 }
 
 export const POSView: React.FC<POSViewProps> = ({
   inventory,
   partners,
   onCompletePOSSale,
-  onNavigateToERP
+  onNavigateToERP,
+  onAddCustomer
 }) => {
   // Search & Filter
   const [searchProduct, setSearchProduct] = useState('');
@@ -55,6 +64,19 @@ export const POSView: React.FC<POSViewProps> = ({
   const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
   const [customCustomerName, setCustomCustomerName] = useState<string>('Khách Lẻ Mua Tại Quầy');
   const [customCustomerPhone, setCustomCustomerPhone] = useState<string>('');
+
+  // Quick Customer Creation State
+  const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
+  const [newCustomerForm, setNewCustomerForm] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    email: '',
+    tier: 'STANDARD' as CustomerTier
+  });
+  const [customerFormErrors, setCustomerFormErrors] = useState<Record<string, string>>({});
+  const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
+  const [posToast, setPosToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Cart in POS
   const [posCart, setPosCart] = useState<{
@@ -75,8 +97,11 @@ export const POSView: React.FC<POSViewProps> = ({
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [lastCompletedBill, setLastCompletedBill] = useState<any>(null);
 
-  // Filter products
-  const categories = ['ALL', 'Váy & Đầm', 'Áo Sơ Mi', 'Áo Khoác & Blazer', 'Quần Jeans', 'Phụ Kiện & Túi Xách', 'Áo T-Shirt', 'Giày Dép'];
+  // Filter products theo 7 nhóm danh mục chuẩn
+  const dynamicCategories = Array.from(new Set(inventory.map(i => i.category).filter(Boolean)));
+  const categories = ['ALL', ...(dynamicCategories.length > 0 ? dynamicCategories : [
+    'Áo khoác', 'Đầm/Váy', 'Quần jeans', 'Túi xách', 'Giày dép nữ', 'Áo thun', 'Áo sơ mi'
+  ])];
 
   const filteredItems = inventory.filter(i => {
     const matchCat = selectedCategory === 'ALL' || i.category === selectedCategory;
@@ -84,6 +109,108 @@ export const POSView: React.FC<POSViewProps> = ({
                        i.code.toLowerCase().includes(searchProduct.toLowerCase());
     return matchCat && matchQuery;
   });
+
+  // Validation form tạo nhanh khách hàng tại POS
+  const validateCustomerForm = (): boolean => {
+    const errs: Record<string, string> = {};
+    const name = newCustomerForm.name.trim();
+    const phone = newCustomerForm.phone.trim();
+    const email = newCustomerForm.email.trim();
+
+    if (!name) {
+      errs.name = 'Họ tên khách hàng không được để trống';
+    }
+
+    const PHONE_REGEX = /^[0-9+.\s-]{9,15}$/;
+    if (!phone) {
+      errs.phone = 'Số điện thoại không được để trống';
+    } else if (!PHONE_REGEX.test(phone)) {
+      errs.phone = 'Số điện thoại không đúng định dạng (từ 9 đến 15 chữ số)';
+    } else {
+      // Chống trùng số điện thoại ngay tại POS
+      const duplicate = partners.find(p => p.phone && p.phone.trim() === phone);
+      if (duplicate) {
+        errs.phone = `Số điện thoại này đã được đăng ký cho "${duplicate.name}" (${duplicate.code})`;
+      }
+    }
+
+    if (email) {
+      const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!EMAIL_REGEX.test(email)) {
+        errs.email = 'Địa chỉ email không đúng định dạng';
+      }
+    }
+
+    setCustomerFormErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  // Xử lý lưu khách hàng mới tại POS & Tự động chọn cho hóa đơn (Bảo toàn giỏ hàng)
+  const handleQuickCreateCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateCustomerForm()) return;
+
+    try {
+      setIsCreatingCustomer(true);
+      setCustomerFormErrors({});
+
+      const payload: Partial<Partner> = {
+        name: newCustomerForm.name.trim(),
+        phone: newCustomerForm.phone.trim(),
+        address: newCustomerForm.address.trim() || 'Showroom mua tại quầy',
+        email: newCustomerForm.email.trim() || undefined,
+        tier: newCustomerForm.tier,
+        type: 'CUSTOMER'
+      };
+
+      let createdCustomer: Partner;
+      if (onAddCustomer) {
+        createdCustomer = await onAddCustomer(payload);
+      } else {
+        createdCustomer = await CustomerService.create(payload);
+      }
+
+      // Tự động chọn khách hàng vừa tạo cho hóa đơn POS hiện tại (Giỏ hàng posCart giữ nguyên 100%)
+      setSelectedPartnerId(createdCustomer.id);
+      setCustomCustomerName(createdCustomer.name);
+      setCustomCustomerPhone(createdCustomer.phone || '');
+      if (createdCustomer.tier === 'DIAMOND' || createdCustomer.tier === 'GOLD') {
+        setDiscountPercent(10);
+      } else if (createdCustomer.tier === 'SILVER') {
+        setDiscountPercent(5);
+      } else {
+        setDiscountPercent(0);
+      }
+
+      setPosToast({
+        type: 'success',
+        message: `Đã thêm khách hàng "${createdCustomer.name}" (${createdCustomer.phone}) và áp dụng ngay vào đơn bán!`
+      });
+      setTimeout(() => setPosToast(null), 4000);
+
+      // Đóng modal và reset form nhập
+      setIsAddCustomerModalOpen(false);
+      setNewCustomerForm({
+        name: '',
+        phone: '',
+        address: '',
+        email: '',
+        tier: 'STANDARD'
+      });
+    } catch (err: any) {
+      console.error('Lỗi khi tạo khách hàng tại POS:', err);
+      const msg = err.message || 'Lỗi khi tạo mới khách hàng';
+      if (err.errors?.phone) {
+        setCustomerFormErrors(prev => ({ ...prev, phone: err.errors.phone }));
+      } else if (msg.includes('Số điện thoại') || msg.includes('phone')) {
+        setCustomerFormErrors(prev => ({ ...prev, phone: msg }));
+      } else {
+        setCustomerFormErrors(prev => ({ ...prev, general: msg }));
+      }
+    } finally {
+      setIsCreatingCustomer(false);
+    }
+  };
 
   // Handle customer change
   const handleSelectPartner = (partnerId: string) => {
@@ -231,6 +358,29 @@ export const POSView: React.FC<POSViewProps> = ({
         </div>
       </div>
 
+      {/* POS Notification Toast */}
+      {posToast && (
+        <div className={`p-3 rounded-2xl mb-4 border flex items-center justify-between shadow-xs animate-in fade-in duration-200 ${
+          posToast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
+        }`}>
+          <div className="flex items-center gap-2 text-xs font-semibold">
+            {posToast.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            )}
+            <span>{posToast.message}</span>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => setPosToast(null)} 
+            className="text-slate-400 hover:text-slate-700 p-1 rounded-lg cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Mobile Tab Switcher (Visible only on mobile/tablet screens < lg) */}
       <div className="lg:hidden flex items-center bg-slate-200/80 p-1 rounded-2xl mb-4 shadow-inner">
         <button
@@ -352,20 +502,36 @@ export const POSView: React.FC<POSViewProps> = ({
         }`}>
           
           {/* Customer Selection Box */}
-          <div className="bg-rose-50/60 rounded-2xl p-3 border border-pink-100 mb-3 shrink-0">
-            <div className="flex items-center justify-between mb-2">
+          <div className="bg-rose-50/60 rounded-2xl p-3 border border-pink-100 mb-3 shrink-0 space-y-2">
+            <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 text-[#fb6f92]" />
                 <span>Khách hàng / Thành viên VIP</span>
               </label>
-              {selectedPartnerId && (
-                <span className="text-[10px] font-bold bg-amber-500 text-white px-2 py-0.5 rounded-full">
-                  VIP - Giảm {discountPercent}%
-                </span>
-              )}
+              <div className="flex items-center gap-1.5">
+                {selectedPartnerId && (
+                  <span className="text-[10px] font-bold bg-amber-500 text-white px-2 py-0.5 rounded-full">
+                    VIP - Giảm {discountPercent}%
+                  </span>
+                )}
+                <button
+                  type="button"
+                  id="btn-pos-add-customer"
+                  onClick={() => {
+                    setCustomerFormErrors({});
+                    setIsAddCustomerModalOpen(true);
+                  }}
+                  className="flex items-center gap-1 px-2.5 py-1 bg-[#fb6f92] hover:bg-[#a93054] text-white rounded-lg text-[11px] font-bold transition shadow-xs cursor-pointer active:scale-95"
+                  title="Tạo nhanh khách hàng mới ngay tại quầy POS"
+                >
+                  <UserPlus className="w-3 h-3" />
+                  <span>+ Thêm khách hàng</span>
+                </button>
+              </div>
             </div>
 
             <select
+              id="select-pos-customer"
               value={selectedPartnerId}
               onChange={(e) => handleSelectPartner(e.target.value)}
               className="w-full bg-white border border-rose-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#fb6f92]"
@@ -377,6 +543,23 @@ export const POSView: React.FC<POSViewProps> = ({
                 </option>
               ))}
             </select>
+
+            {selectedPartnerId && (
+              <div className="flex items-center justify-between bg-white px-2.5 py-1 rounded-lg border border-pink-100 text-[11px]">
+                <div className="flex items-center gap-1.5 text-slate-600 truncate">
+                  <Phone className="w-3 h-3 text-[#fb6f92]" />
+                  <span className="font-semibold text-slate-800 truncate">{customCustomerName}</span>
+                  <span className="font-mono text-slate-500">({customCustomerPhone || 'Không có SĐT'})</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleSelectPartner('')}
+                  className="text-slate-400 hover:text-rose-600 text-[10px] font-semibold cursor-pointer underline ml-2 shrink-0"
+                >
+                  Đổi khách
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Cart Items List */}
@@ -636,6 +819,165 @@ export const POSView: React.FC<POSViewProps> = ({
                 Đơn Bán Mới
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* QUICK CREATE CUSTOMER MODAL */}
+      {isAddCustomerModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-rose-100 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-rose-100 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-pink-100 text-[#a93054] rounded-xl">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-sm">Thêm Khách Hàng Mới Tại Quầy</h3>
+                  <p className="text-[11px] text-slate-500">Tạo nhanh để áp dụng tích điểm &amp; lưu đơn bán</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddCustomerModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {customerFormErrors.general && (
+              <div className="p-3 mb-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold rounded-xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{customerFormErrors.general}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleQuickCreateCustomer} className="space-y-3.5 text-xs text-left">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Họ và tên khách hàng <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="input-pos-cust-name"
+                  placeholder="VD: Nguyễn Mai Trang"
+                  value={newCustomerForm.name}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
+                  className={`w-full px-3 py-2 bg-slate-50 border rounded-xl font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#fb6f92] ${
+                    customerFormErrors.name ? 'border-rose-400 bg-rose-50/50' : 'border-slate-200'
+                  }`}
+                  autoFocus
+                />
+                {customerFormErrors.name && (
+                  <p className="text-[11px] font-semibold text-rose-600 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{customerFormErrors.name}</span>
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Số điện thoại <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  id="input-pos-cust-phone"
+                  placeholder="VD: 0988123456 (9 - 15 số)"
+                  value={newCustomerForm.phone}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
+                  className={`w-full px-3 py-2 bg-slate-50 border rounded-xl font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#fb6f92] ${
+                    customerFormErrors.phone ? 'border-rose-400 bg-rose-50/50' : 'border-slate-200'
+                  }`}
+                />
+                {customerFormErrors.phone && (
+                  <p className="text-[11px] font-semibold text-rose-600 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{customerFormErrors.phone}</span>
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Địa chỉ liên hệ <span className="text-slate-400 font-normal">(không bắt buộc)</span>
+                </label>
+                <input
+                  type="text"
+                  id="input-pos-cust-address"
+                  placeholder="VD: 124 Phố Huế, Hai Bà Trưng, Hà Nội"
+                  value={newCustomerForm.address}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, address: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#fb6f92]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Địa chỉ Email <span className="text-slate-400 font-normal">(không bắt buộc)</span>
+                </label>
+                <input
+                  type="email"
+                  id="input-pos-cust-email"
+                  placeholder="VD: khachhang@gmail.com"
+                  value={newCustomerForm.email}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, email: e.target.value })}
+                  className={`w-full px-3 py-2 bg-slate-50 border rounded-xl font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#fb6f92] ${
+                    customerFormErrors.email ? 'border-rose-400 bg-rose-50/50' : 'border-slate-200'
+                  }`}
+                />
+                {customerFormErrors.email && (
+                  <p className="text-[11px] font-semibold text-rose-600 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{customerFormErrors.email}</span>
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Hạng thành viên ban đầu</label>
+                <select
+                  value={newCustomerForm.tier}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, tier: e.target.value as CustomerTier })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#fb6f92] cursor-pointer"
+                >
+                  <option value="STANDARD">STANDARD - Khách tiêu chuẩn</option>
+                  <option value="SILVER">SILVER - Giảm 5% hóa đơn</option>
+                  <option value="GOLD">GOLD - Giảm 10% hóa đơn (VIP)</option>
+                  <option value="DIAMOND">DIAMOND - Giảm 10% hóa đơn (VIP Kim Cương)</option>
+                </select>
+              </div>
+
+              <div className="flex gap-2 pt-3 border-t border-rose-100">
+                <button
+                  type="button"
+                  onClick={() => setIsAddCustomerModalOpen(false)}
+                  disabled={isCreatingCustomer}
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 font-bold rounded-xl transition cursor-pointer"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  id="btn-pos-submit-customer"
+                  disabled={isCreatingCustomer}
+                  className="flex-1 py-2.5 bg-[#a93054] hover:bg-[#8e2544] disabled:opacity-50 text-white font-bold rounded-xl shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  {isCreatingCustomer ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Đang lưu...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4" />
+                      <span>Lưu &amp; Chọn Vào Đơn</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

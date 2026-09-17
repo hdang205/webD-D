@@ -161,6 +161,12 @@ function handleCreatePartner(req: Request, res: Response, defaultType: 'CUSTOMER
       errors.phone = 'Số điện thoại là bắt buộc';
     } else if (!PHONE_REGEX.test(phone.trim())) {
       errors.phone = 'Số điện thoại không đúng định dạng (từ 9 đến 15 chữ số)';
+    } else {
+      const cleanPhone = phone.trim();
+      const existingPartnerWithPhone = db.prepare('SELECT id, code, name FROM partners WHERE phone = ?').get(cleanPhone) as any;
+      if (existingPartnerWithPhone) {
+        errors.phone = `Số điện thoại "${cleanPhone}" đã tồn tại trong hệ thống (${existingPartnerWithPhone.name} - ${existingPartnerWithPhone.code})`;
+      }
     }
 
     if (email && typeof email === 'string' && email.trim() && !EMAIL_REGEX.test(email.trim())) {
@@ -305,6 +311,12 @@ export function updatePartner(req: Request, res: Response): void {
       errors.phone = 'Số điện thoại không được để trống';
     } else if (phone !== undefined && !PHONE_REGEX.test(String(phone).trim())) {
       errors.phone = 'Số điện thoại không đúng định dạng';
+    } else if (phone !== undefined) {
+      const cleanPhone = String(phone).trim();
+      const existingPartnerWithPhone = db.prepare('SELECT id, code, name FROM partners WHERE phone = ? AND id != ?').get(cleanPhone, id) as any;
+      if (existingPartnerWithPhone) {
+        errors.phone = `Số điện thoại "${cleanPhone}" đã tồn tại trong hệ thống (${existingPartnerWithPhone.name} - ${existingPartnerWithPhone.code})`;
+      }
     }
 
     if (email !== undefined && email && !EMAIL_REGEX.test(String(email).trim())) {

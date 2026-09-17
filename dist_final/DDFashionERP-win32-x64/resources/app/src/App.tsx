@@ -41,6 +41,7 @@ import { CustomerCareView } from './components/CRM/CustomerCareView';
 import { MobileBottomNav } from './components/Navigation/MobileBottomNav';
 import { MobileDrawer } from './components/Navigation/MobileDrawer';
 import { MobileInstallBanner } from './components/Common/MobileInstallBanner';
+import { ChangePasswordModal } from './components/Auth/ChangePasswordModal';
 import { isTabAllowedForRole, getDefaultTabForRole } from './utils/rbac';
 
 import { 
@@ -81,6 +82,7 @@ export default function App() {
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [logoutMessage, setLogoutMessage] = useState<string | null>(null);
   const [isScreenLocked, setIsScreenLocked] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState(false);
 
@@ -191,52 +193,64 @@ export default function App() {
   useEffect(() => { StorageService.saveCareLogs(careLogs); }, [careLogs]);
   useEffect(() => { StorageService.saveCareReminders(careReminders); }, [careReminders]);
 
-  // Tải Master Data từ SQLite REST API khi đăng nhập thành công
+  // Tải Master Data từ SQLite REST API (tự động fallback sang dữ liệu khởi tạo nếu chạy trên Static Hosting như Vercel)
   useEffect(() => {
     if (!currentUser) return;
 
     // 1. Tải sản phẩm từ SQLite
     ProductService.getAll()
-      .then(items => { if (items && items.length > 0) setInventory(items); })
-      .catch(err => console.warn('Lỗi tải products từ SQLite:', err));
+      .then(items => { 
+        if (items && items.length > 0) setInventory(items); 
+        else setInventory(StorageService.getInventory());
+      })
+      .catch(() => setInventory(StorageService.getInventory()));
 
     // 2. Tải đối tác (Khách hàng & Nhà cung cấp) từ SQLite
     Promise.all([
-      CustomerService.getAll(),
-      SupplierService.getAll()
+      CustomerService.getAll().catch(() => []),
+      SupplierService.getAll().catch(() => [])
     ]).then(([custs, supps]) => {
       if ((custs && custs.length > 0) || (supps && supps.length > 0)) {
         const map = new Map<string, Partner>();
         (custs || []).forEach(c => map.set(c.id, c));
         (supps || []).forEach(s => map.set(s.id, s));
         setPartners(Array.from(map.values()));
+      } else {
+        setPartners(StorageService.getPartners());
       }
-    }).catch(err => console.warn('Lỗi tải partners từ SQLite:', err));
+    }).catch(() => setPartners(StorageService.getPartners()));
 
     // 3. Tải nhân sự từ SQLite
     EmployeeService.getAll()
-      .then(emps => { if (emps && emps.length > 0) setEmployees(emps); })
-      .catch(err => console.warn('Lỗi tải employees từ SQLite:', err));
+      .then(emps => { 
+        if (emps && emps.length > 0) setEmployees(emps); 
+        else setEmployees(StorageService.getEmployees());
+      })
+      .catch(() => setEmployees(StorageService.getEmployees()));
 
     // 4. Tải hóa đơn mua hàng & bán hàng từ SQLite
     Promise.all([
-      PurchaseService.getAll(),
-      SaleService.getAll()
+      PurchaseService.getAll().catch(() => []),
+      SaleService.getAll().catch(() => [])
     ]).then(([purchases, sales]) => {
       const allInvoices = [...(sales || []), ...(purchases || [])];
       if (allInvoices.length > 0) {
         setInvoices(allInvoices);
+      } else {
+        setInvoices(StorageService.getInvoices());
       }
-    }).catch(err => console.warn('Lỗi tải invoices từ SQLite:', err));
+    }).catch(() => setInvoices(StorageService.getInvoices()));
 
     // 5. Tải phiếu nhập xuất kho từ SQLite
     InventoryService.getLogs()
       .then(res => {
         if (res?.logs && res.logs.length > 0) {
           setInventoryLogs(res.logs);
+        } else {
+          setInventoryLogs(StorageService.getInventoryLogs());
         }
       })
-      .catch(err => console.warn('Lỗi tải inventory logs từ SQLite:', err));
+      .catch(() => setInventoryLogs(StorageService.getInventoryLogs()));
   }, [currentUser]);
 
   // Handler: POS Sale Completion
@@ -842,11 +856,12 @@ export default function App() {
       case 'pos': return 'Thu Ngân POS Bán Hàng Tại Quầy';
       case 'login':
       case 'auth': return 'Trang Đăng Nhập & Phân Quyền';
-      case 'dashboard': return 'Tổng Quan Báo Cáo';
-      case 'employees': return 'Quản Lý Nhân Sự & Bảng Lương';
+      case 'dashboard': return 'Tổng Quan ERP';
+      case 'employees': return 'Người Dùng & Nhân Sự';
       case 'customers': return 'Quản Lý Khách Hàng (VIP)';
       case 'suppliers': return 'Nhà Cung Cấp & Xưởng May';
       case 'products': return 'Sản Phẩm & Bộ Sưu Tập';
+      case 'categories': return 'Danh Mục Nhóm Hàng';
       case 'sales': return 'Bán Hàng & Đơn Bán (ERP)';
       case 'purchases': return 'Nhập Hàng Từ Xưởng May';
       case 'requisitions': return 'Đề Xuất & Phê Duyệt Nhập/Xuất Hàng';
@@ -857,7 +872,7 @@ export default function App() {
       case 'reports': return 'Báo Cáo Tài Chính & Thuế';
       case 'journal': return 'Sổ Nhật Ký Chung (VAS)';
       case 'accounts': return 'Hệ Thống Tài Khoản';
-      default: return 'Kế Toán Thời Trang D&D';
+      default: return 'Cửa Hàng Thời Trang D&D';
     }
   };
 
@@ -906,7 +921,7 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onExportBackup={StorageService.exportFullBackupJSON}
         onResetData={() => {
-          if (confirm('Khôi phục toàn bộ dữ liệu kế toán thời trang D&D ban đầu?')) {
+          if (confirm('Khôi phục toàn bộ dữ liệu thời trang D&D ban đầu?')) {
             StorageService.resetToDefaults();
             window.location.reload();
           }
@@ -917,6 +932,7 @@ export default function App() {
         currentUser={currentUser}
         onOpenAuth={() => setActiveTab('login')}
         onLogout={handleLogout}
+        onOpenChangePassword={() => setIsChangePasswordOpen(true)}
         onLockScreen={() => setIsScreenLocked(true)}
         onFastSwitchUser={handleFastSwitchUser}
         onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
@@ -1403,6 +1419,14 @@ export default function App() {
         customerCount={customerCount}
         supplierCount={supplierCount}
         productCount={inventory.length}
+      />
+
+      {/* ================= MODAL ĐỔI MẬT KHẨU TÀI KHOẢN (PHASE 8.1) ================= */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
     </div>

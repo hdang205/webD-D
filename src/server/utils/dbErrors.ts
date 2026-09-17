@@ -29,6 +29,14 @@ export function handleDbError(res: Response, error: any, defaultMessage: string 
       res.status(409).json({ success: false, message: 'Mã đối tác (khách hàng/nhà cung cấp) đã tồn tại.' });
       return;
     }
+    if (errMsg.includes('partners.phone')) {
+      res.status(409).json({ 
+        success: false, 
+        message: 'Số điện thoại này đã được sử dụng cho một đối tác khác trong hệ thống.',
+        errors: { phone: 'Số điện thoại đã tồn tại' }
+      });
+      return;
+    }
     if (errMsg.includes('employees.code')) {
       res.status(409).json({ success: false, message: 'Mã nhân viên đã tồn tại.' });
       return;

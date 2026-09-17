@@ -2,53 +2,88 @@ import { Category, InventoryItem } from '../types/accounting';
 
 export const EXPORTED_CATEGORIES: Category[] = [
   {
+    "id": "cat_somi",
+    "code": "CAT_SOMI",
+    "name": "Áo Sơ Mi",
+    "description": "Sơ mi lụa tơ tằm, sơ mi công sở, sơ mi thiết kế cao cấp",
+    "productCount": 33
+  },
+  {
+    "id": "cat_jeans",
+    "code": "CAT_JEANS",
+    "name": "Quần Jeans",
+    "description": "Quần bò denim dáng ôm, ống suông, cạp cao tôn dáng",
+    "productCount": 21
+  },
+  {
+    "id": "cat_vay",
+    "code": "CAT_VAY",
+    "name": "Váy & Đầm",
+    "description": "Đầm dạ hội sang trọng, váy hoa nhí dạo phố, đầm lụa dự tiệc",
+    "productCount": 2
+  },
+  {
+    "id": "cat_blazer",
+    "code": "CAT_BLAZER",
+    "name": "Áo Khoác & Blazer",
+    "description": "Blazer phong cách Hàn Quốc thanh lịch, vest nữ công sở",
+    "productCount": 1
+  },
+  {
+    "id": "cat_tshirt",
+    "code": "CAT_TSHIRT",
+    "name": "Áo T-Shirt",
+    "description": "Áo thun cotton compact 100% thoáng mát cao cấp",
+    "productCount": 1
+  },
+  {
+    "id": "cat_giay",
+    "code": "CAT_GIAY",
+    "name": "Giày Dép",
+    "description": "Giày cao gót, sneaker da thật VNXK",
+    "productCount": 1
+  },
+  {
+    "id": "cat_phukien",
+    "code": "CAT_PHUKIEN",
+    "name": "Phụ Kiện & Túi Xách",
+    "description": "Túi xách da thật, thắt lưng, phụ kiện thời trang",
+    "productCount": 1
+  },
+  {
     "id": "cat_aokhoac",
     "code": "CAT_AOKHOAC",
     "name": "Áo khoác",
-    "description": "Áo khoác, măng tô, áo phao, blazer thời trang",
-    "productCount": 21
+    "description": "Nhóm sản phẩm Áo khoác",
+    "productCount": 20
   },
   {
     "id": "cat_damvay",
     "code": "CAT_DAMVAY",
     "name": "Đầm/Váy",
-    "description": "Đầm xòe, đầm dạ hội, chân váy, váy công sở",
-    "productCount": 22
-  },
-  {
-    "id": "cat_jeans",
-    "code": "CAT_JEANS",
-    "name": "Quần jeans",
-    "description": "Quần jeans skinny, ống rộng, cạp cao, boyfriend jeans",
-    "productCount": 21
+    "description": "Nhóm sản phẩm Đầm/Váy",
+    "productCount": 20
   },
   {
     "id": "cat_tuixach",
     "code": "CAT_TUIXACH",
     "name": "Túi xách",
-    "description": "Túi xách da thật, clutch tiệc, túi đeo chéo",
-    "productCount": 21
+    "description": "Nhóm sản phẩm Túi xách",
+    "productCount": 20
   },
   {
     "id": "cat_giaydepnu",
     "code": "CAT_GIAYDEPNU",
     "name": "Giày dép nữ",
-    "description": "Giày cao gót, sandal, giày búp bê, sneaker nữ",
-    "productCount": 21
+    "description": "Nhóm sản phẩm Giày dép nữ",
+    "productCount": 20
   },
   {
     "id": "cat_aothun",
     "code": "CAT_AOTHUN",
     "name": "Áo thun",
-    "description": "Áo phông thun cotton, áo polo, áo thun in họa tiết",
-    "productCount": 21
-  },
-  {
-    "id": "cat_somi",
-    "code": "CAT_SOMI",
-    "name": "Áo sơ mi",
-    "description": "Sơ mi lụa tơ tằm, sơ mi công sở, sơ mi thiết kế cao cấp",
-    "productCount": 33
+    "description": "Nhóm sản phẩm Áo thun",
+    "productCount": 20
   }
 ];
 
@@ -58,7 +93,7 @@ export const EXPORTED_PRODUCTS: InventoryItem[] = [
     "code": "SP001",
     "name": "Áo Sơ Mi Lụa Silk Premium - Size M (Màu Kem)",
     "unit": "Cái",
-    "category": "Áo sơ mi",
+    "category": "Áo Sơ Mi",
     "categoryId": "cat_somi",
     "size": "FreeSize",
     "color": "Tiêu chuẩn",
@@ -76,7 +111,7 @@ export const EXPORTED_PRODUCTS: InventoryItem[] = [
     "code": "SP002",
     "name": "Quần Jeans Vintage Slimfit - Size L (Màu Indigo)",
     "unit": "Cái",
-    "category": "Quần jeans",
+    "category": "Quần Jeans",
     "categoryId": "cat_jeans",
     "size": "FreeSize",
     "color": "Tiêu chuẩn",
@@ -94,8 +129,8 @@ export const EXPORTED_PRODUCTS: InventoryItem[] = [
     "code": "SP003",
     "name": "Váy Xòe Floral Summer - Size S (Màu Hoa Nhí)",
     "unit": "Chiếc",
-    "category": "Đầm/Váy",
-    "categoryId": "cat_damvay",
+    "category": "Váy & Đầm",
+    "categoryId": "cat_vay",
     "size": "FreeSize",
     "color": "Tiêu chuẩn",
     "barcode": "",
@@ -112,8 +147,8 @@ export const EXPORTED_PRODUCTS: InventoryItem[] = [
     "code": "SP004",
     "name": "Áo Blazer Korean Oversized - Size L (Màu Đen)",
     "unit": "Cái",
-    "category": "Áo khoác",
-    "categoryId": "cat_aokhoac",
+    "category": "Áo Khoác & Blazer",
+    "categoryId": "cat_blazer",
     "size": "FreeSize",
     "color": "Tiêu chuẩn",
     "barcode": "",
@@ -130,8 +165,8 @@ export const EXPORTED_PRODUCTS: InventoryItem[] = [
     "code": "SP005",
     "name": "Áo T-Shirt Compact Cotton - Size M (Màu Trắng)",
     "unit": "Cái",
-    "category": "Áo thun",
-    "categoryId": "cat_aothun",
+    "category": "Áo T-Shirt",
+    "categoryId": "cat_tshirt",
     "size": "FreeSize",
     "color": "Tiêu chuẩn",
     "barcode": "",
@@ -148,8 +183,8 @@ export const EXPORTED_PRODUCTS: InventoryItem[] = [
     "code": "SP006",
     "name": "Giày Sneaker Leather White - Size 41",
     "unit": "Đôi",
-    "category": "Giày dép nữ",
-    "categoryId": "cat_giaydepnu",
+    "category": "Giày Dép",
+    "categoryId": "cat_giay",
     "size": "FreeSize",
     "color": "Tiêu chuẩn",
     "barcode": "",
@@ -166,8 +201,8 @@ export const EXPORTED_PRODUCTS: InventoryItem[] = [
     "code": "SP007",
     "name": "Túi Xách Da Thật Mini Handbag (Màu Nâu Tan)",
     "unit": "Cái",
-    "category": "Túi xách",
-    "categoryId": "cat_tuixach",
+    "category": "Phụ Kiện & Túi Xách",
+    "categoryId": "cat_phukien",
     "size": "FreeSize",
     "color": "Tiêu chuẩn",
     "barcode": "",
@@ -184,8 +219,8 @@ export const EXPORTED_PRODUCTS: InventoryItem[] = [
     "code": "SP008",
     "name": "Chân Váy Pleated Midi - Size S (Màu Ghi)",
     "unit": "Cái",
-    "category": "Đầm/Váy",
-    "categoryId": "cat_damvay",
+    "category": "Váy & Đầm",
+    "categoryId": "cat_vay",
     "size": "FreeSize",
     "color": "Tiêu chuẩn",
     "barcode": "",

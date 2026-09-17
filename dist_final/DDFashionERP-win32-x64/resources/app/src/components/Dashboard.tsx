@@ -82,19 +82,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
     loadStats();
   }, []);
 
-  // Cash transactions (sổ quỹ – localStorage)
-  const totalCashReceipts = cashTransactions
+  // Cash transactions (sổ quỹ – an toàn trước undefined)
+  const txList = Array.isArray(cashTransactions) ? cashTransactions : [];
+
+  const totalCashReceipts = txList
     .filter(t => t.type === 'CASH_RECEIPT' || t.type === 'BANK_DEPOSIT')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  const totalCashPayments = cashTransactions
+  const totalCashPayments = txList
     .filter(t => t.type === 'CASH_PAYMENT' || t.type === 'BANK_WITHDRAWAL')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  // Bar chart dùng dữ liệu thật từ /api/dashboard
-  const barChartData = stats.monthlyRevenue.length > 0
-    ? stats.monthlyRevenue
+  // Bar chart an toàn trước undefined
+  const monthlyRevenueList = Array.isArray(stats?.monthlyRevenue) ? stats.monthlyRevenue : [];
+  const barChartData = monthlyRevenueList.length > 0
+    ? monthlyRevenueList
     : [{ month: 'Chưa có dữ liệu', revenue: 0, purchases: 0 }];
+  
+  const unpaidInvoices = Array.isArray(stats?.unpaidInvoicesList) ? stats.unpaidInvoicesList : [];
 
   return (
     <div id="dashboard-view" className="space-y-6 pb-8">
@@ -180,165 +185,179 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {!isLoading && (
         <>
-          {/* KPI Cards Grid – dữ liệu thật từ /api/dashboard */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          {/* 6 Chỉ Số Trọng Yếu Của Cửa Hàng Thời Trang D&D (Phase 8.1) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
 
-            {/* Card 1: Doanh thu tháng này */}
-            <div className="bg-white border border-pink-100 rounded-2xl p-4 space-y-3 shadow-xs col-span-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#6c595f]">Doanh Thu Tháng Này</span>
-                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
-                  <ArrowDownLeft className="w-4 h-4" />
+            {/* 1. Doanh thu */}
+            <div className="bg-white border border-pink-100/80 rounded-2xl p-3.5 flex flex-col justify-between shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-start justify-between gap-1">
+                <span className="text-xs font-semibold text-[#6c595f] leading-snug line-clamp-2 min-h-[32px] flex items-center">
+                  Doanh Thu Tháng Này
+                </span>
+                <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-xl shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                  <ArrowDownLeft className="w-3.5 h-3.5" />
                 </div>
               </div>
-              <div>
-                <div className="text-xl font-bold text-emerald-700 font-mono">{formatCurrency(stats.revenueThisMonth)}</div>
-                <p className="text-[11px] text-emerald-600 flex items-center gap-1 mt-1 font-medium">
-                  <TrendingUp className="w-3 h-3" />
-                  <span>Đã thu: {formatCurrency(stats.paidThisMonth)}</span>
+              <div className="my-1.5">
+                <div className="flex items-baseline gap-0.5 text-emerald-700 whitespace-nowrap">
+                  <span className="text-lg xl:text-[15px] 2xl:text-xl font-bold tracking-tight tabular-nums">
+                    {stats.revenueThisMonth.toLocaleString('vi-VN')}
+                  </span>
+                  <span className="text-xs font-bold text-emerald-600 shrink-0 ml-0.5">₫</span>
+                </div>
+                <p className="text-[11px] text-emerald-600 flex items-center gap-1 mt-1 font-medium whitespace-nowrap overflow-hidden" title={`Đã thu: ${stats.paidThisMonth.toLocaleString('vi-VN')} ₫`}>
+                  <TrendingUp className="w-3 h-3 shrink-0" />
+                  <span className="truncate">Đã thu: {stats.paidThisMonth.toLocaleString('vi-VN')} ₫</span>
                 </p>
               </div>
             </div>
 
-            {/* Card 2: Chi phí nhập hàng tháng này */}
-            <div className="bg-white border border-pink-100 rounded-2xl p-4 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#6c595f]">Chi Nhập Hàng Tháng Này</span>
-                <div className="p-2 bg-[#ffe5ec] text-[#a93054] rounded-xl">
-                  <ArrowUpRight className="w-4 h-4" />
+            {/* 2. Số hóa đơn */}
+            <div className="bg-white border border-pink-100/80 rounded-2xl p-3.5 flex flex-col justify-between shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-start justify-between gap-1">
+                <span className="text-xs font-semibold text-[#6c595f] leading-snug line-clamp-2 min-h-[32px] flex items-center">
+                  Số Lượng Hóa Đơn
+                </span>
+                <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-xl shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                  <Receipt className="w-3.5 h-3.5" />
                 </div>
               </div>
-              <div>
-                <div className="text-xl font-bold text-[#a93054] font-mono">{formatCurrency(stats.purchasesThisMonth)}</div>
-                <p className="text-[11px] text-[#a93054] flex items-center gap-1 mt-1 font-medium">
-                  <TrendingDown className="w-3 h-3" />
-                  <span>Chờ thanh toán: {stats.unpaidPurchasesCount}</span>
+              <div className="my-1.5">
+                <div className="flex items-baseline gap-0.5 text-indigo-700 whitespace-nowrap">
+                  <span className="text-lg xl:text-[15px] 2xl:text-xl font-bold tracking-tight tabular-nums">
+                    {stats.totalInvoices.toLocaleString('vi-VN')}
+                  </span>
+                  <span className="text-xs font-medium text-slate-500 shrink-0 ml-0.5">đơn</span>
+                </div>
+                <p className="text-[11px] text-indigo-600 mt-1 whitespace-nowrap overflow-hidden">
+                  Chờ thu: <strong className="text-amber-600">{stats.unpaidSalesCount}</strong> · Chờ trả: <strong className="text-rose-600">{stats.unpaidPurchasesCount}</strong>
                 </p>
               </div>
             </div>
 
-            {/* Card 3: Công nợ phải thu */}
-            <div className="bg-white border border-pink-100 rounded-2xl p-4 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#6c595f]">Công Nợ Phải Thu</span>
-                <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
-                  <Wallet className="w-4 h-4" />
+            {/* 3. Tổng sản phẩm */}
+            <div className="bg-white border border-pink-100/80 rounded-2xl p-3.5 flex flex-col justify-between shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-start justify-between gap-1">
+                <span className="text-xs font-semibold text-[#6c595f] leading-snug line-clamp-2 min-h-[32px] flex items-center">
+                  Tổng Mẫu Mã Sản Phẩm
+                </span>
+                <div className="p-1.5 bg-blue-50 text-blue-600 rounded-xl shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                  <ShoppingBag className="w-3.5 h-3.5" />
                 </div>
               </div>
-              <div>
-                <div className="text-xl font-bold text-amber-700 font-mono">{formatCurrency(stats.totalReceivables)}</div>
-                <p className="text-[11px] text-[#6c595f] mt-1">
-                  Phải trả NCC: <strong className="text-rose-600 font-mono">{formatCurrency(stats.totalPayables)}</strong>
+              <div className="my-1.5">
+                <div className="flex items-baseline gap-0.5 text-blue-700 whitespace-nowrap">
+                  <span className="text-lg xl:text-[15px] 2xl:text-xl font-bold tracking-tight tabular-nums">
+                    {stats.totalProducts.toLocaleString('vi-VN')}
+                  </span>
+                  <span className="text-xs font-medium text-slate-500 shrink-0 ml-0.5">mẫu</span>
+                </div>
+                <p className="text-[11px] text-blue-600 mt-1 whitespace-nowrap overflow-hidden">
+                  Sẵn hàng: <strong className="text-emerald-700">{stats.inStockCount}</strong> mẫu
                 </p>
               </div>
             </div>
 
-            {/* Card 4: Khách hàng */}
-            <div className="bg-white border border-pink-100 rounded-2xl p-4 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#6c595f]">Khách Hàng</span>
-                <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-                  <Users className="w-4 h-4" />
+            {/* 4. Tồn kho thực tế */}
+            <div className="bg-white border border-pink-100/80 rounded-2xl p-3.5 flex flex-col justify-between shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-start justify-between gap-1">
+                <span className="text-xs font-semibold text-[#6c595f] leading-snug line-clamp-2 min-h-[32px] flex items-center">
+                  Tổng Tồn Kho Thực Tế
+                </span>
+                <div className="p-1.5 bg-amber-50 text-amber-600 rounded-xl shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                  <Package className="w-3.5 h-3.5" />
                 </div>
               </div>
-              <div>
-                <div className="text-xl font-bold text-blue-700 font-mono">{stats.totalCustomers}</div>
-                <p className="text-[11px] text-[#6c595f] mt-1">
-                  NCC: <strong className="text-slate-800">{stats.totalSuppliers}</strong> · NV: <strong className="text-slate-800">{stats.totalEmployees}</strong>
+              <div className="my-1.5">
+                <div className="flex items-baseline gap-0.5 text-amber-700 whitespace-nowrap">
+                  <span className="text-lg xl:text-[15px] 2xl:text-xl font-bold tracking-tight tabular-nums">
+                    {stats.totalStockQuantity.toLocaleString('vi-VN')}
+                  </span>
+                  <span className="text-xs font-medium text-slate-500 shrink-0 ml-0.5">cái</span>
+                </div>
+                <p className="text-[11px] text-amber-700 mt-1 whitespace-nowrap overflow-hidden">
+                  Sắp hết: <strong className="text-amber-600">{stats.lowStockCount}</strong> · Hết: <strong className={stats.outOfStockCount > 0 ? "text-rose-600 font-bold" : "text-slate-600"}>{stats.outOfStockCount}</strong>
                 </p>
               </div>
             </div>
 
-            {/* Card 5: Tổng Tồn Kho */}
-            <div className="bg-white border border-pink-100 rounded-2xl p-4 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#6c595f]">Tổng Tồn Kho Thực Tế</span>
-                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-                  <Package className="w-4 h-4" />
+            {/* 5. Giá trị tồn kho */}
+            <div className="bg-white border border-pink-100/80 rounded-2xl p-3.5 flex flex-col justify-between shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-start justify-between gap-1">
+                <span className="text-xs font-semibold text-[#6c595f] leading-snug line-clamp-2 min-h-[32px] flex items-center">
+                  Giá Trị Tồn Kho (TK156)
+                </span>
+                <div className="p-1.5 bg-purple-50 text-purple-600 rounded-xl shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                  <TrendingUp className="w-3.5 h-3.5" />
                 </div>
               </div>
-              <div>
-                <div className="text-xl font-bold text-indigo-700 font-mono">
-                  {stats.totalStockQuantity.toLocaleString('vi-VN')} <span className="text-xs font-sans text-slate-500 font-normal">sp</span>
+              <div className="my-1.5">
+                <div className="flex items-baseline gap-0.5 text-purple-700 whitespace-nowrap">
+                  <span className="text-lg xl:text-[15px] 2xl:text-xl font-bold tracking-tight tabular-nums">
+                    {stats.totalInventoryValue.toLocaleString('vi-VN')}
+                  </span>
+                  <span className="text-xs font-bold text-purple-600 shrink-0 ml-0.5">₫</span>
                 </div>
-                <p className="text-[11px] text-[#6c595f] mt-1">
-                  {stats.totalProducts} mẫu mã · Hết: <strong className="text-red-600">{stats.outOfStockCount}</strong>
+                <p className="text-[11px] text-purple-600 mt-1 whitespace-nowrap overflow-hidden">
+                  Giá trị theo giá vốn xưởng
                 </p>
               </div>
             </div>
 
-            {/* Card 6: Giá Trị Tồn Kho */}
-            <div className="bg-white border border-pink-100 rounded-2xl p-4 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#6c595f]">Giá Trị Tồn Kho (TK156)</span>
-                <div className="p-2 bg-purple-50 text-purple-600 rounded-xl">
-                  <ShoppingBag className="w-4 h-4" />
+            {/* 6. Công nợ */}
+            <div className="bg-white border border-pink-100/80 rounded-2xl p-3.5 flex flex-col justify-between shadow-xs hover:shadow-md transition-all group">
+              <div className="flex items-start justify-between gap-1">
+                <span className="text-xs font-semibold text-[#6c595f] leading-snug line-clamp-2 min-h-[32px] flex items-center">
+                  Công Nợ Phải Thu / Trả
+                </span>
+                <div className="p-1.5 bg-rose-50 text-[#a93054] rounded-xl shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                  <Wallet className="w-3.5 h-3.5" />
                 </div>
               </div>
-              <div>
-                <div className="text-xl font-bold text-purple-700 font-mono">
-                  {formatCurrency(stats.totalInventoryValue)}
+              <div className="my-1.5">
+                <div className="flex items-baseline gap-0.5 text-amber-700 whitespace-nowrap">
+                  <span className="text-sm font-semibold text-[#6c595f]">Thu: </span>
+                  <span className="text-base xl:text-sm 2xl:text-base font-bold tracking-tight tabular-nums text-amber-700 ml-1">
+                    {stats.totalReceivables.toLocaleString('vi-VN')}
+                  </span>
+                  <span className="text-[11px] font-bold text-amber-600">₫</span>
                 </div>
-                <p className="text-[11px] text-emerald-600 font-medium mt-1">
-                  Sắp hết: <strong>{stats.lowStockCount}</strong> mã hàng
+                <p className="text-[11px] text-[#6c595f] mt-1 whitespace-nowrap overflow-hidden">
+                  <span>Nợ NCC: </span>
+                  <strong className="text-rose-600 font-mono font-bold tabular-nums">{stats.totalPayables.toLocaleString('vi-VN')} ₫</strong>
                 </p>
               </div>
             </div>
 
           </div>
 
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-            {/* Bar Chart – doanh thu & nhập hàng 6 tháng (thật từ DB) */}
-            <div className="lg:col-span-2 bg-white border border-pink-100 rounded-2xl p-5 space-y-4 shadow-xs">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-[#181a2e]">Doanh Thu & Nhập Hàng 6 Tháng Gần Nhất</h3>
-                <span className="text-[11px] text-[#6c595f]">Đơn vị: VNĐ</span>
-              </div>
-              <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={barChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f4f2ff" />
-                    <XAxis dataKey="month" stroke="#6c595f" fontSize={11} />
-                    <YAxis stroke="#6c595f" fontSize={11} tickFormatter={(val) => `${(val / 1000000).toFixed(0)}M`} />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#ffffff', borderColor: '#ffe5ec', borderRadius: '12px', color: '#181a2e', fontSize: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
-                      formatter={(value: any) => [formatCurrency(Number(value)), '']}
-                    />
-                    <Bar dataKey="revenue" fill="#10b981" radius={[6, 6, 0, 0]} name="Doanh thu" />
-                    <Bar dataKey="purchases" fill="#fb6f92" radius={[6, 6, 0, 0]} name="Nhập hàng" />
-                  </BarChart>
-                </ResponsiveContainer>
+          {/* Charts Section: Biểu đồ cột Doanh thu & Nhập hàng 6 tháng */}
+          <div className="bg-white border border-pink-100 rounded-2xl p-5 space-y-4 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-bold text-[#181a2e]">Doanh Thu Bán Hàng & Chi Phí Nhập Xưởng 6 Tháng Gần Nhất</h3>
+                <p className="text-[11px] text-[#6c595f]">Dữ liệu hạch toán thực tế từ cơ sở dữ liệu SQLite</p>
               </div>
               <div className="flex items-center gap-4 text-xs text-[#6c595f]">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Doanh thu bán hàng</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#fb6f92] inline-block"></span> Chi phí nhập hàng</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Doanh thu</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#fb6f92] inline-block"></span> Chi nhập hàng</span>
               </div>
             </div>
-
-            {/* Summary Stats */}
-            <div className="bg-white border border-pink-100 rounded-2xl p-5 space-y-4 shadow-xs">
-              <h3 className="text-sm font-bold text-[#181a2e]">Tổng Quan Hệ Thống</h3>
-              <div className="space-y-3">
-                {[
-                  { label: 'Tổng sản phẩm', value: `${stats.totalProducts} mẫu mã`, color: 'text-indigo-700' },
-                  { label: 'Khách hàng', value: `${stats.totalCustomers} khách`, color: 'text-blue-700' },
-                  { label: 'Nhà cung cấp', value: `${stats.totalSuppliers} NCC`, color: 'text-slate-700' },
-                  { label: 'Nhân viên', value: `${stats.totalEmployees} NV`, color: 'text-emerald-700' },
-                  { label: 'Tổng hóa đơn', value: `${stats.totalInvoices} hóa đơn`, color: 'text-purple-700' },
-                  { label: 'Hàng còn tồn', value: `${stats.inStockCount} mã`, color: 'text-emerald-700' },
-                  { label: 'Sắp hết hàng', value: `${stats.lowStockCount} mã`, color: 'text-amber-600' },
-                  { label: 'Hết hàng', value: `${stats.outOfStockCount} mã`, color: 'text-red-600' },
-                ].map(item => (
-                  <div key={item.label} className="flex items-center justify-between text-xs">
-                    <span className="text-[#6c595f]">{item.label}</span>
-                    <span className={`font-bold ${item.color}`}>{item.value}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={barChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f4f2ff" />
+                  <XAxis dataKey="month" stroke="#6c595f" fontSize={11} />
+                  <YAxis stroke="#6c595f" fontSize={11} tickFormatter={(val) => `${(val / 1000000).toFixed(0)}M`} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#ffe5ec', borderRadius: '12px', color: '#181a2e', fontSize: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+                    formatter={(value: any) => [formatCurrency(Number(value)), '']}
+                  />
+                  <Bar dataKey="revenue" fill="#10b981" radius={[6, 6, 0, 0]} name="Doanh thu" />
+                  <Bar dataKey="purchases" fill="#fb6f92" radius={[6, 6, 0, 0]} name="Nhập hàng" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-
           </div>
 
           {/* Alerts & Recent Transactions */}
@@ -393,7 +412,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       </button>
                     </div>
                     <div className="space-y-1.5 text-[#4e4447]">
-                      {stats.unpaidInvoicesList.filter(i => i.type === 'SALES').slice(0, 4).map(inv => (
+                      {unpaidInvoices.filter(i => i.type === 'SALES').slice(0, 4).map(inv => (
                         <div 
                           key={inv.id}
                           className="flex justify-between items-center p-2 rounded-lg bg-white hover:bg-pink-50/60 border border-pink-100 transition cursor-pointer text-[11px]"
@@ -446,7 +465,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               <div className="space-y-2.5">
-                {cashTransactions.length === 0 ? (
+                {txList.length === 0 ? (
                   <div className="text-center py-8 text-xs text-[#6c595f]">
                     Chưa có giao dịch thu chi nào. <br />
                     <button onClick={() => onOpenNewCashModal('CASH_RECEIPT')} className="text-[#a93054] font-semibold hover:underline cursor-pointer mt-1">
@@ -454,7 +473,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </button>
                   </div>
                 ) : (
-                  cashTransactions.slice(0, 5).map(t => (
+                  txList.slice(0, 5).map(t => (
                     <div key={t.id} className="flex items-center justify-between p-3 rounded-xl bg-[#fbf8ff] hover:bg-[#f4f2ff] border border-pink-50 transition">
                       <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${t.type === 'CASH_RECEIPT' || t.type === 'BANK_DEPOSIT' ? 'bg-emerald-50 text-emerald-600' : 'bg-[#ffe5ec] text-[#a93054]'}`}>
@@ -478,7 +497,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </div>
                   ))
                 )}
-                {cashTransactions.length > 0 && (
+                {txList.length > 0 && (
                   <div className="pt-1 text-[11px] text-[#6c595f] text-right">
                     Tổng thu: <strong className="text-emerald-700 font-mono">{formatCurrency(totalCashReceipts)}</strong>
                     {' · '}

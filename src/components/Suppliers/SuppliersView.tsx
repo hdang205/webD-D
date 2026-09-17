@@ -15,7 +15,8 @@ import {
   ArrowDownRight,
   PackageCheck,
   Landmark,
-  FileText
+  FileText,
+  AlertCircle
 } from 'lucide-react';
 import { Partner, Invoice } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/accountingEngine';
@@ -43,6 +44,7 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
   const [selectedSupplierHistory, setSelectedSupplierHistory] = useState<Partner | null>(null);
   const [selectedInvoiceForDetail, setSelectedInvoiceForDetail] = useState<Invoice | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -91,6 +93,7 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
 
   const handleOpenAddModal = () => {
     setEditingPartner(null);
+    setFormError(null);
     setFormData({
       code: `NCC00${supplierList.length + 1}`,
       name: '',
@@ -108,6 +111,7 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
 
   const handleOpenEditModal = (supplier: Partner) => {
     setEditingPartner(supplier);
+    setFormError(null);
     setFormData({
       code: supplier.code,
       name: supplier.name,
@@ -125,18 +129,59 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    setFormError(null);
+
+    const cleanName = formData.name.trim();
+    if (!cleanName) {
+      setFormError('Tên đơn vị / xưởng may là bắt buộc.');
+      return;
+    }
+
+    const cleanPhone = formData.phone.trim();
+    if (!cleanPhone) {
+      setFormError('Số điện thoại nhà cung cấp là bắt buộc.');
+      return;
+    }
+
+    const PHONE_REGEX = /^[0-9+() -]{9,15}$/;
+    if (!PHONE_REGEX.test(cleanPhone)) {
+      setFormError('Số điện thoại không hợp lệ (cần từ 9 - 15 chữ số).');
+      return;
+    }
+
+    // Kiểm tra trùng số điện thoại
+    const isDuplicate = partners.some(p => 
+      p.phone && 
+      p.phone.replace(/\s+/g, '') === cleanPhone.replace(/\s+/g, '') &&
+      (!editingPartner || p.id !== editingPartner.id)
+    );
+    if (isDuplicate) {
+      setFormError(`Số điện thoại "${cleanPhone}" đã tồn tại trong hệ thống.`);
+      return;
+    }
+
+    if (formData.email && formData.email.trim()) {
+      const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!EMAIL_REGEX.test(formData.email.trim())) {
+        setFormError('Địa chỉ email không đúng định dạng.');
+        return;
+      }
+    }
 
     if (editingPartner && onUpdatePartner) {
       onUpdatePartner({
         ...editingPartner,
         ...formData,
+        name: cleanName,
+        phone: cleanPhone,
         type: 'SUPPLIER',
         openingDebtDebit: 0,
       });
     } else {
       onAddPartner({
         ...formData,
+        name: cleanName,
+        phone: cleanPhone,
         type: 'SUPPLIER',
         openingDebtDebit: 0,
       });
@@ -454,6 +499,13 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
               </button>
             </div>
 
+            {formError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+                <span>{formError}</span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -493,9 +545,10 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Số Điện Thoại</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Số Điện Thoại *</label>
                   <input
                     type="text"
+                    required
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="028 3910 8888"

@@ -43,6 +43,7 @@ import { MobileDrawer } from './components/Navigation/MobileDrawer';
 import { MobileInstallBanner } from './components/Common/MobileInstallBanner';
 import { ChangePasswordModal } from './components/Auth/ChangePasswordModal';
 import { isTabAllowedForRole, getDefaultTabForRole } from './utils/rbac';
+import { ToastContainer, ToastMessage, ToastType } from './components/Common/Toast';
 
 import { 
   CompanyInfo, 
@@ -86,6 +87,18 @@ export default function App() {
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState(false);
 
+  // Global Toast Notifications State
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const showToast = (message: string, type: ToastType = 'info', duration: number = 4000) => {
+    const id = `toast_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    setToasts(prev => [...prev, { id, message, type, duration }]);
+  };
+
+  const dismissToast = (id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
   // Khôi phục phiên làm việc khi khởi động qua GET /api/auth/me
   useEffect(() => {
     let isMounted = true;
@@ -120,6 +133,7 @@ export default function App() {
     await authService.logout();
     setCurrentUser(null);
     setLogoutMessage(`Đã đăng xuất tài khoản ${userName} an toàn khỏi hệ thống.`);
+    showToast(`Đã đăng xuất tài khoản ${userName} an toàn.`, 'info');
     setActiveTab('login');
   };
 
@@ -127,6 +141,7 @@ export default function App() {
     setCurrentUser(user);
     setLogoutMessage(null);
     setIsScreenLocked(false);
+    showToast(`Đăng nhập thành công! Chào mừng ${user.name} (${user.roleTitle})`, 'success');
     setActiveTab(getDefaultTabForRole(user.role));
   };
 
@@ -556,15 +571,28 @@ export default function App() {
   };
 
   // Handlers: Partners (Customers & Suppliers) - Kết nối API SQLite thật
+  const handleAddCustomerFromPOS = async (customerData: Partial<Partner>): Promise<Partner> => {
+    try {
+      const created = await CustomerService.create(customerData);
+      setPartners(prev => [created, ...prev]);
+      showToast(`Đã thêm khách hàng "${created.name}" thành công!`, 'success');
+      return created;
+    } catch (err: any) {
+      showToast(err.message || 'Lỗi khi tạo mới khách hàng', 'error');
+      throw err;
+    }
+  };
+
   const handleAddPartner = async (partnerData: Omit<Partner, 'id'>) => {
     try {
       const created = partnerData.type === 'SUPPLIER'
         ? await SupplierService.create(partnerData)
         : await CustomerService.create(partnerData);
       setPartners(prev => [created, ...prev]);
+      showToast(`Thêm ${partnerData.type === 'SUPPLIER' ? 'nhà cung cấp' : 'khách hàng'} "${created.name}" thành công!`, 'success');
     } catch (err: any) {
       console.error('Lỗi thêm đối tác:', err);
-      alert(err.message || 'Lỗi thêm đối tác');
+      showToast(err.message || 'Lỗi thêm đối tác', 'error');
     }
   };
 
@@ -574,9 +602,10 @@ export default function App() {
         ? await SupplierService.update(partnerData.id, partnerData)
         : await CustomerService.update(partnerData.id, partnerData);
       setPartners(prev => prev.map(p => p.id === updated.id ? updated : p));
+      showToast(`Cập nhật ${partnerData.type === 'SUPPLIER' ? 'nhà cung cấp' : 'khách hàng'} "${updated.name}" thành công!`, 'success');
     } catch (err: any) {
       console.error('Lỗi cập nhật đối tác:', err);
-      alert(err.message || 'Lỗi cập nhật đối tác');
+      showToast(err.message || 'Lỗi cập nhật đối tác', 'error');
     }
   };
 
@@ -589,9 +618,10 @@ export default function App() {
         await CustomerService.delete(id);
       }
       setPartners(prev => prev.filter(p => p.id !== id));
+      showToast(`Đã xóa đối tác "${target?.name || ''}" thành công!`, 'success');
     } catch (err: any) {
       console.error('Lỗi xóa đối tác:', err);
-      alert(err.message || 'Lỗi xóa đối tác');
+      showToast(err.message || 'Lỗi xóa đối tác', 'error');
     }
   };
 
@@ -600,9 +630,10 @@ export default function App() {
     try {
       const created = await EmployeeService.create(employeeData);
       setEmployees(prev => [created, ...prev]);
+      showToast(`Thêm nhân sự "${created.name}" thành công!`, 'success');
     } catch (err: any) {
       console.error('Lỗi thêm nhân sự:', err);
-      alert(err.message || 'Lỗi thêm nhân sự');
+      showToast(err.message || 'Lỗi thêm nhân sự', 'error');
     }
   };
 
@@ -610,19 +641,22 @@ export default function App() {
     try {
       const updated = await EmployeeService.update(employeeData.id, employeeData);
       setEmployees(prev => prev.map(e => e.id === updated.id ? updated : e));
+      showToast(`Cập nhật nhân sự "${updated.name}" thành công!`, 'success');
     } catch (err: any) {
       console.error('Lỗi cập nhật nhân sự:', err);
-      alert(err.message || 'Lỗi cập nhật nhân sự');
+      showToast(err.message || 'Lỗi cập nhật nhân sự', 'error');
     }
   };
 
   const handleDeleteEmployee = async (id: string) => {
     try {
+      const target = employees.find(e => e.id === id);
       await EmployeeService.delete(id);
       setEmployees(prev => prev.filter(e => e.id !== id));
+      showToast(`Đã xóa nhân sự "${target?.name || ''}" thành công!`, 'success');
     } catch (err: any) {
       console.error('Lỗi xóa nhân sự:', err);
-      alert(err.message || 'Lỗi xóa nhân sự');
+      showToast(err.message || 'Lỗi xóa nhân sự', 'error');
     }
   };
 
@@ -631,9 +665,10 @@ export default function App() {
     try {
       const created = await ProductService.create(itemData);
       setInventory(prev => [created, ...prev]);
+      showToast(`Thêm mẫu sản phẩm "${created.name}" (${created.code}) thành công!`, 'success');
     } catch (err: any) {
       console.error('Lỗi thêm sản phẩm:', err);
-      alert(err.message || 'Lỗi thêm sản phẩm');
+      showToast(err.message || 'Lỗi thêm sản phẩm', 'error');
     }
   };
 
@@ -641,19 +676,22 @@ export default function App() {
     try {
       const updated = await ProductService.update(itemData.id, itemData);
       setInventory(prev => prev.map(i => i.id === updated.id ? updated : i));
+      showToast(`Cập nhật sản phẩm "${updated.name}" (${updated.code}) thành công!`, 'success');
     } catch (err: any) {
       console.error('Lỗi cập nhật sản phẩm:', err);
-      alert(err.message || 'Lỗi cập nhật sản phẩm');
+      showToast(err.message || 'Lỗi cập nhật sản phẩm', 'error');
     }
   };
 
   const handleDeleteInventoryItem = async (id: string) => {
     try {
+      const target = inventory.find(i => i.id === id);
       await ProductService.delete(id);
       setInventory(prev => prev.filter(i => i.id !== id));
+      showToast(`Đã xóa sản phẩm "${target?.name || id}" thành công!`, 'success');
     } catch (err: any) {
       console.error('Lỗi xóa sản phẩm:', err);
-      alert(err.message || 'Lỗi xóa sản phẩm');
+      showToast(err.message || 'Lỗi xóa sản phẩm', 'error');
     }
   };
 
@@ -952,6 +990,7 @@ export default function App() {
               partners={partners}
               onCompletePOSSale={handleCompletePOSSale}
               onNavigateToERP={() => setActiveTab(getDefaultTabForRole(currentUser?.role))}
+              onAddCustomer={handleAddCustomerFromPOS}
             />
           ) : (
             <AccessRestricted
@@ -1428,6 +1467,9 @@ export default function App() {
         currentUser={currentUser}
         onLogout={handleLogout}
       />
+
+      {/* Global Toast Notification Banners */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
     </div>
   );

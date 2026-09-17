@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Package, 
   Search, 
@@ -26,10 +26,10 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import { InventoryItem, AuthUser } from '../../types/accounting';
+import { InventoryItem, AuthUser, Category } from '../../types/accounting';
 import { formatCurrency } from '../../utils/accountingEngine';
 import { canUserViewCostPrice, ROLE_CONFIGS } from '../../utils/rbac';
-import { ProductService } from '../../services/masterDataService';
+import { ProductService, CategoryService } from '../../services/masterDataService';
 
 interface ProductsViewProps {
   inventory: InventoryItem[];
@@ -127,12 +127,37 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
   const roleConfig = ROLE_CONFIGS[userRole] || ROLE_CONFIGS.STAFF;
   const canEdit = roleConfig.canEditProducts;
 
+  // 7 Danh mục chuẩn định hình toàn hệ thống D&D Fashion Store
+  const CANONICAL_CATEGORIES: Category[] = [
+    { id: 'cat_aokhoac', code: 'AOKHOAC', name: 'Áo khoác' },
+    { id: 'cat_damvay', code: 'DAMVAY', name: 'Đầm/Váy' },
+    { id: 'cat_jeans', code: 'JEANS', name: 'Quần jeans' },
+    { id: 'cat_tuixach', code: 'TUIXACH', name: 'Túi xách' },
+    { id: 'cat_giaydepnu', code: 'GIAYDEPNU', name: 'Giày dép nữ' },
+    { id: 'cat_aothun', code: 'AOTHUN', name: 'Áo thun' },
+    { id: 'cat_somi', code: 'SOMI', name: 'Áo sơ mi' },
+  ];
+
+  const [categoriesList, setCategoriesList] = useState<Category[]>(CANONICAL_CATEGORIES);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    CategoryService.getAll().then(cats => {
+      if (cats && cats.length > 0) {
+        setCategoriesList(cats);
+      }
+    }).catch(err => {
+      console.warn('Lỗi khi tải danh sách danh mục:', err);
+    });
+  }, []);
+
   // Form State
   const [formData, setFormData] = useState({
     code: '',
     name: '',
     unit: 'Cái',
-    category: 'Váy & Đầm',
+    categoryId: 'cat_damvay',
+    category: 'Đầm/Váy',
     size: 'M',
     color: 'Hồng Pastel',
     barcode: '',
@@ -143,7 +168,9 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
     description: '',
   });
 
-  const categories = Array.from(new Set(inventory.map(i => i.category).filter(Boolean)));
+  const availableCategories = categoriesList.length > 0 
+    ? categoriesList.map(c => c.name) 
+    : CANONICAL_CATEGORIES.map(c => c.name);
 
   const filteredItems = inventory.filter(item => {
     const matchSearch = 
@@ -153,7 +180,9 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
       (item.size && item.size.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (item.color && item.color.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchCategory = categoryFilter === 'ALL' || item.category === categoryFilter;
+    const matchCategory = categoryFilter === 'ALL' || 
+      item.category === categoryFilter ||
+      (item.category && item.category.toLowerCase() === categoryFilter.toLowerCase());
     
     let matchStock = true;
     if (stockStatusFilter === 'LOW') matchStock = item.openingQuantity <= item.minStockLevel && item.openingQuantity > 0;
@@ -171,11 +200,15 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
 
   const handleOpenAddModal = () => {
     setEditingItem(null);
+    setFormError(null);
+    const activeCats = categoriesList.length > 0 ? categoriesList : CANONICAL_CATEGORIES;
+    const defaultCat = activeCats[0];
     setFormData({
       code: `SP00${inventory.length + 1}`,
       name: '',
       unit: 'Cái',
-      category: 'Váy & Đầm',
+      categoryId: defaultCat?.id || 'cat_damvay',
+      category: defaultCat?.name || 'Đầm/Váy',
       size: 'M',
       color: 'Hồng Pastel',
       barcode: `893888200${inventory.length + 1}`,
@@ -190,11 +223,18 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
 
   const handleOpenEditModal = (item: InventoryItem) => {
     setEditingItem(item);
+    setFormError(null);
+    const activeCats = categoriesList.length > 0 ? categoriesList : CANONICAL_CATEGORIES;
+    const matchedCat = activeCats.find(c => 
+      c.id === item.categoryId || 
+      (c.name && item.category && c.name.toLowerCase() === item.category.toLowerCase())
+    );
     setFormData({
       code: item.code,
       name: item.name,
       unit: item.unit,
-      category: item.category,
+      categoryId: item.categoryId || matchedCat?.id || activeCats[0]?.id || '',
+      category: item.category || matchedCat?.name || activeCats[0]?.name || '',
       size: item.size || 'M',
       color: item.color || '',
       barcode: item.barcode || '',
@@ -209,7 +249,37 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    setFormError(null);
+
+    if (!formData.name.trim()) {
+      setFormError('Tên mẫu thời trang là bắt buộc và không được để trống.');
+      return;
+    }
+
+    if (!formData.categoryId) {
+      setFormError('Vui lòng chọn danh mục cho sản phẩm.');
+      return;
+    }
+
+    if (formData.sellingPrice < 0) {
+      setFormError('Giá bán niêm yết không được là số âm.');
+      return;
+    }
+
+    if (formData.costPrice < 0) {
+      setFormError('Giá vốn không được là số âm.');
+      return;
+    }
+
+    if (formData.openingQuantity < 0) {
+      setFormError('Số lượng tồn kho ban đầu không được là số âm.');
+      return;
+    }
+
+    if (formData.minStockLevel < 0) {
+      setFormError('Định mức tồn tối thiểu không được là số âm.');
+      return;
+    }
 
     const openingVal = formData.openingQuantity * formData.costPrice;
 
@@ -425,19 +495,25 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
           >
             Tất cả ({inventory.length})
           </button>
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setCategoryFilter(cat)}
-              className={`px-3 py-1.5 rounded-xl font-medium whitespace-nowrap transition cursor-pointer ${
-                categoryFilter === cat
-                  ? 'bg-[#fb6f92] text-white shadow-xs'
-                  : 'bg-slate-50 hover:bg-rose-50 text-slate-600'
-              }`}
-            >
-              {cat} ({inventory.filter(i => i.category === cat).length})
-            </button>
-          ))}
+          {availableCategories.map(cat => {
+            const count = inventory.filter(i => 
+              i.category === cat || 
+              (i.category && i.category.toLowerCase() === cat.toLowerCase())
+            ).length;
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={`px-3 py-1.5 rounded-xl font-medium whitespace-nowrap transition cursor-pointer ${
+                  categoryFilter === cat
+                    ? 'bg-[#fb6f92] text-white shadow-xs'
+                    : 'bg-slate-50 hover:bg-rose-50 text-slate-600'
+                }`}
+              >
+                {cat} ({count})
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -704,6 +780,13 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
               </button>
             </div>
 
+            {formError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+                <span>{formError}</span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -742,13 +825,29 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Danh Mục</label>
-                  <input
-                    type="text"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-                  />
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Danh Mục *</label>
+                  <select
+                    id="select-product-category"
+                    required
+                    value={formData.categoryId}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const activeCats = categoriesList.length > 0 ? categoriesList : CANONICAL_CATEGORIES;
+                      const selectedCat = activeCats.find(c => c.id === selectedId);
+                      setFormData({
+                        ...formData,
+                        categoryId: selectedId,
+                        category: selectedCat ? selectedCat.name : ''
+                      });
+                    }}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium cursor-pointer"
+                  >
+                    {(categoriesList.length > 0 ? categoriesList : CANONICAL_CATEGORIES).map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name} ({cat.code})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>

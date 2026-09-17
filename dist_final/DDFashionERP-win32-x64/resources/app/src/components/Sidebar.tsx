@@ -93,54 +93,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const currentRole = currentUser?.role || 'DIRECTOR';
   const roleConfig = ROLE_CONFIGS[currentRole] || ROLE_CONFIGS.STAFF;
 
-  // Master definition of all sections
+  // Cấu trúc phân nhóm tinh gọn theo chuẩn ERP Thời Trang D&D (Phase 8.1)
   const allSections: SidebarSection[] = [
     {
-      title: 'Trạm Bán Hàng POS & CSKH',
+      title: 'DASHBOARD',
       items: [
-        { id: 'pos' as TabKey, label: '⚡ Trạm Thu Ngân POS Quầy', icon: Store, highlight: true },
-        { id: 'crm' as TabKey, label: '👗 Tư Vấn Vóc Dáng & CSKH VIP', icon: HeartHandshake, badge: careRemindersCount > 0 ? careRemindersCount : undefined, badgeColor: 'bg-rose-500' },
-        { id: 'sales' as TabKey, label: '📑 Hóa Đơn & Đơn Bán Hàng', icon: ShoppingBag },
-        { id: 'customers' as TabKey, label: '👥 Danh Bạ Khách Hàng VIP', icon: Users, badge: customerCount },
+        { id: 'dashboard' as TabKey, label: '📈 Tổng Quan ERP', icon: LayoutDashboard },
       ]
     },
     {
-      title: 'Mua Hàng, Xưởng May & Đề Xuất',
+      title: 'QUẢN LÝ',
       items: [
-        { id: 'requisitions' as TabKey, label: '📋 Đề Xuất & Duyệt Nhập/Xuất', icon: ClipboardCheck, badge: pendingRequisitionsCount > 0 ? pendingRequisitionsCount : undefined, badgeColor: 'bg-amber-500' },
-        { id: 'purchases' as TabKey, label: '🏭 Nhập Hàng Từ Xưởng May', icon: Truck, badge: unpaidInvoiceCount > 0 ? unpaidInvoiceCount : undefined, badgeColor: 'bg-rose-600' },
-        { id: 'suppliers' as TabKey, label: '🏢 Danh Bạ Xưởng & Nhà Cung Cấp', icon: Building2, badge: supplierCount },
+        { id: 'products' as TabKey, label: '🏷️ Sản Phẩm', icon: Tag, badge: productCount },
+        { id: 'categories' as TabKey, label: '📂 Danh Mục Hàng', icon: ListTree },
+        { id: 'customers' as TabKey, label: '👥 Khách Hàng', icon: Users, badge: customerCount },
+        { id: 'suppliers' as TabKey, label: '🏢 Nhà Cung Cấp', icon: Building2, badge: supplierCount },
+        { id: 'employees' as TabKey, label: '👔 Người Dùng (Nhân Sự)', icon: UserCheck, badge: employeeCount, badgeColor: 'bg-indigo-600' },
       ]
     },
     {
-      title: 'Quản Lý Kho Hàng & Mẫu Mã',
+      title: 'GIAO DỊCH',
       items: [
-        { id: 'inventory' as TabKey, label: '📦 Kho Hàng & Phiếu Nhập Xuất', icon: Package, badge: lowStockCount > 0 ? lowStockCount : undefined, badgeColor: 'bg-rose-500' },
-        { id: 'products' as TabKey, label: '🏷️ Danh Mục Mẫu Mã & Tồn Kho', icon: Tag, badge: productCount },
-        { id: 'categories' as TabKey, label: '📂 Nhóm Hàng & Danh Mục', icon: ListTree },
+        { id: 'sales' as TabKey, label: '📑 Bán Hàng (Hóa Đơn)', icon: ShoppingBag },
+        { id: 'pos' as TabKey, label: '⚡ Bán Hàng POS Quầy', icon: Store, highlight: true },
+        { id: 'purchases' as TabKey, label: '🏭 Nhập Hàng Xưởng', icon: Truck, badge: unpaidInvoiceCount > 0 ? unpaidInvoiceCount : undefined, badgeColor: 'bg-rose-600' },
+        { id: 'requisitions' as TabKey, label: '📋 Đề Xuất Nhập/Xuất', icon: ClipboardCheck, badge: pendingRequisitionsCount > 0 ? pendingRequisitionsCount : undefined, badgeColor: 'bg-amber-500' },
       ]
     },
     {
-      title: 'Tài Chính & Kế Toán Doanh Nghiệp',
+      title: 'KHO',
       items: [
-        { id: 'cashbook' as TabKey, label: '💰 Sổ Quỹ Tiền Mặt & Ngân Hàng', icon: Wallet },
-        { id: 'debts' as TabKey, label: '💳 Quản Lý Công Nợ Phải Thu/Trả', icon: CreditCard },
-        { id: 'reports' as TabKey, label: '📊 Báo Cáo Tài Chính & Thuế', icon: PieChart },
-        { id: 'journal' as TabKey, label: '📖 Nhật Ký Chung (Sổ Cái VAS)', icon: BookOpenCheck },
-        { id: 'accounts' as TabKey, label: '🌳 Hệ Thống TK (TT 133/200)', icon: ListTree },
+        { id: 'inventory' as TabKey, label: '📦 Tồn Kho & Xuất Nhập', icon: Package, badge: lowStockCount > 0 ? lowStockCount : undefined, badgeColor: 'bg-rose-500' },
       ]
     },
     {
-      title: 'Hệ Thống & Quản Trị Cửa Hàng',
+      title: 'KẾ TOÁN',
       items: [
-        { id: 'dashboard' as TabKey, label: '📈 Tổng Quan Điều Hành ERP', icon: LayoutDashboard },
-        { id: 'employees' as TabKey, label: '👔 Quản Lý Nhân Sự & Bảng Lương', icon: UserCheck, badge: employeeCount, badgeColor: 'bg-indigo-600' },
-        { id: 'login' as TabKey, label: '🛡️ Cổng Đăng Nhập & Phân Quyền', icon: Lock },
+        { id: 'cashbook' as TabKey, label: '💰 Thu Chi (Sổ Quỹ)', icon: Wallet },
+        { id: 'debts' as TabKey, label: '💳 Quản Lý Công Nợ', icon: CreditCard },
+        { id: 'reports' as TabKey, label: '📊 Báo Cáo Tài Chính', icon: PieChart },
       ]
     }
   ];
 
-  // Filter sections and items strictly based on the logged-in user's role
+  // Lọc quyền hiển thị nghiêm ngặt theo RBAC của người dùng đăng nhập
   const visibleSections = allSections
     .map(section => ({
       ...section,
@@ -151,36 +147,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside id="app-sidebar" className="hidden md:flex md:w-64 bg-white border border-slate-200 p-3 rounded-2xl shrink-0 flex-col justify-between overflow-y-auto shadow-xs max-h-[calc(100vh-80px)] sticky top-16">
       <div className="flex flex-col gap-4 w-full">
-        
-        {/* Current Active Internal Role Banner in Sidebar */}
-        {currentUser && (
-          <div className="hidden md:block bg-slate-900 text-white p-3 rounded-xl shadow-xs space-y-1.5 border border-slate-800">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-wider font-extrabold text-pink-400">
-                VAI TRÒ ĐANG TRỰC:
-              </span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl p-1 bg-slate-800 rounded-lg">{currentUser.avatar}</span>
-              <div className="min-w-0 flex-1">
-                <div className="font-bold text-xs truncate text-white">{currentUser.name}</div>
-                <div className="text-[10px] text-pink-300 font-semibold truncate">{currentUser.roleTitle.split('(')[0]}</div>
-              </div>
-            </div>
-            <div className="text-[10px] text-slate-400 font-mono pt-1 border-t border-slate-800 truncate">
-              📍 {currentUser.branch}
-            </div>
-            <div className="text-[10px] bg-slate-800/80 px-2 py-0.5 rounded text-slate-300 text-center font-medium">
-              Cho phép: <strong>{roleConfig.allowedTabs.filter(t => t !== 'login' && t !== 'auth').length}</strong> phân hệ
-            </div>
-          </div>
-        )}
 
         {visibleSections.map((section, sIdx) => (
           <div key={sIdx} className="space-y-1">
             <div className="px-2 py-0.5 flex items-center justify-between">
-              <p className="text-[10px] font-bold tracking-wider uppercase text-slate-500">
+              <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400">
                 {section.title}
               </p>
             </div>
@@ -188,7 +159,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex flex-col gap-1">
               {section.items.map(item => {
                 const Icon = item.icon;
-                const isActive = activeTab === item.id || (item.id === 'login' && activeTab === 'auth');
+                const isActive = activeTab === item.id;
                 return (
                   <button
                     key={item.id}
@@ -218,16 +189,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       </div>
 
-      {/* Internal Workstation Diagnostics Footer */}
+      {/* Footer bảo mật & bản quyền */}
       <div className="mt-auto pt-3 border-t border-slate-200 hidden md:block px-1 text-[11px]">
-        <div className="bg-slate-50 border border-slate-200 p-2 rounded-xl space-y-1">
-          <div className="flex items-center justify-between text-[10px] font-bold text-slate-600">
-            <span>🛡️ PHÂN QUYỀN NỘI BỘ</span>
-            <span className="text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded font-mono">BẢO MẬT</span>
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Chỉ hiển thị các phân hệ và dữ liệu được phân công.
-          </p>
+        <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-center">
+          <p className="text-[10px] font-bold text-slate-700">D&D FASHION ERP</p>
+          <p className="text-[9px] text-slate-400 mt-0.5">Phân quyền theo vai trò (RBAC)</p>
         </div>
       </div>
     </aside>

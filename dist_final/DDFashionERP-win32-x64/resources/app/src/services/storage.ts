@@ -3,6 +3,7 @@ import {
   Account, 
   Partner, 
   InventoryItem, 
+  Category,
   Invoice, 
   CashTransaction, 
   InventoryLog, 
@@ -26,12 +27,14 @@ import {
   INITIAL_CARE_LOGS,
   INITIAL_CARE_REMINDERS
 } from '../data/initialData';
+import { EXPORTED_CATEGORIES, EXPORTED_PRODUCTS } from '../data/dbDumpData';
 
 const STORAGE_KEYS = {
   COMPANY_INFO: 'dnd_fashion_company_info_v3',
   ACCOUNTS: 'dnd_fashion_accounts_v3',
+  CATEGORIES: 'dnd_fashion_categories_v4',
   PARTNERS: 'dnd_fashion_partners_v3',
-  INVENTORY: 'dnd_fashion_inventory_v3',
+  INVENTORY: 'dnd_fashion_inventory_v4',
   CASH_TRANSACTIONS: 'dnd_fashion_cash_transactions_v3',
   INVOICES: 'dnd_fashion_invoices_v3',
   INVENTORY_LOGS: 'dnd_fashion_inventory_logs_v3',
@@ -74,10 +77,27 @@ export const StorageService = {
   getAccounts: (): Account[] => loadStoredData(STORAGE_KEYS.ACCOUNTS, DEFAULT_CHART_OF_ACCOUNTS),
   saveAccounts: (data: Account[]) => saveStoredData(STORAGE_KEYS.ACCOUNTS, data),
 
+  getCategories: (): Category[] => {
+    const list = loadStoredData<Category[]>(STORAGE_KEYS.CATEGORIES, EXPORTED_CATEGORIES);
+    if (!list || list.length === 0) {
+      saveStoredData(STORAGE_KEYS.CATEGORIES, EXPORTED_CATEGORIES);
+      return EXPORTED_CATEGORIES;
+    }
+    return list;
+  },
+  saveCategories: (data: Category[]) => saveStoredData(STORAGE_KEYS.CATEGORIES, data),
+
   getPartners: (): Partner[] => loadStoredData(STORAGE_KEYS.PARTNERS, INITIAL_PARTNERS),
   savePartners: (data: Partner[]) => saveStoredData(STORAGE_KEYS.PARTNERS, data),
 
-  getInventory: (): InventoryItem[] => loadStoredData(STORAGE_KEYS.INVENTORY, INITIAL_INVENTORY),
+  getInventory: (): InventoryItem[] => {
+    const list = loadStoredData<InventoryItem[]>(STORAGE_KEYS.INVENTORY, EXPORTED_PRODUCTS);
+    if (!list || list.length < 50) {
+      saveStoredData(STORAGE_KEYS.INVENTORY, EXPORTED_PRODUCTS);
+      return EXPORTED_PRODUCTS;
+    }
+    return list;
+  },
   saveInventory: (data: InventoryItem[]) => saveStoredData(STORAGE_KEYS.INVENTORY, data),
 
   getCashTransactions: (): CashTransaction[] => loadStoredData(STORAGE_KEYS.CASH_TRANSACTIONS, INITIAL_CASH_TRANSACTIONS),

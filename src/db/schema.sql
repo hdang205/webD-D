@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS partners (
 );
 
 CREATE INDEX IF NOT EXISTS idx_partners_type ON partners(type);
-CREATE INDEX IF NOT EXISTS idx_partners_phone ON partners(phone);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_partners_phone ON partners(phone);
 CREATE INDEX IF NOT EXISTS idx_partners_code ON partners(code);
 
 -- 6. BẢNG NGƯỜI DÙNG & TÀI KHOẢN ĐĂNG NHẬP (Users)

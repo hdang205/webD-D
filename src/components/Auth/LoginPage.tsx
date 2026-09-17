@@ -62,8 +62,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     const cleanUsername = username.trim();
     const cleanPassword = password.trim();
 
-    if (!cleanUsername || !cleanPassword) {
+    if (!cleanUsername && !cleanPassword) {
       setLoginError('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.');
+      return;
+    }
+    if (!cleanUsername) {
+      setLoginError('Tên đăng nhập không được để trống.');
+      return;
+    }
+    if (!cleanPassword) {
+      setLoginError('Mật khẩu không được để trống.');
       return;
     }
 

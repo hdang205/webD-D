@@ -27,11 +27,11 @@ interface LoginPageProps {
 
 // Danh sách tài khoản mẫu trong Database để hỗ trợ kiểm thử nhanh (phải nhập mật khẩu và gọi API thật)
 const SAMPLE_ACCOUNTS = [
-  { username: 'director_dung', roleName: 'Ban Giám Đốc / Quản Lý Cửa Hàng', name: 'Lê Thị Duyên', icon: '👔' },
-  { username: 'cpa_trang', roleName: 'Kế Toán Trưởng & Tài Chính', name: 'Đàm Thị Thùy Dung', icon: '👩‍💼' },
-  { username: 'sales_lan', roleName: 'Nhân Viên Bán Hàng & POS', name: 'Đặng Trà My', icon: '👗' },
-  { username: 'muahang_dat', roleName: 'Nhân Viên Mua Hàng & Xưởng', name: 'Trần Thanh Phong', icon: '📦' },
-  { username: 'wh_hung', roleName: 'Thủ Kho & Quản Lý Xuất Nhập', name: 'Chu Ngọc Hải', icon: '🏬' }
+  { username: 'quanly_duyen', roleName: 'Ban Giám Đốc / Quản Lý Cửa Hàng', name: 'Lê Thị Duyên', icon: '👔' },
+  { username: 'ketoan_dung', roleName: 'Kế Toán Trưởng & Tài Chính', name: 'Đàm Thị Thùy Dung', icon: '👩‍💼' },
+  { username: 'banhang_my', roleName: 'Nhân Viên Bán Hàng & POS', name: 'Đặng Trà My', icon: '👗' },
+  { username: 'muahang_phong', roleName: 'Nhân Viên Mua Hàng & Xưởng', name: 'Trần Thanh Phong', icon: '📦' },
+  { username: 'thukho_hai', roleName: 'Thủ Kho & Quản Lý Xuất Nhập', name: 'Chu Ngọc Hải', icon: '🏬' }
 ];
 
 export const LoginPage: React.FC<LoginPageProps> = ({
@@ -172,7 +172,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     autoFocus
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="VD: director_dung, cpa_trang, sales_lan..."
+                    placeholder="VD: quanly_duyen, ketoan_dung, banhang_my..."
                     className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#a93054]"
                   />
                 </div>

@@ -24,7 +24,7 @@ export interface RoleConfig {
 export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
   DIRECTOR: {
     role: 'DIRECTOR',
-    displayName: 'Đỗ Đức Dũng (Quản Lý Cửa Hàng / Giám Đốc)',
+    displayName: 'Lê Thị Duyên (Quản Lý Cửa Hàng / Giám Đốc)',
     categoryLabel: '1. Quản Lý Cửa Hàng / Ban Giám Đốc',
     defaultTab: 'dashboard',
     allowedTabs: [

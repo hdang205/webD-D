@@ -202,7 +202,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({
                   <p className="font-bold text-slate-900">Giám Đốc</p>
                   <p className="text-[10px] text-slate-500">(Ký, họ tên, đóng dấu)</p>
                   <div className="h-16"></div>
-                  <p className="font-semibold text-slate-800 text-[11px]">{companyInfo.directorName || 'Đỗ Đức Dũng'}</p>
+                  <p className="font-semibold text-slate-800 text-[11px]">{companyInfo.directorName || 'Lê Thị Duyên'}</p>
                 </div>
               </div>
             </>
@@ -296,7 +296,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({
                   <p className="font-bold text-slate-900">Giám Đốc</p>
                   <p className="text-[10px] text-slate-500">(Ký, đóng dấu)</p>
                   <div className="h-16"></div>
-                  <p className="font-semibold text-slate-800 text-[11px]">{companyInfo.directorName || 'Đỗ Đức Dũng'}</p>
+                  <p className="font-semibold text-slate-800 text-[11px]">{companyInfo.directorName || 'Lê Thị Duyên'}</p>
                 </div>
               </div>
             </>
@@ -403,7 +403,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({
                   <p className="font-bold text-slate-900">Thủ Trưởng Đơn Vị</p>
                   <p className="text-[10px] text-slate-500">(Ký, đóng dấu)</p>
                   <div className="h-16"></div>
-                  <p className="font-semibold text-slate-800 text-[11px]">{companyInfo.directorName || 'Đỗ Đức Dũng'}</p>
+                  <p className="font-semibold text-slate-800 text-[11px]">{companyInfo.directorName || 'Lê Thị Duyên'}</p>
                 </div>
               </div>
             </>
