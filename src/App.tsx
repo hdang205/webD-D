@@ -199,7 +199,7 @@ export default function App() {
   const [quickCashModal, setQuickCashModal] = useState<{ open: boolean; type: TransactionType }>({ open: false, type: 'CASH_RECEIPT' });
   const [quickInvoiceModal, setQuickInvoiceModal] = useState<{ open: boolean; type: InvoiceType }>({ open: false, type: 'SALES' });
 
-  // Sync về localStorage CHỈ cho data không có API backend
+  // Sync về localStorage
   useEffect(() => { StorageService.saveCompanyInfo(companyInfo); }, [companyInfo]);
   useEffect(() => { StorageService.saveAccounts(accounts); }, [accounts]);
   useEffect(() => { StorageService.saveCashTransactions(cashTransactions); }, [cashTransactions]);
@@ -207,6 +207,9 @@ export default function App() {
   useEffect(() => { StorageService.saveRequisitions(requisitions); }, [requisitions]);
   useEffect(() => { StorageService.saveCareLogs(careLogs); }, [careLogs]);
   useEffect(() => { StorageService.saveCareReminders(careReminders); }, [careReminders]);
+  useEffect(() => { if (partners && partners.length > 0) StorageService.savePartners(partners); }, [partners]);
+  useEffect(() => { if (inventory && inventory.length > 0) StorageService.saveInventory(inventory); }, [inventory]);
+  useEffect(() => { if (employees && employees.length > 0) StorageService.saveEmployees(employees); }, [employees]);
 
   // Tải Master Data từ SQLite REST API (tự động fallback sang dữ liệu khởi tạo nếu chạy trên Static Hosting như Vercel)
   useEffect(() => {
@@ -220,16 +223,19 @@ export default function App() {
       })
       .catch(() => setInventory(StorageService.getInventory()));
 
-    // 2. Tải đối tác (Khách hàng & Nhà cung cấp) từ SQLite
+    // 2. Tải đối tác (Khách hàng & Nhà cung cấp) từ SQLite (kết hợp đồng bộ cùng StorageService)
     Promise.all([
       CustomerService.getAll().catch(() => []),
       SupplierService.getAll().catch(() => [])
     ]).then(([custs, supps]) => {
-      if ((custs && custs.length > 0) || (supps && supps.length > 0)) {
-        const map = new Map<string, Partner>();
-        (custs || []).forEach(c => map.set(c.id, c));
-        (supps || []).forEach(s => map.set(s.id, s));
-        setPartners(Array.from(map.values()));
+      const storedPartners = StorageService.getPartners();
+      const map = new Map<string, Partner>();
+      (storedPartners || []).forEach(p => { if (p && p.id && p.name) map.set(p.id, p); });
+      (custs || []).forEach(c => { if (c && c.id && c.name) map.set(c.id, c); });
+      (supps || []).forEach(s => { if (s && s.id && s.name) map.set(s.id, s); });
+      const merged = Array.from(map.values());
+      if (merged.length > 0) {
+        setPartners(merged);
       } else {
         setPartners(StorageService.getPartners());
       }
@@ -570,13 +576,16 @@ export default function App() {
     });
   };
 
-  // Handlers: Partners (Customers & Suppliers) - Kết nối API SQLite thật
+  // Handlers: Partners (Customers & Suppliers) - Kết nối API SQLite thật & Lưu trữ bền vững
   const handleAddCustomerFromPOS = async (customerData: Partial<Partner>): Promise<Partner> => {
     try {
       const created = await CustomerService.create(customerData);
-      setPartners(prev => [created, ...prev]);
-      showToast(`Đã thêm khách hàng "${created.name}" thành công!`, 'success');
-      return created;
+      if (created && created.name) {
+        setPartners(prev => [created, ...prev.filter(p => p.id !== created.id)]);
+        showToast(`Đã thêm khách hàng "${created.name}" thành công!`, 'success');
+        return created;
+      }
+      throw new Error('Không nhận được dữ liệu khách hàng sau khi tạo.');
     } catch (err: any) {
       showToast(err.message || 'Lỗi khi tạo mới khách hàng', 'error');
       throw err;
@@ -588,8 +597,13 @@ export default function App() {
       const created = partnerData.type === 'SUPPLIER'
         ? await SupplierService.create(partnerData)
         : await CustomerService.create(partnerData);
-      setPartners(prev => [created, ...prev]);
-      showToast(`Thêm ${partnerData.type === 'SUPPLIER' ? 'nhà cung cấp' : 'khách hàng'} "${created.name}" thành công!`, 'success');
+      
+      if (created && created.name) {
+        setPartners(prev => [created, ...prev.filter(p => p.id !== created.id)]);
+        showToast(`Thêm ${partnerData.type === 'SUPPLIER' ? 'nhà cung cấp' : 'khách hàng'} "${created.name}" thành công!`, 'success');
+      } else {
+        throw new Error('Không thể thêm đối tác: Dữ liệu trả về không hợp lệ.');
+      }
     } catch (err: any) {
       console.error('Lỗi thêm đối tác:', err);
       showToast(err.message || 'Lỗi thêm đối tác', 'error');

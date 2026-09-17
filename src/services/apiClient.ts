@@ -26,6 +26,8 @@ export async function apiRequest<T = any>(
     headers['Content-Type'] = 'application/json';
   }
 
+  const method = (options.method || 'GET').toUpperCase();
+
   let res: Response;
   try {
     res = await fetch(endpoint, {
@@ -34,12 +36,20 @@ export async function apiRequest<T = any>(
     });
   } catch (err: any) {
     console.warn(`Lỗi kết nối mạng tới ${endpoint}:`, err);
-    return { success: true, data: [] as any };
+    if (method === 'GET') {
+      return { success: true, data: [] as any };
+    }
+    throw err;
   }
 
   // Nếu máy chủ là môi trường hosting tĩnh không có backend (HTTP 404 / 405)
   if (res.status === 404 || res.status === 405) {
-    return { success: true, data: [] as any };
+    if (method === 'GET') {
+      return { success: true, data: [] as any };
+    }
+    const err = new Error(`Máy chủ không hỗ trợ API: ${res.status}`);
+    (err as any).status = res.status;
+    throw err;
   }
 
   const text = await res.text();
@@ -50,10 +60,20 @@ export async function apiRequest<T = any>(
       json = JSON.parse(text);
     } catch {
       // Server trả về HTML thay vì JSON (máy chủ tĩnh)
-      return { success: true, data: [] as any };
+      if (method === 'GET') {
+        return { success: true, data: [] as any };
+      }
+      const err = new Error('Phản hồi từ máy chủ không phải JSON.');
+      (err as any).status = res.status;
+      throw err;
     }
   } else {
-    return { success: true, data: [] as any };
+    if (method === 'GET') {
+      return { success: true, data: [] as any };
+    }
+    const err = new Error('Phản hồi rỗng từ máy chủ.');
+    (err as any).status = res.status;
+    throw err;
   }
 
   if (res.status === 401) {
