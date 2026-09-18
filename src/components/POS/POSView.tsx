@@ -110,6 +110,18 @@ export const POSView: React.FC<POSViewProps> = ({
     return matchCat && matchQuery;
   });
 
+  // Helper lấy URL ảnh minh họa sản phẩm (ưu tiên item.imageUrl, hỗ trợ chuẩn hóa SP001-SP020 -> SP01-SP20.png và fallback an toàn)
+  const getProductImage = (item: { code: string; imageUrl?: string | null }): string => {
+    if (item.imageUrl) return item.imageUrl;
+    const spMatch = item.code.match(/^SP0*([1-9]\d*)$/);
+    if (spMatch) {
+      const num = parseInt(spMatch[1], 10);
+      const padded = num < 10 ? `0${num}` : `${num}`;
+      return `/images/products/SP${padded}.png`;
+    }
+    return `/images/products/${item.code}.png`;
+  };
+
   // Validation form tạo nhanh khách hàng tại POS
   const validateCustomerForm = (): boolean => {
     const errs: Record<string, string> = {};
@@ -461,32 +473,64 @@ export const POSView: React.FC<POSViewProps> = ({
                   type="button"
                   disabled={!inStock}
                   onClick={() => handleAddToCart(item)}
-                  className={`text-left p-3 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer group ${
+                  className={`text-left p-2.5 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer group ${
                     inStock
-                      ? 'bg-slate-50/50 hover:bg-pink-50/40 border-rose-100 hover:border-pink-300 hover:shadow-sm'
-                      : 'bg-slate-100 border-slate-200 opacity-50 cursor-not-allowed'
+                      ? 'bg-white hover:bg-rose-50/40 border-rose-100/90 hover:border-[#fb6f92] hover:shadow-md'
+                      : 'bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed'
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] font-bold bg-white text-[#a93054] px-1.5 py-0.5 rounded-md border border-pink-100">
+                    {/* Product Image Thumbnail */}
+                    <div className="w-full h-28 sm:h-32 bg-slate-100/90 rounded-xl overflow-hidden relative mb-2 flex items-center justify-center border border-rose-100/60 shadow-inner">
+                      <img
+                        src={getProductImage(item)}
+                        alt={item.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/images/products/SP01.png';
+                        }}
+                      />
+                      
+                      {/* Code Badge */}
+                      <span className="absolute top-1.5 left-1.5 text-[9px] font-bold bg-white/95 backdrop-blur-xs text-[#a93054] px-1.5 py-0.5 rounded-md shadow-xs border border-pink-100">
                         {item.code}
                       </span>
-                      <span className={`text-[10px] font-bold ${item.openingQuantity <= 5 ? 'text-amber-600' : 'text-emerald-600'}`}>
+
+                      {/* Stock Badge */}
+                      <span className={`absolute top-1.5 right-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-xs backdrop-blur-xs ${
+                        item.openingQuantity <= 5
+                          ? 'bg-amber-500/95 text-white'
+                          : 'bg-white/95 text-emerald-700 border border-emerald-100'
+                      }`}>
                         Kho: {item.openingQuantity}
                       </span>
+
+                      {/* Out of Stock Overlay */}
+                      {!inStock && (
+                        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-[1px] flex items-center justify-center">
+                          <span className="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+                            Hết hàng
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    <h4 className="font-bold text-slate-800 text-xs leading-snug line-clamp-2 group-hover:text-[#a93054]">
+                    <h4 className="font-bold text-slate-800 text-xs leading-snug line-clamp-2 group-hover:text-[#a93054] min-h-[2rem]">
                       {item.name}
                     </h4>
                   </div>
 
-                  <div className="mt-3 pt-2 border-t border-rose-100/60 flex items-center justify-between">
-                    <span className="font-extrabold text-[#a93054] text-xs">
-                      {formatCurrency(item.sellingPrice)}
-                    </span>
-                    <div className="w-6 h-6 rounded-lg bg-pink-100 text-[#a93054] flex items-center justify-center font-bold text-xs group-hover:bg-[#a93054] group-hover:text-white transition">
+                  <div className="mt-2 pt-2 border-t border-rose-100/60 flex items-center justify-between">
+                    <div>
+                      <span className="font-extrabold text-[#a93054] text-xs">
+                        {formatCurrency(item.sellingPrice)}
+                      </span>
+                      {item.size && (
+                        <span className="ml-1 text-[10px] text-slate-400 font-medium">({item.size})</span>
+                      )}
+                    </div>
+                    <div className="w-6 h-6 rounded-lg bg-pink-100 text-[#a93054] flex items-center justify-center font-bold text-xs group-hover:bg-[#a93054] group-hover:text-white transition shadow-xs">
                       +
                     </div>
                   </div>
@@ -572,13 +616,31 @@ export const POSView: React.FC<POSViewProps> = ({
               </div>
             ) : (
               posCart.map((item, idx) => (
-                <div key={item.item.id} className="p-2.5 bg-slate-50/80 rounded-xl border border-rose-100 flex items-center justify-between gap-2 text-xs">
+                <div key={item.item.id} className="p-2 bg-slate-50/80 rounded-xl border border-rose-100 flex items-center justify-between gap-2.5 text-xs hover:bg-rose-50/30 transition">
+                  {/* Cart Item Thumbnail */}
+                  <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-rose-200/80 bg-white shadow-xs">
+                    <img
+                      src={getProductImage(item.item)}
+                      alt={item.item.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/images/products/SP01.png';
+                      }}
+                    />
+                  </div>
+
                   <div className="flex-1 min-w-0">
                     <h5 className="font-bold text-slate-800 truncate">{item.item.name}</h5>
-                    <div className="flex items-center gap-2 text-[10px] text-slate-500 mt-0.5">
-                      <span className="font-mono text-[#a93054]">{item.item.code}</span>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5">
+                      <span className="font-mono text-[#a93054] font-bold">{item.item.code}</span>
                       <span>•</span>
-                      <span>Đơn giá: {formatCurrency(item.price)}</span>
+                      <span>{formatCurrency(item.price)}</span>
+                      {item.selectedSize && (
+                        <>
+                          <span>•</span>
+                          <span className="bg-pink-100 text-[#a93054] px-1 rounded font-bold">{item.selectedSize}</span>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -600,13 +662,13 @@ export const POSView: React.FC<POSViewProps> = ({
                       </button>
                     </div>
 
-                    <span className="font-bold text-[#a93054] min-w-[70px] text-right">
+                    <span className="font-bold text-[#a93054] min-w-[65px] text-right">
                       {formatCurrency(item.price * item.quantity)}
                     </span>
 
                     <button
                       onClick={() => updateQuantity(item.item.id, 0, item.item.openingQuantity)}
-                      className="text-slate-400 hover:text-rose-600 p-1"
+                      className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
