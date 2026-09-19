@@ -31,7 +31,9 @@ const SAMPLE_ACCOUNTS = [
   { username: 'ketoan_dung', roleName: 'Kế Toán Trưởng & Tài Chính', name: 'Đàm Thị Thùy Dung', icon: '👩‍💼' },
   { username: 'banhang_my', roleName: 'Nhân Viên Bán Hàng & POS', name: 'Đặng Trà My', icon: '👗' },
   { username: 'muahang_phong', roleName: 'Nhân Viên Mua Hàng & Xưởng', name: 'Trần Thanh Phong', icon: '📦' },
-  { username: 'thukho_hai', roleName: 'Thủ Kho & Quản Lý Xuất Nhập', name: 'Chu Ngọc Hải', icon: '🏬' }
+  { username: 'thukho_hai', roleName: 'Thủ Kho & Quản Lý Xuất Nhập', name: 'Chu Ngọc Hải', icon: '🏬' },
+  { username: 'thukho_long', roleName: 'Thủ Kho & Quản Lý Kho Vận', name: 'Lê Thành Long', icon: '📦' },
+  { username: 'tuvan_dang', roleName: 'Chuyên Viên Tư Vấn CSKH VIP', name: 'Nguyễn Hải Đăng', icon: '👔' }
 ];
 
 export const LoginPage: React.FC<LoginPageProps> = ({
@@ -180,7 +182,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     autoFocus
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="VD: quanly_duyen, ketoan_dung, banhang_my..."
+                    placeholder="VD: quanly_duyen, thukho_long, tuvan_dang..."
                     className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#a93054]"
                   />
                 </div>

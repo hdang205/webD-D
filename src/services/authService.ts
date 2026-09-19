@@ -63,7 +63,11 @@ export const authService = {
       e.username?.toLowerCase() === cleanUser || 
       (cleanUser === 'director_dung' && e.role === 'DIRECTOR') ||
       (cleanUser === 'quanly_duyen' && (e.role === 'DIRECTOR' || e.username === 'quanly_duyen')) ||
-      (cleanUser === 'wh_hung' && (e.role === 'WAREHOUSE_MANAGER' || e.username === 'wh_hung'))
+      (cleanUser === 'wh_hung' && (e.role === 'WAREHOUSE_MANAGER' || e.username === 'wh_hung')) ||
+      (cleanUser === 'tuvan_dang' && (e.id === 'emp_5' || e.username === 'tuvan_dang')) ||
+      (cleanUser === 'stylist_dang' && (e.id === 'emp_5' || e.username === 'tuvan_dang')) ||
+      (cleanUser === 'thukho_long' && (e.id === 'emp_6' || e.username === 'thukho_long')) ||
+      (cleanUser === 'kho_long' && (e.id === 'emp_6' || e.username === 'thukho_long'))
     );
 
     if (!emp || (password !== '123456' && password !== 'admin123')) {

@@ -74,9 +74,11 @@ Hệ thống tích hợp sẵn 5 tài khoản mẫu tương ứng với 5 vai tr
 | **Nhân Viên Bán Hàng & POS** (Đặng Trà My) | `banhang_my` *(alias: `sales_lan`)* | `123456` | Trạm POS Quầy, Bán hàng, Khách hàng, Tra cứu tồn kho |
 | **Nhân Viên Mua Hàng & Xưởng** (Trần Thanh Phong) | `muahang_phong` *(alias: `muahang_dat`)* | `123456` | Nhập hàng xưởng, Nhà cung cấp, Đề xuất đặt may |
 | **Thủ Kho & Quản Lý Xuất Nhập** (Chu Ngọc Hải) | `thukho_hai` *(alias: `wh_hung`)* | `123456` | Kho hàng, Phiếu nhập xuất, Tra cứu sản phẩm & mẫu mã |
+| **Thủ Kho & Quản Lý Kho Vận** (Lê Thành Long) | `thukho_long` | `123456` | Tồn Kho & Xuất Nhập, Thẻ kho, Điều chỉnh kho, Sản phẩm |
+| **Chuyên Viên Tư Vấn & CSKH VIP** (Nguyễn Hải Đăng) | `tuvan_dang` | `123456` | Bán lẻ POS, CSKH VIP, Tra cứu tồn kho, Đề xuất nhập |
 
 > [!NOTE]
-> - Hệ thống hỗ trợ đăng nhập bằng cả tên đăng nhập thân thiện mới (`quanly_duyen`, `ketoan_dung`, `banhang_my`, `muahang_phong`, `thukho_hai`) lẫn tên đăng nhập cũ để tương thích 100% với kịch bản test.
+> - Hệ thống hỗ trợ đăng nhập bằng cả tên đăng nhập thân thiện mới (`quanly_duyen`, `ketoan_dung`, `banhang_my`, `muahang_phong`, `thukho_hai`, `thukho_long`, `tuvan_dang`) lẫn tên đăng nhập cũ để tương thích 100% với kịch bản test.
 > - Mọi người dùng sau khi đăng nhập đều có thể tự đổi mật khẩu cá nhân tại nút **"Đổi Mật Khẩu"** trong menu tài khoản ở góc trên bên phải Header.
 
 ---
