@@ -112,8 +112,115 @@ export const InventoryService = {
   async adjust(payload: AdjustStockPayload): Promise<any> {
     const res: any = await apiClient.post('/api/inventory/adjust', payload);
     return res;
+  },
+
+  // KIỂM KHO
+  async getAudits(): Promise<StockAudit[]> {
+    const res: any = await apiClient.get('/api/inventory/audits');
+    return res?.data || [];
+  },
+
+  async getAuditById(id: string): Promise<StockAudit | null> {
+    const res: any = await apiClient.get(`/api/inventory/audits/${encodeURIComponent(id)}`);
+    return res?.data || null;
+  },
+
+  async createAudit(payload: CreateStockAuditPayload): Promise<any> {
+    const res: any = await apiClient.post('/api/inventory/audits', payload);
+    return res;
+  },
+
+  // HÀNG LỖI
+  async getDefects(): Promise<DefectiveGood[]> {
+    const res: any = await apiClient.get('/api/inventory/defects');
+    return res?.data || [];
+  },
+
+  async recordDefect(payload: RecordDefectPayload): Promise<any> {
+    const res: any = await apiClient.post('/api/inventory/defects', payload);
+    return res;
   }
 };
+
+export interface StockAuditItem {
+  id: string;
+  auditId: string;
+  productId: string;
+  itemCode: string;
+  itemName: string;
+  unit: string;
+  systemStock: number;
+  actualStock: number;
+  difference: number;
+  status: 'MATCH' | 'SHORTAGE' | 'SURPLUS';
+  costPrice: number;
+  differenceValue: number;
+  note?: string;
+}
+
+export interface StockAudit {
+  id: string;
+  code: string;
+  date: string;
+  auditorName: string;
+  auditorId?: string;
+  reason: string;
+  status: 'COMPLETED' | 'DRAFT' | 'CANCELLED';
+  totalItems: number;
+  totalDiff: number;
+  matchedCount: number;
+  shortageCount: number;
+  surplusCount: number;
+  note?: string;
+  createdAt: string;
+  items?: StockAuditItem[];
+}
+
+export interface CreateStockAuditPayload {
+  date?: string;
+  reason: string;
+  auditorName?: string;
+  note?: string;
+  items: {
+    productId: string;
+    actualStock: number;
+    note?: string;
+  }[];
+}
+
+export interface DefectiveGood {
+  id: string;
+  code: string;
+  productId: string;
+  itemCode: string;
+  itemName: string;
+  unit: string;
+  quantity: number;
+  reason: string;
+  actionType: 'REORDER' | 'RETURN_SUPPLIER' | 'DISPOSE';
+  actionTitle: string;
+  note?: string;
+  handlerName: string;
+  handlerId?: string;
+  date: string;
+  costPrice: number;
+  totalLoss: number;
+  status: string;
+  inventoryLogId?: string;
+  createdAt: string;
+  imageUrl?: string;
+  currentStock?: number;
+}
+
+export interface RecordDefectPayload {
+  productId: string;
+  quantity: number;
+  reason: string;
+  actionType: 'REORDER' | 'RETURN_SUPPLIER' | 'DISPOSE';
+  note?: string;
+  date?: string;
+  handlerName?: string;
+}
 
 export interface DashboardStats {
   totalProducts: number;

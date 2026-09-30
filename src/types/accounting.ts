@@ -30,12 +30,14 @@ export interface Account {
 }
 
 export type TransactionType = 'CASH_RECEIPT' | 'CASH_PAYMENT' | 'BANK_DEPOSIT' | 'BANK_WITHDRAWAL';
+export type CashTransactionCategory = 'GENERAL' | 'CUSTOMER_DEBT_COLLECTION' | 'SUPPLIER_DEBT_PAYMENT';
 
 export interface CashTransaction {
   id: string;
-  code: string; // PT001, PC001, UNC001...
+  code: string; // PT001, PC001, UNC001, PTN001, PCN001...
   date: string;
   type: TransactionType;
+  category?: CashTransactionCategory; // Phân biệt Thu nợ KH / Trả nợ NCC / Thu chi thường
   personName: string;
   personAddress?: string;
   reason: string;
@@ -43,6 +45,7 @@ export interface CashTransaction {
   oppositeAccountCode: string; // TK đối ứng (VD: 511, 131, 331, 642)
   fundAccountCode: string; // TK Quỹ (1111, 1121)
   invoiceRef?: string;
+  invoiceId?: string;
   partnerId?: string; // Khách hàng hoặc Nhà cung cấp
   partnerName?: string;
   createdByName: string;
@@ -107,6 +110,7 @@ export interface Partner {
   bankName?: string;
   openingDebtDebit: number; // Nợ đầu kỳ phải thu (131)
   openingDebtCredit: number; // Nợ đầu kỳ phải trả (331)
+  currentDebt?: number; // Công nợ hiện tại
   notes?: string;
 }
 

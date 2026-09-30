@@ -23,6 +23,7 @@ import {
 import { Partner, Invoice, CustomerTier } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/accountingEngine';
 import { InvoiceDetailModal } from '../Invoices/InvoiceDetailModal';
+import { exportToExcel } from '../../utils/excelExport';
 
 interface CustomersViewProps {
   partners: Partner[];
@@ -230,17 +231,42 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
   };
 
   const handleExportCSV = () => {
-    let csv = '\uFEFFMã KH,Tên Khách Hàng,Phân Hạng VIP,SĐT,Email,Địa Chỉ,Mã Số Thuế,Công Nợ Phải Thu 131,Hạn Mức Tín Dụng\n';
-    customerList.forEach(c => {
-      csv += `"${c.code}","${c.name}","${c.tier || 'STANDARD'}","${c.phone}","${c.email || ''}","${c.address || ''}","${c.taxCode}","${getCustomerCurrentDebt(c)}","${c.creditLimit || 20000000}"\n`;
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const headers = [
+      'Mã KH',
+      'Tên Khách Hàng',
+      'Phân Hạng VIP',
+      'Số Điện Thoại',
+      'Email',
+      'Địa Chỉ',
+      'Mã Số Thuế',
+      'Công Nợ Phải Thu (TK 131)',
+      'Hạn Mức Tín Dụng'
+    ];
+    const rows = customerList.map(c => [
+      c.code,
+      c.name,
+      c.tier === 'DIAMOND' ? 'VIP Kim Cương' : c.tier === 'GOLD' ? 'VIP Vàng' : c.tier === 'SILVER' ? 'Bạc' : c.tier === 'WHOLESALE' ? 'Đại Lý Sỉ' : 'Thành Viên',
+      c.phone,
+      c.email || '',
+      c.address || '',
+      c.taxCode,
+      getCustomerCurrentDebt(c),
+      c.creditLimit || 20000000
+    ]);
+
+    exportToExcel({
+      title: 'DANH SÁCH KHÁCH HÀNG & CÔNG NỢ PHẢI THU D&D FASHION',
+      subtitle: `Thống kê phân hạng VIP & công nợ phải thu (TK 131) | Tổng số KH: ${customerList.length}`,
+      filename: `Danh_sach_khach_hang_${today}.xlsx`,
+      sheetName: 'Khach_Hang',
+      headers,
+      rows,
+      currencyColumns: [7, 8],
+      includeTotalRow: true,
+      totalLabel: 'TỔNG CÔNG NỢ PHẢI THU',
+      totalColumns: [7]
     });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Danh_Sach_Khach_Hang_DND_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   return (

@@ -21,6 +21,7 @@ import {
 import { PurchaseService, CreatePurchasePayload } from './services/purchaseService';
 import { SaleService, CreateSalePayload } from './services/saleService';
 import { InventoryService } from './services/inventoryService';
+import { DebtService } from './services/debtService';
 import { SalesView } from './components/Sales/SalesView';
 import { PurchasesView } from './components/Purchases/PurchasesView';
 import { CashBookView } from './components/CashBook/CashBookView';
@@ -210,6 +211,7 @@ export default function App() {
   useEffect(() => { if (partners && partners.length > 0) StorageService.savePartners(partners); }, [partners]);
   useEffect(() => { if (inventory && inventory.length > 0) StorageService.saveInventory(inventory); }, [inventory]);
   useEffect(() => { if (employees && employees.length > 0) StorageService.saveEmployees(employees); }, [employees]);
+  useEffect(() => { if (invoices && invoices.length > 0) StorageService.saveInvoices(invoices); }, [invoices]);
 
   // Tải Master Data từ SQLite REST API (tự động fallback sang dữ liệu khởi tạo nếu chạy trên Static Hosting như Vercel)
   useEffect(() => {
@@ -272,6 +274,20 @@ export default function App() {
         }
       })
       .catch(() => setInventoryLogs(StorageService.getInventoryLogs()));
+
+    // 6. Tải giao dịch thu chi sổ quỹ từ SQLite
+    DebtService.getTransactions()
+      .then(txs => {
+        if (txs && txs.length > 0) {
+          setCashTransactions(prev => {
+            const map = new Map<string, CashTransaction>();
+            (prev || []).forEach(t => { if (t && t.id) map.set(t.id, t); });
+            txs.forEach(t => { if (t && t.id) map.set(t.id, t); });
+            return Array.from(map.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          });
+        }
+      })
+      .catch(() => {});
   }, [currentUser]);
 
   // Handler: POS Sale Completion
@@ -636,6 +652,113 @@ export default function App() {
     } catch (err: any) {
       console.error('Lỗi xóa đối tác:', err);
       showToast(err.message || 'Lỗi xóa đối tác', 'error');
+    }
+  };
+
+  // Handlers: Quản lý Thu nợ Khách hàng (TK 131) & Trả nợ NCC (TK 331) - Lưu SQLite
+  const handleCollectDebt = async (payload: {
+    partnerId: string;
+    amount: number;
+    date: string;
+    paymentMethod: 'CASH' | 'BANK';
+    note: string;
+  }) => {
+    try {
+      const res = await DebtService.collectDebt(payload);
+      if (res && res.success) {
+        // Cập nhật công nợ đối tác trong state và storage
+        setPartners(prev => {
+          const updated = prev.map(p => p.id === res.partner.id ? { ...p, currentDebt: res.partner.currentDebt } : p);
+          StorageService.savePartners(updated);
+          return updated;
+        });
+
+        // Cập nhật hóa đơn phân bổ FIFO
+        if (res.updatedInvoices && res.updatedInvoices.length > 0) {
+          setInvoices(prev => {
+            const updatedMap = new Map<string, Invoice>();
+            res.updatedInvoices.forEach(inv => updatedMap.set(inv.id, inv));
+            const newInvoices = prev.map(inv => updatedMap.has(inv.id) ? updatedMap.get(inv.id)! : inv);
+            StorageService.saveInvoices(newInvoices);
+            return newInvoices;
+          });
+        }
+
+        // Cập nhật sổ quỹ và sinh bút toán tự động (TK 1111/1121 vs TK 131)
+        if (res.transactions && res.transactions.length > 0) {
+          const newJEs = res.transactions.map(t => generateAutoJournalEntryFromCash(t));
+          setCashTransactions(prev => {
+            const existingIds = new Set(res.transactions.map(t => t.id));
+            const combined = [...res.transactions, ...prev.filter(t => !existingIds.has(t.id))];
+            StorageService.saveCashTransactions(combined);
+            return combined;
+          });
+          setJournalEntries(prev => {
+            const combined = [...newJEs, ...prev];
+            StorageService.saveJournalEntries(combined);
+            return combined;
+          });
+        }
+
+        showToast(res.message || 'Thu nợ khách hàng thành công!', 'success');
+      }
+    } catch (err: any) {
+      console.error('Lỗi khi thu nợ khách hàng:', err);
+      showToast(err.message || 'Lỗi khi thu nợ khách hàng', 'error');
+      throw err;
+    }
+  };
+
+  const handlePayDebt = async (payload: {
+    partnerId: string;
+    amount: number;
+    date: string;
+    paymentMethod: 'CASH' | 'BANK';
+    note: string;
+  }) => {
+    try {
+      const res = await DebtService.payDebt(payload);
+      if (res && res.success) {
+        // Cập nhật công nợ đối tác trong state và storage
+        setPartners(prev => {
+          const updated = prev.map(p => p.id === res.partner.id ? { ...p, currentDebt: res.partner.currentDebt } : p);
+          StorageService.savePartners(updated);
+          return updated;
+        });
+
+        // Cập nhật hóa đơn mua hàng phân bổ FIFO
+        if (res.updatedInvoices && res.updatedInvoices.length > 0) {
+          setInvoices(prev => {
+            const updatedMap = new Map<string, Invoice>();
+            res.updatedInvoices.forEach(inv => updatedMap.set(inv.id, inv));
+            const newInvoices = prev.map(inv => updatedMap.has(inv.id) ? updatedMap.get(inv.id)! : inv);
+            StorageService.saveInvoices(newInvoices);
+            return newInvoices;
+          });
+        }
+
+        // Cập nhật sổ quỹ và sinh bút toán tự động (TK 331 vs TK 1111/1121)
+        if (res.transactions && res.transactions.length > 0) {
+          const newJEs = res.transactions.map(t => generateAutoJournalEntryFromCash(t));
+          setCashTransactions(prev => {
+            const existingIds = new Set(res.transactions.map(t => t.id));
+            const combined = [...res.transactions, ...prev.filter(t => !existingIds.has(t.id))];
+            StorageService.saveCashTransactions(combined);
+            return combined;
+          });
+          setJournalEntries(prev => {
+            const combined = [...newJEs, ...prev];
+            StorageService.saveJournalEntries(combined);
+            return combined;
+          });
+        }
+
+        showToast(res.message || 'Thanh toán nợ nhà cung cấp thành công!', 'success');
+      }
+    } catch (err: any) {
+      console.error('Lỗi khi trả nợ nhà cung cấp:', err);
+      showToast(err.message || 'Lỗi khi trả nợ nhà cung cấp', 'error');
+      throw err;
     }
   };
 
@@ -1236,6 +1359,8 @@ export default function App() {
                   invoices={invoices}
                   cashTransactions={cashTransactions}
                   onAddPartner={handleAddPartner}
+                  onCollectDebt={handleCollectDebt}
+                  onPayDebt={handlePayDebt}
                   onOpenQuickCash={(type) => setQuickCashModal({ open: true, type })}
                 />
               )}

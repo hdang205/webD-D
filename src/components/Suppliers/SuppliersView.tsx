@@ -21,6 +21,7 @@ import {
 import { Partner, Invoice } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/accountingEngine';
 import { InvoiceDetailModal } from '../Invoices/InvoiceDetailModal';
+import { exportToExcel } from '../../utils/excelExport';
 
 interface SuppliersViewProps {
   partners: Partner[];
@@ -190,17 +191,42 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
   };
 
   const handleExportCSV = () => {
-    let csv = '\uFEFFMã NCC,Tên Nhà Cung Cấp,Mã Số Thuế,SĐT,Email,Địa Chỉ,Số Tài Khoản Ngân Hàng,Tên Ngân Hàng,Công Nợ Phải Trả 331\n';
-    supplierList.forEach(s => {
-      csv += `"${s.code}","${s.name}","${s.taxCode}","${s.phone}","${s.email || ''}","${s.address || ''}","${s.bankAccount || ''}","${s.bankName || ''}","${getSupplierCurrentDebt(s)}"\n`;
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const headers = [
+      'Mã NCC',
+      'Tên Nhà Cung Cấp',
+      'Mã Số Thuế',
+      'Số Điện Thoại',
+      'Email',
+      'Địa Chỉ',
+      'Số Tài Khoản',
+      'Ngân Hàng',
+      'Công Nợ Phải Trả (TK 331)'
+    ];
+    const rows = supplierList.map(s => [
+      s.code,
+      s.name,
+      s.taxCode,
+      s.phone,
+      s.email || '',
+      s.address || '',
+      s.bankAccount || '',
+      s.bankName || '',
+      getSupplierCurrentDebt(s)
+    ]);
+
+    exportToExcel({
+      title: 'DANH SÁCH NHÀ CUNG CẤP & XƯỞNG MAY GIA CÔNG D&D FASHION',
+      subtitle: `Thống kê thông tin đối tác & công nợ phải trả (TK 331) | Tổng số NCC: ${supplierList.length}`,
+      filename: `Danh_sach_nha_cung_cap_${today}.xlsx`,
+      sheetName: 'Nha_Cung_Cap',
+      headers,
+      rows,
+      currencyColumns: [8],
+      includeTotalRow: true,
+      totalLabel: 'TỔNG CÔNG NỢ PHẢI TRẢ',
+      totalColumns: [8]
     });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Danh_Sach_Nha_Cung_Cap_DND_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   return (

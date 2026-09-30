@@ -42,7 +42,8 @@ import {
   calculateTrialBalance, 
   calculateProfitAndLoss 
 } from '../../utils/accountingEngine';
-import { formatCurrency, formatDate, downloadCSV, formatNumber } from '../../utils/formatters';
+import { formatCurrency, formatDate, formatNumber } from '../../utils/formatters';
+import { exportToExcel } from '../../utils/excelExport';
 
 interface ReportsViewProps {
   companyInfo: CompanyInfo;
@@ -441,7 +442,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
   // Export to Excel Handler (Adaptive to current Tab & Time Filter)
   const handleExportCSV = () => {
-    const timeSuffix = timeMode === 'DAY' ? selectedDay : timeMode === 'MONTH' ? `${selectedMonth}_${selectedYear}` : selectedYear;
+    const timeSuffix = timeMode === 'DAY' ? selectedDay.replace(/-/g, '') : timeMode === 'MONTH' ? `${selectedMonth}_${selectedYear}` : selectedYear;
 
     if (activeTab === 'STORE_OVERVIEW') {
       const headers = ['Chỉ Tiêu Kinh Doanh Cửa Hàng', 'Giá Trị (VNĐ / Số Lượng)', 'Ghi Chú'];
@@ -462,7 +463,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         ['Chi phí vận hành cửa hàng', storeMetrics.operatingExpenses, 'Mặt bằng, điện nước, lương...'],
         ['Lợi nhuận thực tế cửa hàng', storeMetrics.netStoreProfit, '']
       ];
-      downloadCSV(`BaoCao_KinhDoanh_CuaHang_${timeSuffix}.csv`, [headers, ...rows]);
+      exportToExcel({
+        title: 'BÁO CÁO HIỆU QUẢ KINH DOANH CỬA HÀNG D&D FASHION',
+        subtitle: `Kỳ báo cáo: ${dateRange.label}`,
+        filename: `Bao_cao_kinh_doanh_cua_hang_${timeSuffix}.xlsx`,
+        sheetName: 'Hieu_Qua_Kinh_Doanh',
+        headers,
+        rows
+      });
     } else if (activeTab === 'SALES_TIMELINE') {
       const headers = ['Thời Gian', 'Số Đơn Hàng', 'Số SP Bán', 'Doanh Thu Bán Hàng (VNĐ)', 'Thu Tiền Mặt/CK (VNĐ)', 'Chi Tiền (VNĐ)'];
       const rows = timelineBreakdown.map(t => [
@@ -473,7 +481,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         t.cashIn,
         t.cashOut
       ]);
-      downloadCSV(`BaoCao_DoanhThu_TheoThoiGian_${timeSuffix}.csv`, [headers, ...rows]);
+      exportToExcel({
+        title: 'BÁO CÁO DOANH THU BÁN HÀNG THEO THỜI GIAN D&D FASHION',
+        subtitle: `Kỳ báo cáo: ${dateRange.label}`,
+        filename: `Bao_cao_doanh_thu_theo_thoi_gian_${timeSuffix}.xlsx`,
+        sheetName: 'Doanh_Thu_Thoi_Gian',
+        headers,
+        rows,
+        numberColumns: [1, 2],
+        currencyColumns: [3, 4, 5],
+        includeTotalRow: true,
+        totalLabel: 'TỔNG CỘNG',
+        totalColumns: [1, 2, 3, 4, 5]
+      });
     } else if (activeTab === 'BEST_SELLERS') {
       const headers = ['Mã SKU', 'Tên Mẫu Thời Trang', 'Danh Mục', 'ĐVT', 'Số Lượng Đã Bán', 'Doanh Thu Mang Lại (VNĐ)', 'Tồn Kho Hiện Tại'];
       const rows = bestSellingItems.map(i => [
@@ -485,7 +505,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         i.revenue,
         i.currentStock
       ]);
-      downloadCSV(`BaoCao_MauBanChay_${timeSuffix}.csv`, [headers, ...rows]);
+      exportToExcel({
+        title: 'BÁO CÁO MẪU THỜI TRANG BÁN CHẠY NHẤT D&D FASHION',
+        subtitle: `Kỳ báo cáo: ${dateRange.label} | Top sản phẩm bán chạy`,
+        filename: `Bao_cao_mau_ban_chay_${timeSuffix}.xlsx`,
+        sheetName: 'Mau_Ban_Chay',
+        headers,
+        rows,
+        numberColumns: [4, 6],
+        currencyColumns: [5],
+        includeTotalRow: true,
+        totalLabel: 'TỔNG CỘNG',
+        totalColumns: [4, 5, 6]
+      });
     } else if (activeTab === 'STAFF_PERFORMANCE') {
       const headers = ['Họ Tên Nhân Sự', 'Số Đơn Hàng Phụ Trách', 'Số SP Bán Ra', 'Tổng Doanh Số Đạt Được (VNĐ)', 'Tỷ Trọng Đóng Góp (%)'];
       const totalRev = storeMetrics.totalSalesRevenue || 1;
@@ -496,7 +528,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         s.totalRevenue,
         `${((s.totalRevenue / totalRev) * 100).toFixed(1)}%`
       ]);
-      downloadCSV(`BaoCao_DoanhSo_NhanVien_${timeSuffix}.csv`, [headers, ...rows]);
+      exportToExcel({
+        title: 'BÁO CÁO DOANH SỐ THEO NHÂN SỰ D&D FASHION',
+        subtitle: `Kỳ báo cáo: ${dateRange.label}`,
+        filename: `Bao_cao_doanh_so_nhan_vien_${timeSuffix}.xlsx`,
+        sheetName: 'Doanh_So_Nhan_Su',
+        headers,
+        rows,
+        numberColumns: [1, 2],
+        currencyColumns: [3],
+        includeTotalRow: true,
+        totalLabel: 'TỔNG CỘNG',
+        totalColumns: [1, 2, 3]
+      });
     } else if (activeTab === 'CASHFLOW') {
       const headers = ['Mã Phiếu', 'Ngày', 'Loại', 'Đối Tượng', 'Lý Do Thu/Chi', 'Số Tiền (VNĐ)', 'TK Đối Ứng'];
       const rows = filteredCashTransactions.map(t => [
@@ -508,19 +552,40 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         t.amount,
         t.oppositeAccountCode
       ]);
-      downloadCSV(`BaoCao_SoQuy_ThuChi_${timeSuffix}.csv`, [headers, ...rows]);
+      exportToExcel({
+        title: 'BÁO CÁO SỔ QUỸ THU CHI TIỀN MẶT D&D FASHION',
+        subtitle: `Kỳ báo cáo: ${dateRange.label} | Số lượng giao dịch: ${filteredCashTransactions.length}`,
+        filename: `Bao_cao_so_quy_thu_chi_${timeSuffix}.xlsx`,
+        sheetName: 'Thu_Chi_Quy',
+        headers,
+        rows,
+        currencyColumns: [5],
+        includeTotalRow: true,
+        totalLabel: 'TỔNG CỘNG TIỀN PHÁT SINH',
+        totalColumns: [5]
+      });
     } else {
       // VAS Accounting export
-      const headers = ['Chỉ Tiêu P&L', 'Số Tiền (VNĐ)'];
+      const headers = ['Chỉ Tiêu Báo Cáo Tài Chính (P&L)', 'Số Tiền (VNĐ)'];
       const rows = [
-        ['Doanh thu thuần', pnlData.netRevenue],
-        ['Giá vốn hàng bán', pnlData.costOfGoodsSold],
-        ['Lợi nhuận gộp', pnlData.grossProfit],
-        ['Chi phí vận hành', pnlData.managementExpenses + pnlData.sellingExpenses],
-        ['Lợi nhuận trước thuế', pnlData.operatingProfit],
-        ['Lợi nhuận sau thuế', pnlData.netProfitAfterTax]
+        ['1. Doanh thu thuần về bán hàng & cung cấp dịch vụ', pnlData.netRevenue],
+        ['2. Giá vốn hàng bán (TK 632 / 156)', pnlData.costOfGoodsSold],
+        ['3. Lợi nhuận gộp về bán hàng (1 - 2)', pnlData.grossProfit],
+        ['4. Chi phí bán hàng & quản lý doanh nghiệp (TK 642)', pnlData.managementExpenses + pnlData.sellingExpenses],
+        ['5. Lợi nhuận thuần từ hoạt động kinh doanh (3 - 4)', pnlData.operatingProfit],
+        ['6. Tổng lợi nhuận kế toán trước thuế', pnlData.operatingProfit],
+        ['7. Chi phí thuế thu nhập doanh nghiệp (nếu có)', 0],
+        ['8. Lợi nhuận sau thuế thu nhập doanh nghiệp', pnlData.netProfitAfterTax]
       ];
-      downloadCSV(`BaoCao_TaiChinh_VAS_${timeSuffix}.csv`, [headers, ...rows]);
+      exportToExcel({
+        title: 'BÁO CÁO KẾT QUẢ HOẠT ĐỘNG KINH DOANH (P&L - VAS) D&D FASHION',
+        subtitle: `Kỳ báo cáo: ${dateRange.label} | Chuẩn mực kế toán Việt Nam`,
+        filename: `Bao_cao_tai_chinh_vas_${timeSuffix}.xlsx`,
+        sheetName: 'Ket_Qua_KD_VAS',
+        headers,
+        rows,
+        currencyColumns: [1]
+      });
     }
   };
 

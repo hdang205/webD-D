@@ -14,6 +14,7 @@ import purchaseRoutes from "./src/server/routes/purchaseRoutes.js";
 import salesRoutes from "./src/server/routes/salesRoutes.js";
 import inventoryRoutes from "./src/server/routes/inventoryRoutes.js";
 import dashboardRoutes from "./src/server/routes/dashboardRoutes.js";
+import debtRoutes from "./src/server/routes/debtRoutes.js";
 
 dotenv.config();
 
@@ -105,6 +106,7 @@ Nhiệm vụ cụ thể: Hãy phân tích mô tả giao dịch hoặc thông tin
   app.use("/api/sales", salesRoutes);
   app.use("/api/inventory", inventoryRoutes);
   app.use("/api/dashboard", dashboardRoutes);
+  app.use("/api/debts", debtRoutes);
 
   // Health check endpoint
   app.get("/api/health", (_req, res) => {

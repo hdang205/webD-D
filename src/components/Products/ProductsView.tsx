@@ -27,7 +27,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { InventoryItem, AuthUser, Category } from '../../types/accounting';
-import { formatCurrency } from '../../utils/accountingEngine';
+import { formatCurrency, formatNumber, formatDate } from '../../utils/formatters';
+import { exportToExcel } from '../../utils/excelExport';
 import { canUserViewCostPrice, ROLE_CONFIGS } from '../../utils/rbac';
 import { ProductService, CategoryService } from '../../services/masterDataService';
 
@@ -305,28 +306,48 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
   };
 
   const handleExportCSV = () => {
-    let csv = '\uFEFFMã SP,Tên Sản Phẩm,Danh Mục,ĐVT,Size,Màu Sắc,Giá Bán,Tồn Kho Thực Tế,Định Mức Tồn Tối Thiểu';
+    const now = new Date();
+    const dateSuffix = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    
+    const headers = ['STT', 'Mã SP', 'Tên Sản Phẩm Thời Trang', 'Danh Mục', 'ĐVT', 'Size', 'Màu Sắc', 'Giá Bán (VNĐ)', 'Tồn Kho Thực Tế', 'Định Mức Tối Thiểu'];
+    const currencyCols: number[] = [7];
     if (canViewCost) {
-      csv += ',Giá Vốn (156),Tổng Giá Trị Tồn\n';
-    } else {
-      csv += '\n';
+      headers.push('Giá Vốn (VNĐ)', 'Tổng Giá Trị Tồn (VNĐ)');
+      currencyCols.push(10, 11);
     }
 
-    inventory.forEach(i => {
-      csv += `"${i.code}","${i.name}","${i.category}","${i.unit}","${i.size || ''}","${i.color || ''}","${i.sellingPrice}","${i.openingQuantity}","${i.minStockLevel}"`;
+    const rows = inventory.map((i, idx) => {
+      const row: any[] = [
+        idx + 1,
+        i.code,
+        i.name,
+        i.category,
+        i.unit,
+        i.size || '',
+        i.color || '',
+        i.sellingPrice,
+        i.openingQuantity,
+        i.minStockLevel
+      ];
       if (canViewCost) {
-        csv += `,"${i.costPrice}","${i.openingQuantity * i.costPrice}"\n`;
-      } else {
-        csv += '\n';
+        row.push(i.costPrice, (i.openingQuantity || 0) * (i.costPrice || 0));
       }
+      return row;
     });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Danh_Muc_SanPham_DND_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+
+    exportToExcel({
+      title: 'BÁO CÁO DANH MỤC SẢN PHẨM THỜI TRANG D&D',
+      subtitle: `Tổng số sản phẩm: ${inventory.length} mã hàng`,
+      filename: `Bao_cao_san_pham_${dateSuffix}.xlsx`,
+      sheetName: 'Sản Phẩm',
+      headers,
+      rows,
+      currencyColumns: currencyCols,
+      numberColumns: [0, 8, 9],
+      includeTotalRow: true,
+      totalLabel: 'TỔNG CỘNG',
+      totalColumns: canViewCost ? [8, 11] : [8]
+    });
   };
 
   return (
@@ -885,7 +906,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
                     type="number"
                     required
                     min="0"
-                    step="1000"
+                    step="any"
                     value={formData.costPrice}
                     onChange={(e) => setFormData({ ...formData, costPrice: Number(e.target.value) })}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-emerald-700"
@@ -898,7 +919,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
                     type="number"
                     required
                     min="0"
-                    step="1000"
+                    step="any"
                     value={formData.sellingPrice}
                     onChange={(e) => setFormData({ ...formData, sellingPrice: Number(e.target.value) })}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-[#a93054]"

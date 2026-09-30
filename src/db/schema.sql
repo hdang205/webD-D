@@ -240,6 +240,7 @@ CREATE TABLE IF NOT EXISTS cash_transactions (
     invoice_ref TEXT,
     created_by TEXT REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
     created_by_name TEXT,
+    category TEXT DEFAULT 'GENERAL',
     note TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -509,3 +510,75 @@ BEGIN
         updated_at = datetime('now')
     WHERE id = OLD.invoice_id;
 END;
+
+-- ============================================================================
+-- 19. BẢNG KIỂM KHO (Stock Audits) & CHI TIẾT KIỂM KHO (Stock Audit Items)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS stock_audits (
+    id TEXT PRIMARY KEY,
+    code TEXT NOT NULL UNIQUE,
+    date TEXT NOT NULL,
+    auditor_name TEXT NOT NULL,
+    auditor_id TEXT REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    reason TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'COMPLETED' CHECK (status IN ('COMPLETED', 'DRAFT', 'CANCELLED')),
+    total_items INTEGER NOT NULL DEFAULT 0,
+    total_diff INTEGER NOT NULL DEFAULT 0,
+    matched_count INTEGER NOT NULL DEFAULT 0,
+    shortage_count INTEGER NOT NULL DEFAULT 0,
+    surplus_count INTEGER NOT NULL DEFAULT 0,
+    note TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_stock_audits_date ON stock_audits(date);
+CREATE INDEX IF NOT EXISTS idx_stock_audits_code ON stock_audits(code);
+
+CREATE TABLE IF NOT EXISTS stock_audit_items (
+    id TEXT PRIMARY KEY,
+    audit_id TEXT NOT NULL REFERENCES stock_audits(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    product_id TEXT NOT NULL REFERENCES products(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    item_code TEXT NOT NULL,
+    item_name TEXT NOT NULL,
+    unit TEXT NOT NULL,
+    system_stock INTEGER NOT NULL,
+    actual_stock INTEGER NOT NULL,
+    difference INTEGER NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('MATCH', 'SHORTAGE', 'SURPLUS')),
+    cost_price REAL NOT NULL DEFAULT 0,
+    difference_value REAL NOT NULL DEFAULT 0,
+    note TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_stock_audit_items_audit ON stock_audit_items(audit_id);
+CREATE INDEX IF NOT EXISTS idx_stock_audit_items_prod ON stock_audit_items(product_id);
+
+-- ============================================================================
+-- 20. BẢNG THEO DÕI & XỬ LÝ HÀNG LỖI (Defective Goods)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS defective_goods (
+    id TEXT PRIMARY KEY,
+    code TEXT NOT NULL UNIQUE,
+    product_id TEXT NOT NULL REFERENCES products(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    item_code TEXT NOT NULL,
+    item_name TEXT NOT NULL,
+    unit TEXT NOT NULL,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    reason TEXT NOT NULL,
+    action_type TEXT NOT NULL CHECK (action_type IN ('REORDER', 'RETURN_SUPPLIER', 'DISPOSE')),
+    action_title TEXT NOT NULL,
+    note TEXT,
+    handler_name TEXT NOT NULL,
+    handler_id TEXT REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    date TEXT NOT NULL,
+    cost_price REAL NOT NULL DEFAULT 0,
+    total_loss REAL NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'COMPLETED',
+    inventory_log_id TEXT REFERENCES inventory_logs(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_defective_goods_date ON defective_goods(date);
+CREATE INDEX IF NOT EXISTS idx_defective_goods_prod ON defective_goods(product_id);
+CREATE INDEX IF NOT EXISTS idx_defective_goods_action ON defective_goods(action_type);
+

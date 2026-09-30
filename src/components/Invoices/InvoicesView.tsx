@@ -12,7 +12,8 @@ import {
   Info
 } from 'lucide-react';
 import { Invoice, InvoiceType, Partner, InventoryItem } from '../../types/accounting';
-import { formatCurrency, formatDate, downloadCSV } from '../../utils/formatters';
+import { formatCurrency, formatDate } from '../../utils/formatters';
+import { exportToExcel } from '../../utils/excelExport';
 import { InvoiceModal } from './InvoiceModal';
 
 interface InvoicesViewProps {
@@ -58,7 +59,8 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({
   };
 
   const handleExportCSV = () => {
-    const headers = ['Số HĐ', 'Ký hiệu', 'Ngày lập', 'Loại', 'Đối tác', 'MST', 'Tổng tiền', 'Đã thanh toán', 'Trạng thái'];
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const headers = ['Số HĐ', 'Ký Hiệu', 'Ngày Lập', 'Loại Nghiệp Vụ', 'Đối Tác', 'Mã Số Thuế', 'Tổng Tiền HĐ', 'Đã Thanh Toán', 'Còn Lại', 'Trạng Thái'];
     const rows = filteredInvoices.map(i => [
       i.code,
       i.invoiceSymbol || '',
@@ -68,9 +70,22 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({
       i.partnerTaxCode || '',
       i.grandTotal,
       i.paidAmount,
-      i.status === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán'
+      i.grandTotal - i.paidAmount,
+      i.status === 'PAID' ? 'Đã thanh toán' : i.status === 'PARTIAL' ? 'Thanh toán 1 phần' : 'Chưa thanh toán'
     ]);
-    downloadCSV('DanhSachHoaDon_DND_Fashion.csv', [headers, ...rows]);
+
+    exportToExcel({
+      title: 'DANH SÁCH HÓA ĐƠN BÁN HÀNG & MUA HÀNG D&D FASHION',
+      subtitle: `Tổng hợp hóa đơn tài chính GTGT | Số lượng: ${filteredInvoices.length} hóa đơn`,
+      filename: `Danh_sach_hoa_don_${today}.xlsx`,
+      sheetName: 'Hoa_Don',
+      headers,
+      rows,
+      currencyColumns: [6, 7, 8],
+      includeTotalRow: true,
+      totalLabel: 'TỔNG CỘNG HÓA ĐƠN',
+      totalColumns: [6, 7, 8]
+    });
   };
 
   return (
@@ -97,7 +112,7 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({
             className="flex items-center gap-1.5 bg-[#fb6f92] hover:bg-[#e0557b] text-white font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-xs cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Tạo Hóa Đơn Bán Hàng</span>
+            <span>Tạo Hóa Đơn Bán Hàng</span>
           </button>
 
           <button
@@ -106,7 +121,7 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({
             className="flex items-center gap-1.5 bg-[#a93054] hover:bg-[#89153d] text-white font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-xs cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Hóa Đơn Mua Hàng / Chi Phí</span>
+            <span>Hóa Đơn Mua Hàng / Chi Phí</span>
           </button>
 
           <button

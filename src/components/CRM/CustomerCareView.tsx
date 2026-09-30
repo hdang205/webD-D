@@ -773,7 +773,7 @@ Em xin phép lấy số đo vòng eo & chiều cao của Chị để lập ngay 
                 className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-[#fb6f92] to-[#a93054] text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ Thêm Nhật Ký Tư Vấn Mới</span>
+                <span>Thêm Nhật Ký Tư Vấn Mới</span>
               </button>
             </div>
           </div>

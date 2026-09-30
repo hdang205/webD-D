@@ -1,3 +1,6 @@
+import { exportToExcel } from './excelExport';
+export { exportToExcel } from './excelExport';
+
 export function formatCurrency(amount: number): string {
   if (isNaN(amount)) return '0 ₫';
   return new Intl.NumberFormat('vi-VN', {
@@ -26,25 +29,21 @@ export function getCurrentISODate(): string {
   return new Date().toISOString().split('T')[0];
 }
 
+/**
+ * Tương thích ngược: Khi người dùng hoặc component gọi chức năng xuất file,
+ * hệ thống luôn xuất định dạng Excel .xlsx thật chuẩn Microsoft Excel thay vì CSV.
+ */
 export function downloadCSV(filename: string, rows: (string | number)[][]) {
-  const processRow = (row: (string | number)[]) => {
-    return row.map(val => {
-      let str = String(val ?? '');
-      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-        str = `"${str.replace(/"/g, '""')}"`;
-      }
-      return str;
-    }).join(',');
-  };
+  const safeFilename = filename.replace(/\.csv$/i, '') + '.xlsx';
+  const headers = rows.length > 0 ? rows[0].map(h => String(h)) : [];
+  const dataRows = rows.slice(1);
+  const title = filename.replace(/\.(csv|xlsx)$/i, '').replace(/[_]+/g, ' ').trim();
 
-  const csvContent = '\uFEFF' + rows.map(processRow).join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', filename);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  exportToExcel({
+    title: title || 'BÁO CÁO DỮ LIỆU D&D FASHION',
+    filename: safeFilename,
+    headers,
+    rows: dataRows
+  });
 }
+

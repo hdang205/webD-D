@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Invoice, Partner, InventoryItem } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/accountingEngine';
+import { exportToExcel } from '../../utils/excelExport';
 import { InvoiceModal } from '../Invoices/InvoiceModal';
 import { InvoiceDetailModal } from '../Invoices/InvoiceDetailModal';
 
@@ -66,17 +67,52 @@ export const PurchasesView: React.FC<PurchasesViewProps> = ({
   const totalPendingSupplierDebt = totalPurchaseCost - totalPaidToSuppliers;
 
   const handleExportCSV = () => {
-    let csv = '\uFEFFMã HĐ Mua,Ngày Nhập,Nhà Cung Cấp / Xưởng May,MST,Tiền Hàng Chưa VAT,Thuế GTGT Khấu Trừ (133),Tổng Tiền,Đã Trả,Trạng Thái,Ghi Chú\n';
-    purchaseInvoices.forEach(i => {
-      csv += `"${i.code}","${i.date}","${i.partnerName}","${i.partnerTaxCode || ''}","${i.subtotal}","${i.vatTotal}","${i.grandTotal}","${i.paidAmount}","${i.status}","${i.note || ''}"\n`;
+    const now = new Date();
+    const dateSuffix = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+
+    const headers = [
+      'STT',
+      'Mã HĐ Mua',
+      'Ngày Nhập',
+      'Nhà Cung Cấp / Xưởng May',
+      'Mã Số Thuế',
+      'Tiền Hàng Chưa VAT (VNĐ)',
+      'Thuế GTGT Khấu Trừ 133 (VNĐ)',
+      'Tổng Tiền Thanh Toán (VNĐ)',
+      'Đã Thanh Toán (VNĐ)',
+      'Công Nợ Còn Lại (VNĐ)',
+      'Trạng Thái',
+      'Ghi Chú'
+    ];
+
+    const rows = purchaseInvoices.map((i, idx) => [
+      idx + 1,
+      i.code,
+      formatDate(i.date),
+      i.partnerName,
+      i.partnerTaxCode || '',
+      i.subtotal,
+      i.vatTotal,
+      i.grandTotal,
+      i.paidAmount,
+      Math.max(0, (i.grandTotal || 0) - (i.paidAmount || 0)),
+      i.status === 'PAID' ? 'Đã thanh toán' : i.status === 'PARTIAL' ? 'Thanh toán 1 phần' : 'Chưa thanh toán',
+      i.note || ''
+    ]);
+
+    exportToExcel({
+      title: 'BÁO CÁO HÓA ĐƠN NHẬP HÀNG & MUA HÀNG D&D',
+      subtitle: `Tổng giá trị nhập: ${formatCurrency(totalPurchaseCost)} | Nợ NCC: ${formatCurrency(totalPendingSupplierDebt)}`,
+      filename: `Bao_cao_nhap_hang_${dateSuffix}.xlsx`,
+      sheetName: 'Hóa Đơn Nhập Hàng',
+      headers,
+      rows,
+      currencyColumns: [5, 6, 7, 8, 9],
+      numberColumns: [0],
+      includeTotalRow: true,
+      totalLabel: 'TỔNG CỘNG',
+      totalColumns: [5, 6, 7, 8, 9]
     });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Danh_Sach_Hoa_Don_Nhap_Hang_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   return (

@@ -26,6 +26,7 @@ import {
 import { Employee, EmployeeDepartment, EmployeeStatus, Invoice, CashTransaction } from '../../types/accounting';
 import { EmployeeModal } from './EmployeeModal';
 import { EmployeeDetailModal } from './EmployeeDetailModal';
+import { exportToExcel } from '../../utils/excelExport';
 
 interface EmployeesViewProps {
   employees: Employee[];
@@ -113,32 +114,37 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
     }
   };
 
-  // Export CSV
+  // Export Excel
   const handleExportCSV = () => {
-    const headers = ['Mã NV', 'Họ Tên', 'Giới Tính', 'SĐT', 'Email', 'Phòng Ban', 'Chức Vụ', 'Lương Cơ Bản', 'Phụ Cấp', '% Hoa Hồng', 'STK Ngân Hàng', 'Trạng Thái'];
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const headers = ['Mã NV', 'Họ Tên', 'Giới Tính', 'Số Điện Thoại', 'Email', 'Phòng Ban', 'Chức Vụ', 'Lương Cơ Bản', 'Phụ Cấp', '% Hoa Hồng', 'Tài Khoản Ngân Hàng', 'Trạng Thái'];
     const rows = employees.map(e => [
       e.code,
-      `"${e.name}"`,
+      e.name,
       e.gender === 'FEMALE' ? 'Nữ' : 'Nam',
-      `"${e.phone}"`,
-      `"${e.email}"`,
-      `"${getDepartmentInfo(e.department).label}"`,
-      `"${e.position}"`,
+      e.phone,
+      e.email,
+      getDepartmentInfo(e.department).label,
+      e.position,
       e.baseSalary,
       e.allowance || 0,
       `${e.commissionRate}%`,
-      `"${e.bankAccount} (${e.bankName})"`,
+      `${e.bankAccount} (${e.bankName})`,
       e.status === 'ACTIVE' ? 'Đang làm việc' : e.status === 'ON_LEAVE' ? 'Tạm nghỉ' : 'Đã thôi việc'
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `DanhSachNhanSu_DND_Fashion_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    exportToExcel({
+      title: 'DANH SÁCH NHÂN SỰ & BẢNG LƯƠNG ĐỘI NGŨ D&D FASHION',
+      subtitle: `Thống kê danh sách cán bộ công nhân viên | Tổng số nhân sự: ${employees.length}`,
+      filename: `Danh_sach_nhan_su_${today}.xlsx`,
+      sheetName: 'Nhan_Su',
+      headers,
+      rows,
+      currencyColumns: [7, 8],
+      includeTotalRow: true,
+      totalLabel: 'TỔNG QUỸ LƯƠNG CƠ BẢN',
+      totalColumns: [7, 8]
+    });
   };
 
   return (
@@ -179,7 +185,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
             className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-[#fb6f92] to-[#a93054] hover:opacity-95 text-white text-xs font-bold transition cursor-pointer shadow-xs active:scale-95"
           >
             <UserPlus className="w-4 h-4" />
-            <span>+ Thêm Nhân Viên Mới</span>
+            <span>Thêm Nhân Viên Mới</span>
           </button>
         </div>
       </div>
@@ -492,7 +498,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                   className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-xl font-bold text-xs shadow-xs hover:opacity-95 transition cursor-pointer flex items-center gap-1.5 shrink-0"
                 >
                   <DollarSign className="w-4 h-4" />
-                  <span>+ Lập Phiếu Chi Lương Toàn Bộ</span>
+                  <span>Lập Phiếu Chi Lương Toàn Bộ</span>
                 </button>
               )}
             </div>

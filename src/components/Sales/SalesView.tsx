@@ -20,6 +20,7 @@ import { Invoice, Partner, InventoryItem } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/accountingEngine';
 import { InvoiceModal } from '../Invoices/InvoiceModal';
 import { InvoiceDetailModal } from '../Invoices/InvoiceDetailModal';
+import { exportToExcel } from '../../utils/excelExport';
 
 interface SalesViewProps {
   invoices: Invoice[];
@@ -68,17 +69,48 @@ export const SalesView: React.FC<SalesViewProps> = ({
   const totalPendingDebt = totalGrossRevenue - totalPaidRevenue;
 
   const handleExportCSV = () => {
-    let csv = '\uFEFFMã HĐ,Ngày Lập,Khách Hàng,MST,Tiền Chưa VAT,Chiết Khấu,Thuế GTGT,Tổng Tiền,Đã Thanh Toán,Trạng Thái,Ghi Chú\n';
-    salesInvoices.forEach(i => {
-      csv += `"${i.code}","${i.date}","${i.partnerName}","${i.partnerTaxCode || ''}","${i.subtotal}","${i.discountTotal}","${i.vatTotal}","${i.grandTotal}","${i.paidAmount}","${i.status}","${i.note || ''}"\n`;
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const headers = [
+      'Mã HĐ',
+      'Ngày Lập',
+      'Khách Hàng',
+      'Mã Số Thuế',
+      'Tiền Chưa VAT',
+      'Chiết Khấu',
+      'Thuế GTGT',
+      'Tổng Doanh Thu',
+      'Đã Thu Tiền',
+      'Còn Phải Thu (131)',
+      'Trạng Thái',
+      'Ghi Chú'
+    ];
+    const rows = salesInvoices.map(i => [
+      i.code,
+      formatDate(i.date),
+      i.partnerName,
+      i.partnerTaxCode || '',
+      i.subtotal,
+      i.discountTotal,
+      i.vatTotal,
+      i.grandTotal,
+      i.paidAmount,
+      i.grandTotal - i.paidAmount,
+      i.status === 'PAID' ? 'Đã thanh toán' : i.status === 'PARTIAL' ? 'Thanh toán 1 phần' : 'Chưa thanh toán',
+      i.note || ''
+    ]);
+
+    exportToExcel({
+      title: 'BÁO CÁO DOANH SỐ BÁN HÀNG D&D FASHION',
+      subtitle: `Thống kê danh sách hóa đơn bán buôn & bán lẻ | Tổng số đơn: ${salesInvoices.length}`,
+      filename: `Bao_cao_ban_hang_${today}.xlsx`,
+      sheetName: 'Ban_Hang',
+      headers,
+      rows,
+      currencyColumns: [4, 5, 6, 7, 8, 9],
+      includeTotalRow: true,
+      totalLabel: 'TỔNG CỘNG DOANH THU',
+      totalColumns: [4, 5, 6, 7, 8, 9]
     });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Danh_Sach_Hoa_Don_Ban_Hang_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   return (

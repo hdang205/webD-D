@@ -11,14 +11,31 @@ import {
   UserCheck
 } from 'lucide-react';
 import { Partner, PartnerType, Invoice, CashTransaction } from '../../types/accounting';
-import { formatCurrency, downloadCSV } from '../../utils/formatters';
+import { formatCurrency } from '../../utils/formatters';
+import { exportToExcel } from '../../utils/excelExport';
+import { CustomerDebtModal } from './CustomerDebtModal';
+import { SupplierDebtModal } from './SupplierDebtModal';
 
 interface DebtsViewProps {
   partners: Partner[];
   invoices: Invoice[];
   cashTransactions: CashTransaction[];
   onAddPartner: (partner: Omit<Partner, 'id'>) => void;
-  onOpenQuickCash: (type: 'CASH_RECEIPT' | 'CASH_PAYMENT', partnerId: string) => void;
+  onCollectDebt?: (payload: {
+    partnerId: string;
+    amount: number;
+    date: string;
+    paymentMethod: 'CASH' | 'BANK';
+    note: string;
+  }) => Promise<void>;
+  onPayDebt?: (payload: {
+    partnerId: string;
+    amount: number;
+    date: string;
+    paymentMethod: 'CASH' | 'BANK';
+    note: string;
+  }) => Promise<void>;
+  onOpenQuickCash?: (type: 'CASH_RECEIPT' | 'CASH_PAYMENT', partnerId: string) => void;
 }
 
 export const DebtsView: React.FC<DebtsViewProps> = ({
@@ -26,11 +43,16 @@ export const DebtsView: React.FC<DebtsViewProps> = ({
   invoices,
   cashTransactions: _cashTransactions,
   onAddPartner,
-  onOpenQuickCash
+  onCollectDebt,
+  onPayDebt,
+  onOpenQuickCash: _onOpenQuickCash
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [partnerTypeFilter, setPartnerTypeFilter] = useState<'ALL' | 'CUSTOMER' | 'SUPPLIER'>('ALL');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedCustomerForDebt, setSelectedCustomerForDebt] = useState<{ partner: Partner; currentDebt: number } | null>(null);
+  const [selectedSupplierForDebt, setSelectedSupplierForDebt] = useState<{ partner: Partner; currentDebt: number } | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // New Partner Form state
   const [code, setCode] = useState(() => `KH${Math.floor(100 + Math.random() * 900)}`);
@@ -104,7 +126,17 @@ export const DebtsView: React.FC<DebtsViewProps> = ({
   };
 
   const handleExportCSV = () => {
-    const headers = ['Mã ĐT', 'Tên Đối Tác', 'Phân loại', 'MST', 'SĐT', 'Địa chỉ', 'Công nợ phải thu (TK 131)', 'Công nợ phải trả (TK 331)'];
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const headers = [
+       'Mã ĐT',
+       'Tên Đối Tác',
+       'Phân Loại',
+       'Mã Số Thuế',
+       'Số Điện Thoại',
+       'Địa Chỉ',
+       'Công Nợ Phải Thu (TK 131)',
+       'Công Nợ Phải Trả (TK 331)'
+    ];
     const rows = filteredPartners.map(p => [
       p.code,
       p.name,
@@ -115,7 +147,53 @@ export const DebtsView: React.FC<DebtsViewProps> = ({
       p.totalReceivable,
       p.totalPayable
     ]);
-    downloadCSV('CongNoDoiTac_DND_Fashion.csv', [headers, ...rows]);
+
+    exportToExcel({
+      title: 'BÁO CÁO CÔNG NỢ ĐỐI TÁC D&D FASHION',
+      subtitle: `Theo dõi công nợ phải thu (TK 131) và công nợ phải trả (TK 331) | Tổng số đối tác: ${filteredPartners.length}`,
+      filename: `Bao_cao_cong_no_${today}.xlsx`,
+      sheetName: 'Cong_No',
+      headers,
+      rows,
+      currencyColumns: [6, 7],
+      includeTotalRow: true,
+      totalLabel: 'TỔNG CỘNG CÔNG NỢ',
+      totalColumns: [6, 7]
+    });
+  };
+
+  const handleConfirmCollect = async (payload: {
+    partnerId: string;
+    amount: number;
+    date: string;
+    paymentMethod: 'CASH' | 'BANK';
+    note: string;
+  }) => {
+    if (onCollectDebt) {
+      await onCollectDebt(payload);
+      setToastMessage({
+        type: 'success',
+        text: `Thu nợ thành công số tiền ${formatCurrency(payload.amount)} từ khách hàng!`
+      });
+      setTimeout(() => setToastMessage(null), 5000);
+    }
+  };
+
+  const handleConfirmPay = async (payload: {
+    partnerId: string;
+    amount: number;
+    date: string;
+    paymentMethod: 'CASH' | 'BANK';
+    note: string;
+  }) => {
+    if (onPayDebt) {
+      await onPayDebt(payload);
+      setToastMessage({
+        type: 'success',
+        text: `Chi trả nợ thành công số tiền ${formatCurrency(payload.amount)} cho nhà cung cấp!`
+      });
+      setTimeout(() => setToastMessage(null), 5000);
+    }
   };
 
   return (
@@ -255,8 +333,9 @@ export const DebtsView: React.FC<DebtsViewProps> = ({
                       <div className="flex items-center justify-center gap-1.5">
                         {p.totalReceivable > 0 && (
                           <button
-                            onClick={() => onOpenQuickCash('CASH_RECEIPT', p.id)}
-                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition cursor-pointer shadow-xs"
+                            id={`btn-collect-debt-${p.code}`}
+                            onClick={() => setSelectedCustomerForDebt({ partner: p, currentDebt: p.totalReceivable })}
+                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold transition cursor-pointer shadow-xs active:scale-95"
                             title="Lập phiếu thu nợ từ khách hàng"
                           >
                             + Thu Nợ
@@ -264,11 +343,12 @@ export const DebtsView: React.FC<DebtsViewProps> = ({
                         )}
                         {p.totalPayable > 0 && (
                           <button
-                            onClick={() => onOpenQuickCash('CASH_PAYMENT', p.id)}
-                            className="px-2.5 py-1 bg-[#a93054] hover:bg-[#89153d] text-white rounded-lg text-[10px] font-bold transition cursor-pointer shadow-xs"
+                            id={`btn-pay-debt-${p.code}`}
+                            onClick={() => setSelectedSupplierForDebt({ partner: p, currentDebt: p.totalPayable })}
+                            className="px-2.5 py-1 bg-[#a93054] hover:bg-[#89153d] text-white rounded-lg text-[11px] font-bold transition cursor-pointer shadow-xs active:scale-95"
                             title="Lập phiếu chi trả nợ nhà cung cấp"
                           >
-                            - Trả Nợ
+                            Trả Nợ
                           </button>
                         )}
                       </div>
@@ -392,6 +472,44 @@ export const DebtsView: React.FC<DebtsViewProps> = ({
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Phiếu Thu Nợ Khách Hàng riêng biệt */}
+      {selectedCustomerForDebt && (
+        <CustomerDebtModal
+          isOpen={true}
+          onClose={() => setSelectedCustomerForDebt(null)}
+          partner={selectedCustomerForDebt.partner}
+          currentDebt={selectedCustomerForDebt.currentDebt}
+          onConfirm={handleConfirmCollect}
+        />
+      )}
+
+      {/* Phiếu Trả Nợ Nhà Cung Cấp riêng biệt */}
+      {selectedSupplierForDebt && (
+        <SupplierDebtModal
+          isOpen={true}
+          onClose={() => setSelectedSupplierForDebt(null)}
+          partner={selectedSupplierForDebt.partner}
+          currentDebt={selectedSupplierForDebt.currentDebt}
+          onConfirm={handleConfirmPay}
+        />
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-fade-in">
+          <div className={`p-1.5 rounded-xl ${toastMessage.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
+            <UserCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-xs font-bold">{toastMessage.type === 'success' ? 'Thành công' : 'Thông báo'}</div>
+            <div className="text-xs text-slate-300">{toastMessage.text}</div>
+          </div>
+          <button onClick={() => setToastMessage(null)} className="ml-2 text-slate-400 hover:text-white cursor-pointer">
+            <Plus className="w-4 h-4 rotate-45" />
+          </button>
         </div>
       )}
 

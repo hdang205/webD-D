@@ -22,12 +22,23 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { InventoryItem, InventoryLog, Partner, AuthUser } from '../../types/accounting';
-import { formatCurrency, formatNumber, downloadCSV, formatDate } from '../../utils/formatters';
+import { formatCurrency, formatNumber, formatDate } from '../../utils/formatters';
+import { exportToExcel } from '../../utils/excelExport';
 import { ItemModal } from './ItemModal';
 import { StockVoucherModal } from './StockVoucherModal';
 import { StockAdjustmentModal } from './StockAdjustmentModal';
+import { StockAuditModal } from './StockAuditModal';
+import { StockAuditDetailModal } from './StockAuditDetailModal';
+import { DefectiveGoodsModal } from './DefectiveGoodsModal';
 import { canUserViewCostPrice, canUserManageStockVouchers, ROLE_CONFIGS } from '../../utils/rbac';
-import { InventoryService, InventoryProduct, InventoryMovement, InventorySummary } from '../../services/inventoryService';
+import { 
+  InventoryService, 
+  InventoryProduct, 
+  InventoryMovement, 
+  InventorySummary,
+  StockAudit,
+  DefectiveGood
+} from '../../services/inventoryService';
 
 interface InventoryViewProps {
   inventory: InventoryItem[];
@@ -59,7 +70,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState<'ALL' | 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK'>('ALL');
-  const [activeTab, setActiveTab] = useState<'STOCK' | 'HISTORY' | 'IMPORT_VOUCHERS' | 'EXPORT_VOUCHERS'>('STOCK');
+  const [activeTab, setActiveTab] = useState<'STOCK' | 'HISTORY' | 'IMPORT_VOUCHERS' | 'EXPORT_VOUCHERS' | 'AUDIT' | 'DEFECTS'>('STOCK');
   
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
@@ -69,10 +80,17 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
   const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
   const [selectedAdjustProduct, setSelectedAdjustProduct] = useState<InventoryProduct | null>(null);
 
+  // Kiểm kho & Hàng lỗi Modal States
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+  const [selectedAuditDetail, setSelectedAuditDetail] = useState<StockAudit | null>(null);
+  const [isDefectModalOpen, setIsDefectModalOpen] = useState(false);
+
   // Live Database State
   const [dbProducts, setDbProducts] = useState<InventoryProduct[]>([]);
   const [dbSummary, setDbSummary] = useState<InventorySummary | null>(null);
   const [dbMovements, setDbMovements] = useState<InventoryMovement[]>([]);
+  const [dbAudits, setDbAudits] = useState<StockAudit[]>([]);
+  const [dbDefects, setDbDefects] = useState<DefectiveGood[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
@@ -85,14 +103,18 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
   const loadInventoryData = async () => {
     setIsLoading(true);
     try {
-      const [prods, sum, logsRes] = await Promise.all([
+      const [prods, sum, logsRes, auditsRes, defectsRes] = await Promise.all([
         InventoryService.getAll(),
         InventoryService.getSummary(),
-        InventoryService.getLogs()
+        InventoryService.getLogs(),
+        InventoryService.getAudits(),
+        InventoryService.getDefects()
       ]);
       if (prods) setDbProducts(prods);
       if (sum) setDbSummary(sum);
       if (logsRes?.movements) setDbMovements(logsRes.movements);
+      if (auditsRes) setDbAudits(auditsRes);
+      if (defectsRes) setDbDefects(defectsRes);
     } catch (err) {
       console.warn('Không thể tải trực tiếp từ /api/inventory, dùng fallback props:', err);
     } finally {
@@ -230,15 +252,36 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
     if (onRefreshInventory) onRefreshInventory();
   };
 
-  const handleExportCSV = () => {
+  const handleAuditSuccess = (res: any) => {
+    setSuccessToast(res?.message || 'Đã xác nhận kiểm kho và cân bằng tồn kho thành công!');
+    setTimeout(() => setSuccessToast(null), 4000);
+    loadInventoryData();
+    if (onRefreshInventory) onRefreshInventory();
+  };
+
+  const handleDefectSuccess = (res: any) => {
+    setSuccessToast(res?.message || 'Đã ghi nhận và xử lý hàng lỗi thành công!');
+    setTimeout(() => setSuccessToast(null), 4000);
+    loadInventoryData();
+    if (onRefreshInventory) onRefreshInventory();
+  };
+
+  const handleExportExcel = () => {
+    const now = new Date();
+    const dateSuffix = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+
     if (activeTab === 'STOCK') {
-      const headers = ['Mã Sản Phẩm', 'Tên Sản Phẩm Thời Trang', 'ĐVT', 'Nhóm Thời Trang', 'Giá Bán (VNĐ)'];
+      const headers = ['STT', 'Mã Sản Phẩm', 'Tên Sản Phẩm Thời Trang', 'ĐVT', 'Nhóm Thời Trang', 'Giá Bán (VNĐ)'];
+      const currencyCols: number[] = [5];
       if (canViewCost) {
         headers.push('Giá Nhập (VNĐ)', 'Tổng Giá Trị Tồn Kho');
+        currencyCols.push(6, 7);
       }
       headers.push('Số Lượng Tồn Kho', 'Trạng Thái');
-      const rows = filteredProducts.map(i => {
+
+      const rows = filteredProducts.map((i, idx) => {
         const row: any[] = [
+          idx + 1,
           i.code,
           i.name,
           i.unit,
@@ -251,10 +294,84 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
         row.push(i.currentStock ?? i.openingQuantity ?? 0, i.statusText);
         return row;
       });
-      downloadCSV('BaoCaoTonKho_DND_Fashion.csv', [headers, ...rows]);
+
+      exportToExcel({
+        title: 'BÁO CÁO TỒN KHO THỜI TRANG D&D',
+        subtitle: `Số lượng mã hàng: ${filteredProducts.length} | Tổng tồn kho: ${formatNumber(totalStockQuantity)} sp`,
+        filename: `Bao_cao_ton_kho_${dateSuffix}.xlsx`,
+        sheetName: 'Tồn Kho D&D',
+        headers,
+        rows,
+        currencyColumns: currencyCols,
+        numberColumns: [0, canViewCost ? 8 : 6],
+        includeTotalRow: true,
+        totalLabel: 'TỔNG CỘNG',
+        totalColumns: canViewCost ? [7, 8] : [5, 6]
+      });
+    } else if (activeTab === 'AUDIT') {
+      const headers = ['STT', 'Mã Phiếu', 'Ngày Kiểm Kho', 'Người Thực Hiện', 'Lý Do Kiểm Kho', 'Số Mặt Hàng', 'Khớp', 'Thiếu', 'Thừa', 'Tổng Chênh Lệch', 'Trạng Thái', 'Ghi Chú'];
+      const rows = dbAudits.map((a, idx) => [
+        idx + 1,
+        a.code,
+        formatDate(a.date),
+        a.auditorName,
+        a.reason,
+        a.totalItems,
+        a.matchedCount,
+        a.shortageCount,
+        a.surplusCount,
+        a.totalDiff,
+        a.status,
+        a.note || ''
+      ]);
+
+      exportToExcel({
+        title: 'BÁO CÁO KẾT QUẢ KIỂM KÊ KHO HÀNG D&D',
+        subtitle: `Tổng số phiếu kiểm: ${dbAudits.length}`,
+        filename: `Bao_cao_kiem_kho_${dateSuffix}.xlsx`,
+        sheetName: 'Phiếu Kiểm Kho',
+        headers,
+        rows,
+        numberColumns: [0, 5, 6, 7, 8, 9],
+        includeTotalRow: true,
+        totalLabel: 'TỔNG CỘNG',
+        totalColumns: [5, 6, 7, 8, 9]
+      });
+    } else if (activeTab === 'DEFECTS') {
+      const headers = ['STT', 'Mã Phiếu', 'Ngày Ghi Nhận', 'Mã SP', 'Tên Sản Phẩm', 'ĐVT', 'Số Lượng Lỗi', 'Lý Do Lỗi', 'Hướng Xử Lý', 'Người Xử Lý', 'Giá Vốn (VNĐ)', 'Tổn Thất (VNĐ)', 'Ghi Chú'];
+      const rows = dbDefects.map((d, idx) => [
+        idx + 1,
+        d.code,
+        formatDate(d.date),
+        d.itemCode,
+        d.itemName,
+        d.unit,
+        d.quantity,
+        d.reason,
+        d.actionTitle,
+        d.handlerName,
+        d.costPrice,
+        d.totalLoss,
+        d.note || ''
+      ]);
+
+      exportToExcel({
+        title: 'BÁO CÁO THEO DÕI VÀ XỬ LÝ HÀNG LỖI / HỎNG',
+        subtitle: `Tổng số sự vụ lỗi: ${dbDefects.length}`,
+        filename: `Bao_cao_hang_loi_${dateSuffix}.xlsx`,
+        sheetName: 'Hàng Lỗi & Hỏng',
+        headers,
+        rows,
+        currencyColumns: [10, 11],
+        numberColumns: [0, 6],
+        includeTotalRow: true,
+        totalLabel: 'TỔNG CỘNG',
+        totalColumns: [6, 11]
+      });
     } else if (activeTab === 'HISTORY') {
-      const headers = ['Thời Gian', 'Mã SKU', 'Tên Sản Phẩm', 'Loại Giao Dịch', 'Số Lượng', 'Tồn Trước', 'Tồn Sau', 'Người Thực Hiện', 'Tham Chiếu', 'Diễn Giải'];
-      const rows = filteredMovements.map(m => [
+      const headers = ['STT', 'Thời Gian', 'Mã SKU', 'Tên Sản Phẩm', 'Loại Giao Dịch', 'Số Lượng', 'Tồn Trước', 'Tồn Sau', 'Người Thực Hiện', 'Tham Chiếu', 'Diễn Giải'];
+      const rows = filteredMovements.map((m, idx) => [
+        idx + 1,
         formatDate(m.date),
         m.itemCode,
         m.itemName,
@@ -266,10 +383,20 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
         m.invoiceRef || m.logCode,
         m.note || ''
       ]);
-      downloadCSV('LichSuNhapXuatKho_DND.csv', [headers, ...rows]);
+
+      exportToExcel({
+        title: 'BÁO CÁO LỊCH SỬ NHẬP XUẤT KHO D&D',
+        subtitle: `Tổng số bản ghi biến động: ${filteredMovements.length}`,
+        filename: `Lich_su_nhap_xuat_kho_${dateSuffix}.xlsx`,
+        sheetName: 'Lịch Sử Biến Động',
+        headers,
+        rows,
+        numberColumns: [0, 6, 7]
+      });
     } else if (activeTab === 'IMPORT_VOUCHERS') {
-      const headers = ['Số Phiếu Nhập', 'Ngày Nhập', 'Nhà Cung Cấp / Xưởng', 'Kho Nhập', 'Diễn Giải', 'Tổng Tiền Nhập (VNĐ)'];
-      const rows = filteredImportLogs.map(l => [
+      const headers = ['STT', 'Số Phiếu Nhập', 'Ngày Nhập', 'Nhà Cung Cấp / Xưởng', 'Kho Nhập', 'Diễn Giải', 'Tổng Tiền Nhập (VNĐ)'];
+      const rows = filteredImportLogs.map((l, idx) => [
+        idx + 1,
         l.code,
         formatDate(l.date),
         l.partnerName || '-',
@@ -277,10 +404,24 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
         l.note || '',
         l.totalValue
       ]);
-      downloadCSV('DanhSachPhieuNhapKho_DND.csv', [headers, ...rows]);
+
+      exportToExcel({
+        title: 'BÁO CÁO DANH SÁCH PHIẾU NHẬP KHO D&D',
+        subtitle: `Tổng số phiếu nhập: ${filteredImportLogs.length}`,
+        filename: `Bao_cao_nhap_hang_${dateSuffix}.xlsx`,
+        sheetName: 'Phiếu Nhập Kho',
+        headers,
+        rows,
+        currencyColumns: [6],
+        numberColumns: [0],
+        includeTotalRow: true,
+        totalLabel: 'TỔNG CỘNG TIỀN NHẬP',
+        totalColumns: [6]
+      });
     } else {
-      const headers = ['Số Phiếu Xuất', 'Ngày Xuất', 'Khách Hàng / Showroom', 'Kho Xuất', 'Lý Do Xuất', 'Tổng Giá Vốn (VNĐ)'];
-      const rows = filteredExportLogs.map(l => [
+      const headers = ['STT', 'Số Phiếu Xuất', 'Ngày Xuất', 'Khách Hàng / Showroom', 'Kho Xuất', 'Lý Do Xuất', 'Tổng Giá Vốn (VNĐ)'];
+      const rows = filteredExportLogs.map((l, idx) => [
+        idx + 1,
         l.code,
         formatDate(l.date),
         l.partnerName || '-',
@@ -288,7 +429,20 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
         l.note || '',
         l.totalValue
       ]);
-      downloadCSV('DanhSachPhieuXuatKho_DND.csv', [headers, ...rows]);
+
+      exportToExcel({
+        title: 'BÁO CÁO DANH SÁCH PHIẾU XUẤT KHO D&D',
+        subtitle: `Tổng số phiếu xuất: ${filteredExportLogs.length}`,
+        filename: `Bao_cao_xuat_hang_${dateSuffix}.xlsx`,
+        sheetName: 'Phiếu Xuất Kho',
+        headers,
+        rows,
+        currencyColumns: [6],
+        numberColumns: [0],
+        includeTotalRow: true,
+        totalLabel: 'TỔNG CỘNG GIÁ VỐN XUẤT',
+        totalColumns: [6]
+      });
     }
   };
 
@@ -337,6 +491,24 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
           {canManageVouchers && (
             <>
               <button
+                id="btn-open-audit-modal"
+                onClick={() => setIsAuditModalOpen(true)}
+                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
+              >
+                <ClipboardCheck className="w-4 h-4" />
+                <span>Phiếu Kiểm Kho</span>
+              </button>
+
+              <button
+                id="btn-open-defect-modal"
+                onClick={() => setIsDefectModalOpen(true)}
+                className="flex items-center gap-1.5 bg-linear-to-r from-amber-600 to-rose-600 hover:opacity-95 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
+              >
+                <AlertTriangle className="w-4 h-4" />
+                <span>Báo Hàng Lỗi</span>
+              </button>
+
+              <button
                 id="btn-open-adjust-modal"
                 onClick={() => handleOpenAdjustModal()}
                 className="flex items-center gap-1.5 bg-[#f4f2ff] hover:bg-[#edecff] text-[#a93054] font-bold text-xs px-3.5 py-2 rounded-xl border border-pink-200 transition cursor-pointer shadow-xs active:scale-95"
@@ -351,7 +523,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                 className="flex items-center gap-1.5 bg-[#fb6f92] hover:bg-[#e0557b] text-white font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
               >
                 <PackagePlus className="w-4 h-4" />
-                <span>+ Lập Phiếu Nhập Kho</span>
+                <span>Lập Phiếu Nhập Kho</span>
               </button>
 
               <button
@@ -360,7 +532,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                 className="flex items-center gap-1.5 bg-[#a93054] hover:bg-[#89153d] text-white font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
               >
                 <PackageMinus className="w-4 h-4" />
-                <span>+ Lập Phiếu Xuất Kho</span>
+                <span>Lập Phiếu Xuất Kho</span>
               </button>
 
               {roleConfig.canEditProducts && (
@@ -381,16 +553,16 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
               className="flex items-center gap-1.5 bg-[#fb6f92] hover:bg-[#e0557b] text-white font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer shadow-xs"
             >
               <ClipboardCheck className="w-4 h-4" />
-              <span>+ Đề Xuất Nhập Mẫu Hết Hàng</span>
+              <span>Đề Xuất Nhập Mẫu Hết Hàng</span>
             </button>
           )}
 
           <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-1.5 bg-white hover:bg-[#fbf8ff] text-[#4e4447] font-semibold text-xs px-3 py-2 rounded-xl border border-pink-200 transition cursor-pointer"
+            onClick={handleExportExcel}
+            className="flex items-center gap-1.5 bg-white hover:bg-[#fbf8ff] text-[#4e4447] font-semibold text-xs px-3 py-2 rounded-xl border border-pink-200 transition cursor-pointer shadow-2xs"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Xuất Excel</span>
+            <Download className="w-3.5 h-3.5 text-[#fb6f92]" />
+            <span>Xuất Excel (.xlsx)</span>
           </button>
         </div>
       </div>
@@ -500,6 +672,32 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
           >
             <Package className="w-4 h-4" />
             <span>Kho Hàng & Tồn Kho ({filteredProducts.length})</span>
+          </button>
+
+          <button
+            id="tab-btn-audit"
+            onClick={() => setActiveTab('AUDIT')}
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition cursor-pointer ${
+              activeTab === 'AUDIT'
+                ? 'bg-white text-emerald-700 shadow-xs font-bold'
+                : 'text-[#4e4447] hover:text-[#181a2e]'
+            }`}
+          >
+            <ClipboardCheck className="w-4 h-4 text-emerald-600" />
+            <span>Kiểm Kho ({dbAudits.length})</span>
+          </button>
+
+          <button
+            id="tab-btn-defects"
+            onClick={() => setActiveTab('DEFECTS')}
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition cursor-pointer ${
+              activeTab === 'DEFECTS'
+                ? 'bg-white text-amber-700 shadow-xs font-bold'
+                : 'text-[#4e4447] hover:text-[#181a2e]'
+            }`}
+          >
+            <AlertTriangle className="w-4 h-4 text-amber-600" />
+            <span>Hàng Lỗi ({dbDefects.length})</span>
           </button>
 
           <button
@@ -754,6 +952,284 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* 2.1. TAB KIỂM KHO (STOCK AUDITS) */}
+      {activeTab === 'AUDIT' && (
+        <div className="space-y-4 animate-fadeIn">
+          {/* Header Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-pink-100 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100">
+                <ClipboardCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Quản Lý & Lịch Sử Phiếu Kiểm Kho</h3>
+                <p className="text-xs text-[#6c595f]">Đối soát thực tế đếm tại kho với dữ liệu tồn hệ thống, tự động cân bằng tồn kho</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsAuditModalOpen(true)}
+                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tạo Phiếu Kiểm Kho Mới</span>
+              </button>
+            </div>
+          </div>
+
+          {/* KPI Summary for Audit */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="bg-white border border-pink-100 p-3.5 rounded-2xl shadow-2xs">
+              <span className="text-[11px] font-semibold text-[#6c595f]">Tổng Phiếu Kiểm Kho</span>
+              <div className="text-lg font-bold font-mono text-slate-800 mt-1">{dbAudits.length}</div>
+            </div>
+            <div className="bg-white border border-pink-100 p-3.5 rounded-2xl shadow-2xs">
+              <span className="text-[11px] font-semibold text-[#6c595f]">Mặt Hàng Đã Kiểm</span>
+              <div className="text-lg font-bold font-mono text-slate-800 mt-1">
+                {dbAudits.reduce((s, a) => s + (a.totalItems || 0), 0)} <span className="text-xs font-normal">mã</span>
+              </div>
+            </div>
+            <div className="bg-emerald-50/50 border border-emerald-100 p-3.5 rounded-2xl shadow-2xs">
+              <span className="text-[11px] font-semibold text-emerald-700">Khớp Hoàn Toàn</span>
+              <div className="text-lg font-bold font-mono text-emerald-800 mt-1">
+                {dbAudits.reduce((s, a) => s + (a.matchedCount || 0), 0)} <span className="text-xs font-normal">mã</span>
+              </div>
+            </div>
+            <div className="bg-rose-50/50 border border-rose-100 p-3.5 rounded-2xl shadow-2xs">
+              <span className="text-[11px] font-semibold text-rose-700">Mặt Hàng Thiếu Kho</span>
+              <div className="text-lg font-bold font-mono text-rose-800 mt-1">
+                {dbAudits.reduce((s, a) => s + (a.shortageCount || 0), 0)} <span className="text-xs font-normal">mã</span>
+              </div>
+            </div>
+            <div className="bg-blue-50/50 border border-blue-100 p-3.5 rounded-2xl shadow-2xs">
+              <span className="text-[11px] font-semibold text-blue-700">Mặt Hàng Thừa Kho</span>
+              <div className="text-lg font-bold font-mono text-blue-800 mt-1">
+                {dbAudits.reduce((s, a) => s + (a.surplusCount || 0), 0)} <span className="text-xs font-normal">mã</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Audits Table */}
+          <div className="bg-white border border-pink-100 rounded-2xl overflow-hidden shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-[#fbf8ff] text-[#4e4447] font-bold text-[11px] border-b border-pink-100">
+                  <tr>
+                    <th className="py-3 px-4">Mã Phiếu</th>
+                    <th className="py-3 px-4">Ngày Kiểm</th>
+                    <th className="py-3 px-4">Người Thực Hiện</th>
+                    <th className="py-3 px-4">Lý Do Kiểm Kê</th>
+                    <th className="py-3 px-4 text-center">Mặt Hàng</th>
+                    <th className="py-3 px-4 text-center">Khớp</th>
+                    <th className="py-3 px-4 text-center">Thiếu</th>
+                    <th className="py-3 px-4 text-center">Thừa</th>
+                    <th className="py-3 px-4 text-center">Chênh Lệch</th>
+                    <th className="py-3 px-4 text-center">Trạng Thái</th>
+                    <th className="py-3 px-4 text-center">Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-pink-50">
+                  {dbAudits.length === 0 ? (
+                    <tr>
+                      <td colSpan={11} className="py-12 text-center text-slate-400">
+                        <ClipboardCheck className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                        Chưa có phiếu kiểm kho nào. Nhấn "+ Tạo Phiếu Kiểm Kho Mới" để bắt đầu kiểm đếm.
+                      </td>
+                    </tr>
+                  ) : (
+                    dbAudits.map(audit => (
+                      <tr key={audit.id} className="hover:bg-[#fbf8ff] transition">
+                        <td className="py-3 px-4 font-mono font-bold text-[#a93054]">{audit.code}</td>
+                        <td className="py-3 px-4 text-[#6c595f]">{formatDate(audit.date)}</td>
+                        <td className="py-3 px-4 font-medium text-slate-800">{audit.auditorName}</td>
+                        <td className="py-3 px-4 text-slate-700 max-w-[220px] truncate" title={audit.reason}>
+                          {audit.reason}
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono font-bold">{audit.totalItems}</td>
+                        <td className="py-3 px-4 text-center">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            {audit.matchedCount}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {audit.shortageCount > 0 ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                              -{audit.shortageCount}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">0</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {audit.surplusCount > 0 ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                              +{audit.surplusCount}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">0</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono font-bold">
+                          {audit.totalDiff === 0 ? (
+                            <span className="text-emerald-600">0</span>
+                          ) : audit.totalDiff > 0 ? (
+                            <span className="text-blue-600">+{audit.totalDiff}</span>
+                          ) : (
+                            <span className="text-rose-600">{audit.totalDiff}</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            {audit.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            onClick={() => setSelectedAuditDetail(audit)}
+                            className="px-2.5 py-1 bg-pink-50 hover:bg-pink-100 text-[#a93054] rounded-lg text-xs font-semibold transition cursor-pointer"
+                          >
+                            Xem Chi Tiết
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2.2. TAB QUẢN LÝ HÀNG LỖI / HỎNG (DEFECTS) */}
+      {activeTab === 'DEFECTS' && (
+        <div className="space-y-4 animate-fadeIn">
+          {/* Header Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-pink-100 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 bg-amber-50 text-amber-600 rounded-2xl border border-amber-100">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Quản Lý & Theo Dõi Sản Phẩm Lỗi / Hỏng</h3>
+                <p className="text-xs text-[#6c595f]">Kiểm tra tồn kho, trừ kho khả dụng và phân loại hướng xử lý: Báo nhập lại / Trả NCC / Hủy hàng lỗi</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsDefectModalOpen(true)}
+                className="flex items-center gap-1.5 bg-linear-to-r from-amber-600 to-rose-600 hover:opacity-95 text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Khai Báo Hàng Lỗi</span>
+              </button>
+            </div>
+          </div>
+
+          {/* KPI Summary for Defects */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="bg-white border border-pink-100 p-3.5 rounded-2xl shadow-2xs">
+              <span className="text-[11px] font-semibold text-[#6c595f]">Tổng Phiếu Hàng Lỗi</span>
+              <div className="text-lg font-bold font-mono text-slate-800 mt-1">{dbDefects.length}</div>
+            </div>
+            <div className="bg-white border border-pink-100 p-3.5 rounded-2xl shadow-2xs">
+              <span className="text-[11px] font-semibold text-[#6c595f]">Tổng Lượng Hàng Lỗi</span>
+              <div className="text-lg font-bold font-mono text-rose-700 mt-1">
+                {dbDefects.reduce((s, d) => s + (d.quantity || 0), 0)} <span className="text-xs font-normal">sp</span>
+              </div>
+            </div>
+            <div className="bg-amber-50/50 border border-amber-100 p-3.5 rounded-2xl shadow-2xs">
+              <span className="text-[11px] font-semibold text-amber-700">Trả Nhà Cung Cấp</span>
+              <div className="text-lg font-bold font-mono text-amber-800 mt-1">
+                {dbDefects.filter(d => d.actionType === 'RETURN_SUPPLIER').reduce((s, d) => s + (d.quantity || 0), 0)} <span className="text-xs font-normal">sp</span>
+              </div>
+            </div>
+            <div className="bg-emerald-50/50 border border-emerald-100 p-3.5 rounded-2xl shadow-2xs">
+              <span className="text-[11px] font-semibold text-emerald-700">Báo Nhập Lại</span>
+              <div className="text-lg font-bold font-mono text-emerald-800 mt-1">
+                {dbDefects.filter(d => d.actionType === 'REORDER').reduce((s, d) => s + (d.quantity || 0), 0)} <span className="text-xs font-normal">sp</span>
+              </div>
+            </div>
+            <div className="bg-rose-50/50 border border-rose-100 p-3.5 rounded-2xl shadow-2xs">
+              <span className="text-[11px] font-semibold text-rose-700">Xuất Hủy Hàng Lỗi</span>
+              <div className="text-lg font-bold font-mono text-rose-800 mt-1">
+                {dbDefects.filter(d => d.actionType === 'DISPOSE').reduce((s, d) => s + (d.quantity || 0), 0)} <span className="text-xs font-normal">sp</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Defects Table */}
+          <div className="bg-white border border-pink-100 rounded-2xl overflow-hidden shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-[#fbf8ff] text-[#4e4447] font-bold text-[11px] border-b border-pink-100">
+                  <tr>
+                    <th className="py-3 px-4">Mã Phiếu</th>
+                    <th className="py-3 px-4">Ngày Ghi Nhận</th>
+                    <th className="py-3 px-4">Sản Phẩm</th>
+                    <th className="py-3 px-4 text-center">Số Lượng Lỗi</th>
+                    <th className="py-3 px-4">Lý Do Lỗi / Hỏng</th>
+                    <th className="py-3 px-4 text-center">Hướng Xử Lý</th>
+                    <th className="py-3 px-4">Người Xử Lý</th>
+                    <th className="py-3 px-4 text-right">Tổng Tổn Thất (VNĐ)</th>
+                    <th className="py-3 px-4">Ghi Chú</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-pink-50">
+                  {dbDefects.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="py-12 text-center text-slate-400">
+                        <AlertTriangle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                        Chưa có sự vụ hàng lỗi nào được ghi nhận. Nhấn "+ Khai Báo Hàng Lỗi" để theo dõi.
+                      </td>
+                    </tr>
+                  ) : (
+                    dbDefects.map(d => (
+                      <tr key={d.id} className="hover:bg-[#fbf8ff] transition">
+                        <td className="py-3 px-4 font-mono font-bold text-[#a93054]">{d.code}</td>
+                        <td className="py-3 px-4 text-[#6c595f]">{formatDate(d.date)}</td>
+                        <td className="py-3 px-4">
+                          <span className="font-mono font-bold text-[#a93054] mr-1.5">{d.itemCode}</span>
+                          <span className="font-medium text-slate-800">{d.itemName}</span>
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono font-bold text-rose-600">
+                          {d.quantity} {d.unit}
+                        </td>
+                        <td className="py-3 px-4 text-slate-700">{d.reason}</td>
+                        <td className="py-3 px-4 text-center">
+                          {d.actionType === 'RETURN_SUPPLIER' && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                              Trả NCC
+                            </span>
+                          )}
+                          {d.actionType === 'REORDER' && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                              Báo Nhập Lại
+                            </span>
+                          )}
+                          {d.actionType === 'DISPOSE' && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                              Hủy Hàng Lỗi
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600">{d.handlerName}</td>
+                        <td className="py-3 px-4 text-right font-mono font-bold text-slate-800">
+                          {formatCurrency(d.totalLoss)}
+                        </td>
+                        <td className="py-3 px-4 text-slate-500 text-[11px]">{d.note || '-'}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -1023,6 +1499,30 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
         partners={partners}
         onClose={() => setIsVoucherModalOpen(false)}
         onSave={onAddStockVoucher}
+      />
+
+      {/* Stock Audit Modal */}
+      <StockAuditModal
+        isOpen={isAuditModalOpen}
+        productList={displayProducts}
+        currentUser={currentUser}
+        onClose={() => setIsAuditModalOpen(false)}
+        onSuccess={handleAuditSuccess}
+      />
+
+      {/* Stock Audit Detail Modal */}
+      <StockAuditDetailModal
+        audit={selectedAuditDetail}
+        onClose={() => setSelectedAuditDetail(null)}
+      />
+
+      {/* Defective Goods Modal */}
+      <DefectiveGoodsModal
+        isOpen={isDefectModalOpen}
+        productList={displayProducts}
+        currentUser={currentUser}
+        onClose={() => setIsDefectModalOpen(false)}
+        onSuccess={handleDefectSuccess}
       />
 
     </div>

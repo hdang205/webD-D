@@ -901,7 +901,7 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
                           <td className="py-2 px-3 text-right">
                             <input
                               type="number"
-                              step="5000"
+                              step="any"
                               value={it.estimatedUnitPrice}
                               onChange={(e) => handleUpdateItem(it.id, 'estimatedUnitPrice', Number(e.target.value))}
                               className="w-full px-2 py-1 text-right bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-semibold"

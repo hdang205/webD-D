@@ -6,7 +6,12 @@ import {
   getInventoryLogs, 
   adjustInventory,
   initStock, 
-  getInventorySummary 
+  getInventorySummary,
+  getStockAudits,
+  getStockAuditById,
+  createStockAudit,
+  getDefectiveGoods,
+  recordDefectiveGoods
 } from '../controllers/inventoryController.js';
 
 const router = Router();
@@ -22,6 +27,20 @@ router.get('/summary', getInventorySummary);
 
 // GET /api/inventory/logs - Lịch sử chi tiết toàn bộ các lần nhập xuất kho
 router.get('/logs', getInventoryLogs);
+
+// KIỂM KHO (STOCK AUDITS)
+// GET /api/inventory/audits - Danh sách toàn bộ các phiếu kiểm kho
+router.get('/audits', getStockAudits);
+// GET /api/inventory/audits/:id - Chi tiết một phiếu kiểm kho
+router.get('/audits/:id', getStockAuditById);
+// POST /api/inventory/audits - Tạo & xác nhận phiếu kiểm kho
+router.post('/audits', requireRole('DIRECTOR', 'CHIEF_ACCOUNTANT', 'WAREHOUSE_MANAGER', 'STAFF'), createStockAudit);
+
+// QUẢN LÝ HÀNG LỖI (DEFECTIVE GOODS)
+// GET /api/inventory/defects - Danh sách sản phẩm lỗi
+router.get('/defects', getDefectiveGoods);
+// POST /api/inventory/defects - Khai báo & xử lý sản phẩm lỗi
+router.post('/defects', requireRole('DIRECTOR', 'CHIEF_ACCOUNTANT', 'WAREHOUSE_MANAGER', 'STAFF'), recordDefectiveGoods);
 
 // POST /api/inventory/adjust - Điều chỉnh tăng/giảm số lượng tồn kho (Yêu cầu quyền: Quản lý kho, Kế toán trưởng, Giám đốc)
 router.post('/adjust', requireRole('DIRECTOR', 'CHIEF_ACCOUNTANT', 'WAREHOUSE_MANAGER'), adjustInventory);

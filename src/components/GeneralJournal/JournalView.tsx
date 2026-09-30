@@ -8,7 +8,8 @@ import {
   Filter 
 } from 'lucide-react';
 import { JournalEntry, Account } from '../../types/accounting';
-import { formatDate, formatCurrency, downloadCSV } from '../../utils/formatters';
+import { formatDate, formatCurrency } from '../../utils/formatters';
+import { exportToExcel } from '../../utils/excelExport';
 import { JournalEntryModal } from './JournalEntryModal';
 
 interface JournalViewProps {
@@ -34,7 +35,8 @@ export const JournalView: React.FC<JournalViewProps> = ({
   );
 
   const handleExportCSV = () => {
-    const headers = ['Mã BT', 'Ngày', 'Diễn giải', 'Số chứng từ', 'Mã TK', 'Tên TK', 'Phát sinh Nợ', 'Phát sinh Có'];
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const headers = ['Mã Bút Toán', 'Ngày Hạch Toán', 'Diễn Giải Nghiệp Vụ', 'Số Chứng Từ', 'Mã TK', 'Tên Tài Khoản', 'Phát Sinh Nợ', 'Phát Sinh Có'];
     const rows: (string | number)[][] = [];
     
     filteredEntries.forEach(je => {
@@ -52,7 +54,18 @@ export const JournalView: React.FC<JournalViewProps> = ({
       });
     });
 
-    downloadCSV('SoNhatKyChung.csv', [headers, ...rows]);
+    exportToExcel({
+      title: 'SỔ NHẬT KÝ CHUNG D&D FASHION',
+      subtitle: `Sổ chi tiết định khoản kế toán kép (VAS) | Tổng số dòng hạch toán: ${rows.length}`,
+      filename: `So_nhat_ky_chung_${today}.xlsx`,
+      sheetName: 'Nhat_Ky_Chung',
+      headers,
+      rows,
+      currencyColumns: [6, 7],
+      includeTotalRow: true,
+      totalLabel: 'TỔNG CỘNG PHÁT SINH',
+      totalColumns: [6, 7]
+    });
   };
 
   return (

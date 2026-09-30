@@ -569,7 +569,7 @@ export const POSView: React.FC<POSViewProps> = ({
                   title="Tạo nhanh khách hàng mới ngay tại quầy POS"
                 >
                   <UserPlus className="w-3 h-3" />
-                  <span>+ Thêm khách hàng</span>
+                  <span>Thêm khách hàng</span>
                 </button>
               </div>
             </div>

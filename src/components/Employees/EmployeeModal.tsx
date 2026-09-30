@@ -493,7 +493,7 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
                       type="number"
                       required
                       min={0}
-                      step={500000}
+                      step="any"
                       value={formData.baseSalary}
                       onChange={(e) => setFormData({ ...formData, baseSalary: parseFloat(e.target.value) || 0 })}
                       className="w-full px-3 py-2 text-xs font-bold text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#fb6f92]"
@@ -513,7 +513,7 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
                     <input
                       type="number"
                       min={0}
-                      step={100000}
+                      step="any"
                       value={formData.allowance}
                       onChange={(e) => setFormData({ ...formData, allowance: parseFloat(e.target.value) || 0 })}
                       className="w-full px-3 py-2 text-xs font-bold text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#fb6f92]"
@@ -557,7 +557,7 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
                     <input
                       type="number"
                       min={0}
-                      step={500000}
+                      step="any"
                       value={formData.insuranceSalary}
                       onChange={(e) => setFormData({ ...formData, insuranceSalary: parseFloat(e.target.value) || 0 })}
                       className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#fb6f92]"

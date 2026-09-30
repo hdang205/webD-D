@@ -346,7 +346,7 @@ export const StockVoucherModal: React.FC<StockVoucherModalProps> = ({
                 className="flex items-center gap-1 text-[#fb6f92] hover:text-[#a93054] font-semibold transition cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Thêm Dòng Sản Phẩm</span>
+                <span>Thêm Dòng Sản Phẩm</span>
               </button>
             </div>
 
@@ -425,7 +425,7 @@ export const StockVoucherModal: React.FC<StockVoucherModalProps> = ({
                         <input
                           type="number"
                           min="0"
-                          step="1000"
+                          step="any"
                           value={item.unitPrice}
                           onChange={e => handlePriceChange(idx, Number(e.target.value))}
                           className="w-full bg-white border border-pink-200 rounded px-2 py-1 text-right font-mono text-slate-900 focus:outline-none focus:border-[#fb6f92]"

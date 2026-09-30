@@ -10,7 +10,8 @@ import {
   Wallet
 } from 'lucide-react';
 import { CashTransaction, TransactionType, Partner, Account } from '../../types/accounting';
-import { formatCurrency, formatDate, downloadCSV } from '../../utils/formatters';
+import { formatCurrency, formatDate } from '../../utils/formatters';
+import { exportToExcel } from '../../utils/excelExport';
 import { TransactionModal } from './TransactionModal';
 
 interface CashBookViewProps {
@@ -62,18 +63,31 @@ export const CashBookView: React.FC<CashBookViewProps> = ({
   };
 
   const handleExportCSV = () => {
-    const headers = ['Mã CT', 'Ngày', 'Loại', 'Người nộp/nhận', 'Lý do', 'TK Quỹ', 'TK Đối ứng', 'Số tiền (VND)'];
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const headers = ['Mã CT', 'Ngày Lập', 'Loại Nghiệp Vụ', 'Người Nộp / Nhận', 'Lý Do Thu / Chi', 'TK Quỹ', 'TK Đối Ứng', 'Số Tiền'];
     const rows = filteredTransactions.map(t => [
       t.code,
       formatDate(t.date),
-      t.type,
+      t.type === 'CASH_RECEIPT' ? 'Phiếu thu tiền mặt' : t.type === 'CASH_PAYMENT' ? 'Phiếu chi tiền mặt' : t.type === 'BANK_DEPOSIT' ? 'Báo có ngân hàng' : 'Báo nợ ngân hàng',
       t.personName,
       t.reason,
       t.fundAccountCode,
       t.oppositeAccountCode,
       t.amount
     ]);
-    downloadCSV('SoQuyThuChi_DND_Fashion.csv', [headers, ...rows]);
+
+    exportToExcel({
+      title: 'SỔ QUỸ TIỀN MẶT & TIỀN GỬI NGÂN HÀNG D&D FASHION',
+      subtitle: `Sổ nhật ký thu - chi tài chính tiền mặt & tài khoản | Số giao dịch: ${filteredTransactions.length}`,
+      filename: `So_quy_thu_chi_${today}.xlsx`,
+      sheetName: 'So_Quy',
+      headers,
+      rows,
+      currencyColumns: [7],
+      includeTotalRow: true,
+      totalLabel: 'TỔNG CỘNG PHÁT SINH',
+      totalColumns: [7]
+    });
   };
 
   return (
@@ -100,7 +114,7 @@ export const CashBookView: React.FC<CashBookViewProps> = ({
             className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-xs cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Lập Phiếu Thu (01-TT)</span>
+            <span>Lập Phiếu Thu (01-TT)</span>
           </button>
 
           <button
@@ -109,7 +123,7 @@ export const CashBookView: React.FC<CashBookViewProps> = ({
             className="flex items-center gap-1.5 bg-[#a93054] hover:bg-[#89153d] text-white font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-xs cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Lập Phiếu Chi (02-TT)</span>
+            <span>Lập Phiếu Chi (02-TT)</span>
           </button>
 
           <button
@@ -219,12 +233,24 @@ export const CashBookView: React.FC<CashBookViewProps> = ({
                         {formatDate(t.date)}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-block font-semibold px-2 py-0.5 rounded-full text-[10px] ${isReceipt ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-[#ffe5ec] text-[#a93054] border border-pink-200'}`}>
-                          {t.type === 'CASH_RECEIPT' && 'Phiếu Thu (TM)'}
-                          {t.type === 'CASH_PAYMENT' && 'Phiếu Chi (TM)'}
-                          {t.type === 'BANK_DEPOSIT' && 'Báo Có (NH)'}
-                          {t.type === 'BANK_WITHDRAWAL' && 'Báo Nợ (NH)'}
-                        </span>
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className={`inline-block font-semibold px-2 py-0.5 rounded-full text-[10px] ${isReceipt ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-[#ffe5ec] text-[#a93054] border border-pink-200'}`}>
+                            {t.type === 'CASH_RECEIPT' && 'Phiếu Thu (TM)'}
+                            {t.type === 'CASH_PAYMENT' && 'Phiếu Chi (TM)'}
+                            {t.type === 'BANK_DEPOSIT' && 'Báo Có (NH)'}
+                            {t.type === 'BANK_WITHDRAWAL' && 'Báo Nợ (NH)'}
+                          </span>
+                          {(t.category === 'CUSTOMER_DEBT_COLLECTION' || t.oppositeAccountCode === '131') && (
+                            <span className="inline-block font-semibold px-2 py-0.5 rounded-md text-[9px] bg-teal-50 text-teal-800 border border-teal-200">
+                              Thu Nợ KH (131)
+                            </span>
+                          )}
+                          {(t.category === 'SUPPLIER_DEBT_PAYMENT' || t.oppositeAccountCode === '331') && (
+                            <span className="inline-block font-semibold px-2 py-0.5 rounded-md text-[9px] bg-amber-50 text-amber-800 border border-amber-200">
+                              Trả Nợ NCC (331)
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 px-4 font-medium text-[#181a2e]">
                         {t.personName}

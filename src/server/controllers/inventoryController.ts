@@ -603,3 +603,604 @@ export function getInventorySummary(req: AuthenticatedRequest, res: Response): v
     handleDbError(res, error, 'Lỗi khi lấy thống kê tồn kho');
   }
 }
+
+// ============================================================================
+// PHÂN HỆ KIỂM KHO (STOCK AUDITS)
+// ============================================================================
+
+/**
+ * Lấy danh sách toàn bộ phiếu kiểm kho
+ * GET /api/inventory/audits
+ */
+export function getStockAudits(req: AuthenticatedRequest, res: Response): void {
+  try {
+    const audits = db.prepare(`
+      SELECT 
+        id, code, date, auditor_name as auditorName, auditor_id as auditorId,
+        reason, status, total_items as totalItems, total_diff as totalDiff,
+        matched_count as matchedCount, shortage_count as shortageCount, surplus_count as surplusCount,
+        note, created_at as createdAt
+      FROM stock_audits
+      ORDER BY date DESC, created_at DESC
+    `).all() as any[];
+
+    const getItemsStmt = db.prepare(`
+      SELECT 
+        id, audit_id as auditId, product_id as productId, item_code as itemCode,
+        item_name as itemName, unit, system_stock as systemStock,
+        actual_stock as actualStock, difference, status, cost_price as costPrice,
+        difference_value as differenceValue, note
+      FROM stock_audit_items
+      WHERE audit_id = ?
+      ORDER BY id ASC
+    `);
+
+    const result = audits.map(a => ({
+      ...a,
+      items: getItemsStmt.all(a.id)
+    }));
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error: any) {
+    handleDbError(res, error, 'Lỗi khi lấy danh sách phiếu kiểm kho');
+  }
+}
+
+/**
+ * Lấy chi tiết một phiếu kiểm kho
+ * GET /api/inventory/audits/:id
+ */
+export function getStockAuditById(req: AuthenticatedRequest, res: Response): void {
+  try {
+    const { id } = req.params;
+    const audit = db.prepare(`
+      SELECT 
+        id, code, date, auditor_name as auditorName, auditor_id as auditorId,
+        reason, status, total_items as totalItems, total_diff as totalDiff,
+        matched_count as matchedCount, shortage_count as shortageCount, surplus_count as surplusCount,
+        note, created_at as createdAt
+      FROM stock_audits
+      WHERE id = ? OR code = ?
+    `).get(id, id) as any;
+
+    if (!audit) {
+      res.status(404).json({ success: false, error: `Không tìm thấy phiếu kiểm kho '${id}'` });
+      return;
+    }
+
+    const items = db.prepare(`
+      SELECT 
+        id, audit_id as auditId, product_id as productId, item_code as itemCode,
+        item_name as itemName, unit, system_stock as systemStock,
+        actual_stock as actualStock, difference, status, cost_price as costPrice,
+        difference_value as differenceValue, note
+      FROM stock_audit_items
+      WHERE audit_id = ?
+      ORDER BY id ASC
+    `).all(audit.id);
+
+    res.json({
+      success: true,
+      data: {
+        ...audit,
+        items
+      }
+    });
+  } catch (error: any) {
+    handleDbError(res, error, 'Lỗi khi lấy chi tiết phiếu kiểm kho');
+  }
+}
+
+/**
+ * Tạo & xác nhận phiếu kiểm kho: Cập nhật tồn kho theo số lượng thực tế
+ * POST /api/inventory/audits
+ */
+export function createStockAudit(req: AuthenticatedRequest, res: Response): void {
+  try {
+    const { items, reason, note, date, auditorName } = req.body;
+
+    // 1. Validate danh sách sản phẩm
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      res.status(400).json({
+        success: false,
+        error: 'Phiếu kiểm kho phải có ít nhất 1 sản phẩm kiểm đếm.'
+      });
+      return;
+    }
+
+    // 2. Validate lý do kiểm kê
+    const trimmedReason = (reason || '').trim();
+    if (!trimmedReason) {
+      res.status(400).json({
+        success: false,
+        error: 'Vui lòng nhập lý do kiểm kho (ví dụ: Kiểm kê định kỳ, Kiểm tra đột xuất).'
+      });
+      return;
+    }
+
+    const today = date || new Date().toISOString().split('T')[0];
+    const timestamp = Date.now();
+    const dateCompact = today.replace(/-/g, '');
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    const auditId = `audit_${timestamp}_${randomSuffix.toLowerCase()}`;
+    const auditCode = `PKK-${dateCompact}-${randomSuffix}`;
+    const actualAuditorName = auditorName?.trim() || req.user?.name || 'Nhân viên kiểm kho';
+    const auditorId = req.user?.id || 'usr_emp_1';
+
+    // 3. Xử lý & validate từng mặt hàng
+    const validatedItems: any[] = [];
+    let matchedCount = 0;
+    let shortageCount = 0;
+    let surplusCount = 0;
+    let totalDiff = 0;
+
+    for (let idx = 0; idx < items.length; idx++) {
+      const it = items[idx];
+      const prodId = it.productId || it.id;
+
+      if (!prodId) {
+        res.status(400).json({
+          success: false,
+          error: `Dòng ${idx + 1}: Thiếu thông tin mã sản phẩm kiểm kê.`
+        });
+        return;
+      }
+
+      // Kiểm tra sản phẩm trong DB
+      const product = db.prepare(`
+        SELECT id, code, name, unit, cost_price, current_stock 
+        FROM products 
+        WHERE id = ? OR code = ?
+      `).get(prodId, prodId) as any;
+
+      if (!product) {
+        res.status(400).json({
+          success: false,
+          error: `Dòng ${idx + 1}: Sản phẩm '${prodId}' không tồn tại trong hệ thống.`
+        });
+        return;
+      }
+
+      // Validate số lượng thực tế: không được âm, phải là số nguyên
+      const actualStock = Number(it.actualStock);
+      if (isNaN(actualStock) || actualStock < 0 || !Number.isInteger(actualStock)) {
+        res.status(400).json({
+          success: false,
+          error: `Dòng ${idx + 1} (${product.name}): Số lượng thực tế phải là số nguyên không âm (nhận được: ${it.actualStock}).`
+        });
+        return;
+      }
+
+      const systemStock = Number(product.current_stock);
+      const difference = actualStock - systemStock;
+      totalDiff += difference;
+
+      let status: 'MATCH' | 'SHORTAGE' | 'SURPLUS';
+      if (difference === 0) {
+        status = 'MATCH';
+        matchedCount++;
+      } else if (difference < 0) {
+        status = 'SHORTAGE';
+        shortageCount++;
+      } else {
+        status = 'SURPLUS';
+        surplusCount++;
+      }
+
+      const costPrice = Number(product.cost_price) || 0;
+      const differenceValue = Math.abs(difference) * costPrice;
+
+      validatedItems.push({
+        product,
+        systemStock,
+        actualStock,
+        difference,
+        status,
+        costPrice,
+        differenceValue,
+        note: it.note ? String(it.note).trim() : ''
+      });
+    }
+
+    // 4. Thực thi Transaction Database Atomic
+    const executeAudit = db.transaction(() => {
+      // 4.1. Ghi bản ghi phiếu kiểm kho (stock_audits)
+      db.prepare(`
+        INSERT INTO stock_audits (
+          id, code, date, auditor_name, auditor_id, reason,
+          status, total_items, total_diff, matched_count, shortage_count, surplus_count,
+          note, created_at
+        ) VALUES (
+          @id, @code, @date, @auditorName, @auditorId, @reason,
+          'COMPLETED', @totalItems, @totalDiff, @matchedCount, @shortageCount, @surplusCount,
+          @note, datetime('now')
+        )
+      `).run({
+        id: auditId,
+        code: auditCode,
+        date: today,
+        auditorName: actualAuditorName,
+        auditorId,
+        reason: trimmedReason,
+        totalItems: validatedItems.length,
+        totalDiff,
+        matchedCount,
+        shortageCount,
+        surplusCount,
+        note: note ? String(note).trim() : null
+      });
+
+      // 4.2. Ghi chi tiết từng dòng kiểm kê (stock_audit_items)
+      const insertItemStmt = db.prepare(`
+        INSERT INTO stock_audit_items (
+          id, audit_id, product_id, item_code, item_name, unit,
+          system_stock, actual_stock, difference, status,
+          cost_price, difference_value, note
+        ) VALUES (
+          @id, @auditId, @productId, @itemCode, @itemName, @unit,
+          @systemStock, @actualStock, @difference, @status,
+          @costPrice, @differenceValue, @note
+        )
+      `);
+
+      for (let i = 0; i < validatedItems.length; i++) {
+        const it = validatedItems[i];
+        insertItemStmt.run({
+          id: `audit_item_${timestamp}_${i + 1}`,
+          auditId,
+          productId: it.product.id,
+          itemCode: it.product.code,
+          itemName: it.product.name,
+          unit: it.product.unit,
+          systemStock: it.systemStock,
+          actualStock: it.actualStock,
+          difference: it.difference,
+          status: it.status,
+          costPrice: it.costPrice,
+          differenceValue: it.differenceValue,
+          note: it.note
+        });
+      }
+
+      // 4.3. Cân bằng tồn kho qua phiếu điều chỉnh kho (inventory_logs) cho các sản phẩm có chênh lệch
+      for (let i = 0; i < validatedItems.length; i++) {
+        const it = validatedItems[i];
+        if (it.difference === 0) continue; // Khớp -> không cần điều chỉnh tồn kho
+
+        const isSurplus = it.difference > 0;
+        const movementType = isSurplus ? 'IMPORT' : 'EXPORT';
+        const absQty = Math.abs(it.difference);
+        const logId = `log_audit_${timestamp}_${i + 1}`;
+        const logCode = `DC-KK-${dateCompact}-${randomSuffix}-${i + 1}`;
+        const oppositeAccountCode = isSurplus ? '331' : '632';
+        const diffDesc = isSurplus ? `Thừa hàng +${absQty}` : `Thiếu hàng -${absQty}`;
+
+        // Ghi phiếu kho (inventory_logs)
+        db.prepare(`
+          INSERT INTO inventory_logs (
+            id, code, date, type, invoice_ref, warehouse_name,
+            stock_account_code, opposite_account_code, total_value,
+            note, created_by, created_at
+          ) VALUES (
+            @id, @code, @date, @type, @invoiceRef, 'Kho Tổng Thời Trang D&D',
+            '156', @oppositeAccountCode, @totalValue,
+            @note, @createdBy, datetime('now')
+          )
+        `).run({
+          id: logId,
+          code: logCode,
+          date: today,
+          type: movementType,
+          invoiceRef: auditCode,
+          oppositeAccountCode,
+          totalValue: it.differenceValue,
+          note: `[KIỂM KHO ${auditCode}] ${diffDesc} (${trimmedReason})`,
+          createdBy: auditorId
+        });
+
+        // Ghi dòng chi tiết phiếu kho -> Trigger trg_inventory_log_item_after_insert tự cập nhật current_stock!
+        db.prepare(`
+          INSERT INTO inventory_log_items (
+            id, inventory_log_id, product_id, movement_type, item_code,
+            item_name, unit, quantity, unit_price, total_amount
+          ) VALUES (
+            @id, @logId, @productId, @movementType, @itemCode,
+            @itemName, @unit, @quantity, @unitPrice, @totalAmount
+          )
+        `).run({
+          id: `item_log_audit_${timestamp}_${i + 1}`,
+          logId,
+          productId: it.product.id,
+          movementType,
+          itemCode: it.product.code,
+          itemName: it.product.name,
+          unit: it.product.unit,
+          quantity: absQty,
+          unitPrice: it.costPrice,
+          totalAmount: it.differenceValue
+        });
+      }
+    });
+
+    executeAudit();
+
+    // 5. Đọc lại tồn kho mới nhất của các sản phẩm
+    const updatedProducts = validatedItems.map(it => {
+      const prod = db.prepare('SELECT id, code, name, current_stock FROM products WHERE id = ?').get(it.product.id) as any;
+      return {
+        id: prod.id,
+        code: prod.code,
+        name: prod.name,
+        systemStock: it.systemStock,
+        actualStock: it.actualStock,
+        currentStock: prod.current_stock,
+        difference: it.difference,
+        status: it.status
+      };
+    });
+
+    res.status(201).json({
+      success: true,
+      message: `Đã xác nhận kiểm kho thành công cho ${validatedItems.length} sản phẩm (Khớp: ${matchedCount}, Thiếu: ${shortageCount}, Thừa: ${surplusCount}). Tồn kho đã được cân bằng chính xác.`,
+      audit: {
+        id: auditId,
+        code: auditCode,
+        date: today,
+        auditorName: actualAuditorName,
+        reason: trimmedReason,
+        totalItems: validatedItems.length,
+        totalDiff,
+        matchedCount,
+        shortageCount,
+        surplusCount
+      },
+      updatedProducts
+    });
+  } catch (error: any) {
+    handleDbError(res, error, 'Lỗi khi xác nhận phiếu kiểm kho');
+  }
+}
+
+// ============================================================================
+// PHÂN HỆ QUẢN LÝ HÀNG LỖI (DEFECTIVE GOODS)
+// ============================================================================
+
+/**
+ * Lấy danh sách toàn bộ các sản phẩm lỗi đã ghi nhận
+ * GET /api/inventory/defects
+ */
+export function getDefectiveGoods(req: AuthenticatedRequest, res: Response): void {
+  try {
+    const defects = db.prepare(`
+      SELECT 
+        dg.id, dg.code, dg.product_id as productId, dg.item_code as itemCode,
+        dg.item_name as itemName, dg.unit, dg.quantity, dg.reason,
+        dg.action_type as actionType, dg.action_title as actionTitle,
+        dg.note, dg.handler_name as handlerName, dg.handler_id as handlerId,
+        dg.date, dg.cost_price as costPrice, dg.total_loss as totalLoss,
+        dg.status, dg.inventory_log_id as inventoryLogId, dg.created_at as createdAt,
+        p.image_url as imageUrl, p.current_stock as currentStock
+      FROM defective_goods dg
+      LEFT JOIN products p ON p.id = dg.product_id
+      ORDER BY dg.date DESC, dg.created_at DESC
+    `).all() as any[];
+
+    res.json({
+      success: true,
+      data: defects
+    });
+  } catch (error: any) {
+    handleDbError(res, error, 'Lỗi khi lấy danh sách hàng lỗi');
+  }
+}
+
+/**
+ * Khai báo & xử lý sản phẩm lỗi / hỏng
+ * POST /api/inventory/defects
+ */
+export function recordDefectiveGoods(req: AuthenticatedRequest, res: Response): void {
+  try {
+    const { productId, quantity, reason, actionType, note, date, handlerName } = req.body;
+
+    // 1. Validate sản phẩm
+    if (!productId) {
+      res.status(400).json({
+        success: false,
+        error: 'Vui lòng chọn sản phẩm bị lỗi/hỏng.'
+      });
+      return;
+    }
+
+    const product = db.prepare(`
+      SELECT id, code, name, unit, cost_price, current_stock 
+      FROM products 
+      WHERE id = ? OR code = ?
+    `).get(productId, productId) as any;
+
+    if (!product) {
+      res.status(404).json({
+        success: false,
+        error: `Sản phẩm '${productId}' không tồn tại trong hệ thống.`
+      });
+      return;
+    }
+
+    // 2. Validate số lượng hàng lỗi
+    const parsedQty = Number(quantity);
+    if (isNaN(parsedQty) || parsedQty <= 0 || !Number.isInteger(parsedQty)) {
+      res.status(400).json({
+        success: false,
+        error: 'Số lượng hàng lỗi phải là số nguyên lớn hơn 0.'
+      });
+      return;
+    }
+
+    // Kiểm tra không vượt quá tồn kho hiện tại
+    if (parsedQty > product.current_stock) {
+      res.status(400).json({
+        success: false,
+        error: `Không thể xử lý ${parsedQty} sản phẩm lỗi. Tồn kho hiện tại của '${product.name}' chỉ còn ${product.current_stock} ${product.unit}.`
+      });
+      return;
+    }
+
+    // 3. Validate lý do
+    const trimmedReason = (reason || '').trim();
+    if (!trimmedReason) {
+      res.status(400).json({
+        success: false,
+        error: 'Vui lòng nhập lý do sản phẩm bị lỗi/hỏng (vd: Rách vải, Lỗi đường may, Ố màu...).'
+      });
+      return;
+    }
+
+    // 4. Validate phân loại xử lý
+    const validActions = ['REORDER', 'RETURN_SUPPLIER', 'DISPOSE'];
+    if (!validActions.includes(actionType)) {
+      res.status(400).json({
+        success: false,
+        error: 'Phân loại xử lý không hợp lệ. Vui lòng chọn: Báo nhập lại, Trả hàng nhà cung cấp, hoặc Hủy hàng lỗi.'
+      });
+      return;
+    }
+
+    const actionTitleMap: Record<string, string> = {
+      REORDER: 'Báo nhập lại',
+      RETURN_SUPPLIER: 'Trả hàng nhà cung cấp',
+      DISPOSE: 'Hủy hàng lỗi'
+    };
+    const actionTitle = actionTitleMap[actionType] || actionType;
+
+    const today = date || new Date().toISOString().split('T')[0];
+    const timestamp = Date.now();
+    const dateCompact = today.replace(/-/g, '');
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    const defectId = `defect_${timestamp}_${randomSuffix.toLowerCase()}`;
+    const defectCode = `HL-${dateCompact}-${randomSuffix}`;
+    const logId = `log_defect_${timestamp}_${randomSuffix.toLowerCase()}`;
+    const logCode = `PXK-HL-${dateCompact}-${randomSuffix}`;
+
+    const actualHandlerName = handlerName?.trim() || req.user?.name || 'Nhân viên quản lý kho';
+    const handlerId = req.user?.id || 'usr_emp_1';
+
+    const costPrice = Number(product.cost_price) || 0;
+    const totalLoss = parsedQty * costPrice;
+
+    // Tài khoản đối ứng kế toán khi xuất giảm hàng lỗi:
+    // - Trả NCC: Giảm công nợ NCC (TK 331)
+    // - Hủy hàng lỗi: Giá vốn / Hao hụt hàng hỏng (TK 632)
+    // - Báo nhập lại: Tạm theo dõi hàng chờ xử lý / đặt lại (TK 156 hoặc 1388)
+    const oppositeAccountCode = actionType === 'RETURN_SUPPLIER' ? '331' : (actionType === 'DISPOSE' ? '632' : '156');
+
+    // 5. Thực thi Transaction Atomic: ghi hàng lỗi & xuất giảm tồn kho
+    const executeDefect = db.transaction(() => {
+      // 5.1. Tạo phiếu xuất kho (inventory_logs)
+      db.prepare(`
+        INSERT INTO inventory_logs (
+          id, code, date, type, invoice_ref, warehouse_name,
+          stock_account_code, opposite_account_code, total_value,
+          note, created_by, created_at
+        ) VALUES (
+          @id, @code, @date, 'EXPORT', @invoiceRef, 'Kho Tổng Thời Trang D&D',
+          '156', @oppositeAccountCode, @totalValue,
+          @note, @createdBy, datetime('now')
+        )
+      `).run({
+        id: logId,
+        code: logCode,
+        date: today,
+        invoiceRef: defectCode,
+        oppositeAccountCode,
+        totalValue: totalLoss,
+        note: `[HÀNG LỖI - ${actionTitle}] ${product.name}: ${trimmedReason}${note ? ' - ' + note : ''}`,
+        createdBy: handlerId
+      });
+
+      // 5.2. Ghi dòng chi tiết phiếu kho -> Trigger trg_inventory_log_item_after_insert tự giảm current_stock!
+      db.prepare(`
+        INSERT INTO inventory_log_items (
+          id, inventory_log_id, product_id, movement_type, item_code,
+          item_name, unit, quantity, unit_price, total_amount
+        ) VALUES (
+          @id, @logId, @productId, 'EXPORT', @itemCode,
+          @itemName, @unit, @quantity, @unitPrice, @totalAmount
+        )
+      `).run({
+        id: `item_log_defect_${timestamp}`,
+        logId,
+        productId: product.id,
+        itemCode: product.code,
+        itemName: product.name,
+        unit: product.unit,
+        quantity: parsedQty,
+        unitPrice: costPrice,
+        totalAmount: totalLoss
+      });
+
+      // 5.3. Ghi vào bảng quản lý hàng lỗi (defective_goods)
+      db.prepare(`
+        INSERT INTO defective_goods (
+          id, code, product_id, item_code, item_name, unit,
+          quantity, reason, action_type, action_title, note,
+          handler_name, handler_id, date, cost_price, total_loss,
+          status, inventory_log_id, created_at
+        ) VALUES (
+          @id, @code, @productId, @itemCode, @itemName, @unit,
+          @quantity, @reason, @actionType, @actionTitle, @note,
+          @handlerName, @handlerId, @date, @costPrice, @totalLoss,
+          'COMPLETED', @inventoryLogId, datetime('now')
+        )
+      `).run({
+        id: defectId,
+        code: defectCode,
+        productId: product.id,
+        itemCode: product.code,
+        itemName: product.name,
+        unit: product.unit,
+        quantity: parsedQty,
+        reason: trimmedReason,
+        actionType,
+        actionTitle,
+        note: note ? String(note).trim() : null,
+        handlerName: actualHandlerName,
+        handlerId,
+        date: today,
+        costPrice,
+        totalLoss,
+        inventoryLogId: logId
+      });
+    });
+
+    executeDefect();
+
+    // 6. Đọc tồn kho mới nhất sau khi xuất
+    const updatedProd = db.prepare('SELECT current_stock FROM products WHERE id = ?').get(product.id) as any;
+
+    res.status(201).json({
+      success: true,
+      message: `Đã ghi nhận và xử lý ${parsedQty} ${product.unit} hàng lỗi cho '${product.name}' (Phương án: ${actionTitle}). Tồn kho hiện tại còn ${updatedProd?.current_stock} ${product.unit}.`,
+      defect: {
+        id: defectId,
+        code: defectCode,
+        productName: product.name,
+        productCode: product.code,
+        quantity: parsedQty,
+        reason: trimmedReason,
+        actionType,
+        actionTitle,
+        date: today,
+        totalLoss,
+        previousStock: product.current_stock,
+        newStock: updatedProd?.current_stock
+      }
+    });
+  } catch (error: any) {
+    handleDbError(res, error, 'Lỗi khi xử lý hàng lỗi');
+  }
+}
+
