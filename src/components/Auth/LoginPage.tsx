@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Lock, 
-  KeyRound, 
   LogIn, 
   LogOut, 
   AlertCircle, 
@@ -10,8 +9,7 @@ import {
   Eye, 
   EyeOff, 
   User, 
-  Loader2,
-  HelpCircle
+  Loader2
 } from 'lucide-react';
 import { AuthUser } from '../../types/accounting.js';
 import { TabKey } from '../Sidebar.js';
@@ -25,16 +23,7 @@ interface LoginPageProps {
   logoutMessage?: string | null;
 }
 
-// Danh sách tài khoản mẫu trong Database để hỗ trợ kiểm thử nhanh (phải nhập mật khẩu và gọi API thật)
-const SAMPLE_ACCOUNTS = [
-  { username: 'quanly_duyen', roleName: 'Ban Giám Đốc / Quản Lý Cửa Hàng', name: 'Lê Thị Duyên', icon: '👔' },
-  { username: 'ketoan_dung', roleName: 'Kế Toán Trưởng & Tài Chính', name: 'Đàm Thị Thùy Dung', icon: '👩‍💼' },
-  { username: 'banhang_my', roleName: 'Nhân Viên Bán Hàng & POS', name: 'Đặng Trà My', icon: '👗' },
-  { username: 'muahang_phong', roleName: 'Nhân Viên Mua Hàng & Xưởng', name: 'Trần Thanh Phong', icon: '📦' },
-  { username: 'thukho_hai', roleName: 'Thủ Kho & Quản Lý Xuất Nhập', name: 'Chu Ngọc Hải', icon: '🏬' },
-  { username: 'thukho_long', roleName: 'Thủ Kho & Quản Lý Kho Vận', name: 'Lê Thành Long', icon: '📦' },
-  { username: 'tuvan_dang', roleName: 'Chuyên Viên Tư Vấn CSKH VIP', name: 'Nguyễn Hải Đăng', icon: '👔' }
-];
+
 
 export const LoginPage: React.FC<LoginPageProps> = ({
   currentUser,
@@ -90,11 +79,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
   };
 
-  const handlePreFill = (userAccount: string) => {
-    setUsername(userAccount);
-    setPassword('123456');
-    setLoginError(null);
-  };
+
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center p-4">
@@ -238,35 +223,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
         </div>
 
-        {/* Trợ giúp kiểm thử nhanh: Gợi ý các tài khoản mẫu từ Database */}
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2.5">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-            <HelpCircle className="w-4 h-4 text-[#a93054]" />
-            <span>Tài khoản mẫu thử nghiệm trong Database (Mật khẩu: 123456)</span>
-          </div>
-          <p className="text-[11px] text-slate-500">
-            Nhấp vào để điền nhanh thông tin vào form (vẫn bắt buộc gọi API xác thực thật qua server):
-          </p>
-          <div className="grid grid-cols-1 gap-1.5 pt-1">
-            {SAMPLE_ACCOUNTS.map((acc) => (
-              <button
-                key={acc.username}
-                type="button"
-                onClick={() => handlePreFill(acc.username)}
-                className="w-full px-3 py-2 bg-white hover:bg-rose-50/50 border border-slate-200 rounded-xl text-left transition flex items-center justify-between cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="text-base">{acc.icon}</span>
-                  <div>
-                    <span className="text-xs font-bold text-slate-900 font-mono">{acc.username}</span>
-                    <span className="text-[11px] text-slate-500 ml-2 font-medium">({acc.roleName})</span>
-                  </div>
-                </div>
-                <KeyRound className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-            ))}
-          </div>
-        </div>
+
 
       </div>
     </div>
