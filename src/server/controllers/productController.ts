@@ -155,6 +155,7 @@ export function createProduct(req: AuthenticatedRequest, res: Response): void {
       unit,
       categoryId,
       category,
+      supplierId,
       size,
       color,
       barcode,
@@ -174,6 +175,12 @@ export function createProduct(req: AuthenticatedRequest, res: Response): void {
 
     if (!code || typeof code !== 'string' || !code.trim()) {
       errors.code = 'Mã sản phẩm (SKU) là bắt buộc';
+    } else {
+      const cleanSku = code.trim().toUpperCase();
+      const existingProduct = db.prepare('SELECT id FROM products WHERE code = ?').get(cleanSku);
+      if (existingProduct) {
+        errors.code = `Mã sản phẩm '${cleanSku}' đã tồn tại trong hệ thống`;
+      }
     }
 
     // Xác định category_id
@@ -194,13 +201,26 @@ export function createProduct(req: AuthenticatedRequest, res: Response): void {
       }
     }
 
+    // Kiểm tra nhà cung cấp nếu có truyền lên
+    const targetSupplierId = (typeof supplierId === 'string' && supplierId.trim()) 
+      ? supplierId.trim() 
+      : (typeof req.body?.supplier_id === 'string' && req.body.supplier_id.trim() ? req.body.supplier_id.trim() : '');
+
+    let supplierRow: any = null;
+    if (targetSupplierId) {
+      supplierRow = db.prepare("SELECT id, code, name FROM partners WHERE (id = ? OR code = ?) AND type IN ('SUPPLIER', 'BOTH')").get(targetSupplierId, targetSupplierId);
+      if (!supplierRow) {
+        errors.supplierId = 'Nhà cung cấp được chọn không tồn tại trong hệ thống';
+      }
+    }
+
     const numCostPrice = Number(costPrice ?? 0);
     const numSellingPrice = Number(sellingPrice ?? 0);
     const numOpeningQuantity = Number(openingQuantity ?? 0);
     const numMinStock = Number(minStockLevel ?? 0);
 
     if (isNaN(numCostPrice) || numCostPrice < 0) {
-      errors.costPrice = 'Giá vốn phải là số lớn hơn hoặc bằng 0';
+      errors.costPrice = 'Giá vốn/giá nhập phải là số lớn hơn hoặc bằng 0';
     }
     if (isNaN(numSellingPrice) || numSellingPrice < 0) {
       errors.sellingPrice = 'Giá bán phải là số lớn hơn hoặc bằng 0';
@@ -213,9 +233,10 @@ export function createProduct(req: AuthenticatedRequest, res: Response): void {
     }
 
     if (Object.keys(errors).length > 0) {
-      res.status(400).json({
+      const isConflict = !!errors.code?.includes('đã tồn tại');
+      res.status(isConflict ? 409 : 400).json({
         success: false,
-        message: 'Dữ liệu sản phẩm không hợp lệ',
+        message: isConflict ? errors.code : 'Dữ liệu sản phẩm không hợp lệ',
         errors
       });
       return;
@@ -258,6 +279,18 @@ export function createProduct(req: AuthenticatedRequest, res: Response): void {
       cleanDesc
     );
 
+    // Tự động gán sản phẩm vào nhà cung cấp nếu có
+    if (supplierRow) {
+      const spId = `sp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      db.prepare(`
+        INSERT INTO supplier_products (id, supplier_id, product_id, last_purchase_price, is_active, created_at)
+        VALUES (?, ?, ?, ?, 1, datetime('now'))
+        ON CONFLICT(supplier_id, product_id) DO UPDATE SET
+          last_purchase_price = excluded.last_purchase_price,
+          is_active = 1
+      `).run(spId, supplierRow.id, newId, numCostPrice);
+    }
+
     const created = db.prepare(`
       SELECT 
         p.id, p.code, p.name, p.unit, p.category_id as categoryId, c.name as category,
@@ -269,7 +302,12 @@ export function createProduct(req: AuthenticatedRequest, res: Response): void {
       FROM products p
       LEFT JOIN categories c ON c.id = p.category_id
       WHERE p.id = ?
-    `).get(newId);
+    `).get(newId) as any;
+
+    if (supplierRow && created) {
+      created.supplierId = supplierRow.id;
+      created.supplierName = supplierRow.name;
+    }
 
     res.status(201).json({
       success: true,

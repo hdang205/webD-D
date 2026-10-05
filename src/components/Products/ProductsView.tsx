@@ -26,6 +26,7 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { InventoryItem, AuthUser, Category } from '../../types/accounting';
 import { formatCurrency, formatNumber, formatDate } from '../../utils/formatters';
 import { exportToExcel } from '../../utils/excelExport';
@@ -354,35 +355,30 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
     <div id="products-view" className="space-y-6 pb-12">
       
       {/* Header Bar */}
-      <div className="bg-white border border-rose-100/80 p-5 rounded-2xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      <div className="bg-white border border-rose-100/80 p-4 sm:p-5 rounded-2xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+        <div className="shrink-0">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-pink-100/70 text-[#fb6f92]">
+            <div className="p-1.5 rounded-lg bg-pink-100/70 text-[#fb6f92] shrink-0">
               <Tag className="w-5 h-5" />
             </div>
-            <h2 className="text-lg font-bold text-slate-800">
-              Quản Lý Danh Mục Sản Phẩm & Bộ Sưu Tập Thời Trang
+            <h2 className="text-lg font-bold text-slate-800 whitespace-nowrap">
+              Sản Phẩm
             </h2>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            {canViewCost
-              ? 'Quản lý mã SP, size, màu sắc, giá vốn (TK 156), giá bán niêm yết & cảnh báo tồn an toàn'
-              : 'Tra cứu mã SP, mẫu mã, size, màu sắc & giá bán niêm yết phục vụ bán hàng quầy'}
-          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200">
+        <div className="flex flex-wrap items-center justify-start gap-2 shrink-0">
+          <div className="bg-slate-100 p-0.5 rounded-xl flex items-center gap-0.5 border border-slate-200 h-9 shrink-0">
             <button
               onClick={() => setViewMode('GRID')}
-              className={`p-1.5 rounded-lg transition cursor-pointer ${viewMode === 'GRID' ? 'bg-white shadow-xs text-[#a93054]' : 'text-slate-500'}`}
+              className={`p-1.5 rounded-lg transition cursor-pointer h-7 w-7 flex items-center justify-center ${viewMode === 'GRID' ? 'bg-white shadow-xs text-[#a93054]' : 'text-slate-500 hover:text-slate-800'}`}
               title="Xem dạng thẻ (Grid)"
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('TABLE')}
-              className={`p-1.5 rounded-lg transition cursor-pointer ${viewMode === 'TABLE' ? 'bg-white shadow-xs text-[#a93054]' : 'text-slate-500'}`}
+              className={`p-1.5 rounded-lg transition cursor-pointer h-7 w-7 flex items-center justify-center ${viewMode === 'TABLE' ? 'bg-white shadow-xs text-[#a93054]' : 'text-slate-500 hover:text-slate-800'}`}
               title="Xem dạng bảng (Table)"
             >
               <List className="w-4 h-4" />
@@ -391,23 +387,9 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
 
           {canEdit && (
             <button
-              onClick={() => {
-                setIsImportModalOpen(true);
-                setImportResult(null);
-                setImportError(null);
-              }}
-              className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium text-xs px-3 py-2 rounded-xl border border-emerald-200 transition shadow-xs cursor-pointer"
-              title="Import danh mục sản phẩm từ file Excel DD_products_import.xlsx"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Import Excel</span>
-            </button>
-          )}
-
-          {canEdit && (
-            <button
+              id="btn-add-product"
               onClick={handleOpenAddModal}
-              className="flex items-center gap-1.5 bg-[#fb6f92] hover:bg-[#a93054] text-white font-medium text-xs px-3.5 py-2 rounded-xl transition shadow-xs cursor-pointer"
+              className="h-9 inline-flex items-center gap-1.5 bg-[#fb6f92] hover:bg-[#a93054] text-white font-semibold text-xs px-3.5 rounded-xl transition shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
               <span>Thêm Sản Phẩm</span>
@@ -416,8 +398,9 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
 
           {onNavigateToCategories && (
             <button
+              id="btn-product-categories"
               onClick={onNavigateToCategories}
-              className="flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium text-xs px-3 py-2 rounded-xl border border-purple-200 transition cursor-pointer"
+              className="h-9 inline-flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold text-xs px-3 rounded-xl border border-purple-200 transition cursor-pointer active:scale-95 whitespace-nowrap"
               title="Quản lý danh mục & nhóm hàng"
             >
               <Tag className="w-3.5 h-3.5 text-purple-600" />
@@ -425,9 +408,26 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
             </button>
           )}
 
+          {canEdit && (
+            <button
+              id="btn-import-excel-products"
+              onClick={() => {
+                setIsImportModalOpen(true);
+                setImportResult(null);
+                setImportError(null);
+              }}
+              className="h-9 inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs px-3 rounded-xl border border-emerald-200 transition shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
+              title="Import danh mục sản phẩm từ file Excel DD_products_import.xlsx"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Import Excel</span>
+            </button>
+          )}
+
           <button
+            id="btn-export-excel-products"
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 bg-rose-50/60 hover:bg-rose-100 text-slate-700 font-medium text-xs px-3 py-2 rounded-xl border border-rose-200/60 transition cursor-pointer"
+            className="h-9 inline-flex items-center gap-1.5 bg-rose-50/60 hover:bg-rose-100 text-slate-700 font-semibold text-xs px-3 rounded-xl border border-rose-200/60 transition cursor-pointer active:scale-95 whitespace-nowrap"
           >
             <Download className="w-3.5 h-3.5 text-slate-500" />
             <span>Xuất Excel</span>
@@ -491,16 +491,17 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <select
+            <Dropdown
+              size="sm"
               value={stockStatusFilter}
               onChange={(e) => setStockStatusFilter(e.target.value)}
-              className="bg-slate-50/70 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 focus:outline-none cursor-pointer"
+              className="bg-slate-50/70 border-slate-200 font-medium"
             >
               <option value="ALL">Tất cả trạng thái tồn</option>
               <option value="IN_STOCK">Còn hàng (Dồi dào)</option>
               <option value="LOW">Sắp hết hàng (Dưới định mức)</option>
               <option value="OUT">Hết hàng (Tồn = 0)</option>
-            </select>
+            </Dropdown>
           </div>
         </div>
 
@@ -847,7 +848,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Danh Mục *</label>
-                  <select
+                  <Dropdown
                     id="select-product-category"
                     required
                     value={formData.categoryId}
@@ -861,22 +862,22 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
                         category: selectedCat ? selectedCat.name : ''
                       });
                     }}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium cursor-pointer"
+                    className="w-full bg-slate-50 border-slate-200"
                   >
                     {(categoriesList.length > 0 ? categoriesList : CANONICAL_CATEGORIES).map(cat => (
                       <option key={cat.id} value={cat.id}>
                         {cat.name} ({cat.code})
                       </option>
                     ))}
-                  </select>
+                  </Dropdown>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Size</label>
-                  <select
+                  <Dropdown
                     value={formData.size}
                     onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold cursor-pointer"
+                    className="w-full bg-slate-50 border-slate-200 font-bold"
                   >
                     <option value="XS">XS (40-45kg)</option>
                     <option value="S">S (46-50kg)</option>
@@ -884,7 +885,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
                     <option value="L">L (57-62kg)</option>
                     <option value="XL">XL (63-70kg)</option>
                     <option value="FreeSize">FreeSize</option>
-                  </select>
+                  </Dropdown>
                 </div>
 
                 <div>

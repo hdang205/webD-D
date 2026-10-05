@@ -17,7 +17,6 @@ import {
   Lock, 
   HeartHandshake, 
   Tag, 
-  Sparkles, 
   Settings, 
   Download, 
   LogOut, 
@@ -40,7 +39,6 @@ interface MobileDrawerProps {
   currentUser?: AuthUser | null;
   onLogout?: () => void;
   onFastSwitchUser?: (username: string) => void;
-  onOpenAIAssistant: () => void;
   onOpenSettings: () => void;
   onExportBackup: () => void;
   onLockScreen?: () => void;
@@ -62,7 +60,6 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   currentUser,
   onLogout,
   onFastSwitchUser,
-  onOpenAIAssistant,
   onOpenSettings,
   onExportBackup,
   onLockScreen,
@@ -248,17 +245,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
 
         {/* Bottom Utility Tools & Logout */}
         <div className="p-3 bg-slate-950 border-t border-slate-800 space-y-2">
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => {
-                onOpenAIAssistant();
-                onClose();
-              }}
-              className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/70 hover:bg-slate-800 text-pink-300 border border-slate-700/80 transition text-[10px] font-bold"
-            >
-              <Sparkles className="w-4 h-4 mb-0.5 text-pink-400" />
-              <span>Trợ Lý AI</span>
-            </button>
+          <div className="grid grid-cols-2 gap-2">
 
             <button
               onClick={() => {

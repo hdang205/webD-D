@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, 
   Search, 
@@ -14,6 +14,7 @@ import {
   Save, 
   ArrowDownRight,
   PackageCheck,
+  Package,
   Landmark,
   FileText,
   AlertCircle
@@ -22,6 +23,7 @@ import { Partner, Invoice } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/accountingEngine';
 import { InvoiceDetailModal } from '../Invoices/InvoiceDetailModal';
 import { exportToExcel } from '../../utils/excelExport';
+import { SupplierService } from '../../services/masterDataService';
 
 interface SuppliersViewProps {
   partners: Partner[];
@@ -46,6 +48,24 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
   const [selectedSupplierHistory, setSelectedSupplierHistory] = useState<Partner | null>(null);
   const [selectedInvoiceForDetail, setSelectedInvoiceForDetail] = useState<Invoice | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Supplier Detail Modal Tab & Products
+  const [supplierModalTab, setSupplierModalTab] = useState<'PRODUCTS' | 'INVOICES'>('PRODUCTS');
+  const [supplierProductsList, setSupplierProductsList] = useState<any[]>([]);
+  const [loadingSupplierProducts, setLoadingSupplierProducts] = useState(false);
+
+  useEffect(() => {
+    if (selectedSupplierHistory) {
+      setLoadingSupplierProducts(true);
+      SupplierService.getProducts(selectedSupplierHistory.id)
+        .then(prods => setSupplierProductsList(prods || []))
+        .catch(() => setSupplierProductsList([]))
+        .finally(() => setLoadingSupplierProducts(false));
+    } else {
+      setSupplierProductsList([]);
+      setSupplierModalTab('PRODUCTS');
+    }
+  }, [selectedSupplierHistory]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -240,12 +260,9 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
               <Building2 className="w-5 h-5" />
             </div>
             <h2 className="text-lg font-bold text-slate-800">
-              Quản Lý Nhà Cung Cấp & Xưởng May Gia Công
+              Nhà Cung Cấp
             </h2>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Danh bạ đối tác xưởng may, nguồn cung vải lụa, phụ liệu & công nợ phải trả (TK 331)
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -430,10 +447,10 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
         </div>
       </div>
 
-      {/* Supplier Purchase Invoices History Modal */}
+      {/* Supplier Products & Invoices History Modal */}
       {selectedSupplierHistory && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-rose-100 w-full max-w-2xl rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="bg-white border border-rose-100 w-full max-w-3xl rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-rose-100 pb-3">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-lg bg-pink-100/70 text-[#fb6f92]">
@@ -441,52 +458,128 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-slate-800">
-                    Lịch Sử Mua Hàng Từ: {selectedSupplierHistory.name}
+                    Chi Tiết Nhà Cung Cấp: {selectedSupplierHistory.name}
                   </h3>
-                  <p className="text-xs text-slate-500">Mã NCC: {selectedSupplierHistory.code} • MST: {selectedSupplierHistory.taxCode}</p>
+                  <p className="text-xs text-slate-500">Mã NCC: {selectedSupplierHistory.code} • MST: {selectedSupplierHistory.taxCode || 'Chưa có'} • SĐT: {selectedSupplierHistory.phone || 'Chưa có'}</p>
                 </div>
               </div>
-              <button onClick={() => setSelectedSupplierHistory(null)} className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-rose-50">
+              <button onClick={() => setSelectedSupplierHistory(null)} className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-rose-50 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3 max-h-80 overflow-y-auto">
-              {invoices
-                .filter(inv => inv.type === 'PURCHASE' && (inv.partnerId === selectedSupplierHistory.id || inv.partnerName === selectedSupplierHistory.name))
-                .length === 0 ? (
-                  <p className="text-xs text-slate-400 text-center py-6">Chưa có hóa đơn mua hàng nào từ nhà cung cấp này.</p>
-                ) : (
-                  invoices
-                    .filter(inv => inv.type === 'PURCHASE' && (inv.partnerId === selectedSupplierHistory.id || inv.partnerName === selectedSupplierHistory.name))
-                    .map(inv => (
-                      <div 
-                        key={inv.id} 
-                        onClick={() => setSelectedInvoiceForDetail(inv)}
-                        className="p-3.5 bg-slate-50 hover:bg-pink-50/50 border border-slate-100 hover:border-pink-200 rounded-xl flex items-center justify-between text-xs cursor-pointer transition"
-                      >
-                        <div>
-                          <div className="font-mono font-bold text-slate-800 flex items-center gap-2">
-                            <span className="text-[#a93054] hover:underline">{inv.code}</span>
-                            <span className="text-[10px] text-slate-400">({formatDate(inv.date)})</span>
-                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
-                              inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                            }`}>
-                              {inv.status === 'PAID' ? 'Đã trả đủ' : 'Còn nợ NCC'}
-                            </span>
-                          </div>
-                          <div className="text-slate-500 text-[11px] mt-1">
-                            {inv.items.map(i => `${i.itemName} (x${i.quantity})`).join(', ')}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-mono font-bold text-[#a93054]">{formatCurrency(inv.grandTotal)}</div>
-                          <div className="text-[10px] text-slate-400">Thuế VAT 133: {formatCurrency(inv.vatTotal)}</div>
-                        </div>
-                      </div>
-                    ))
-                )}
+            {/* Navigation Tabs */}
+            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setSupplierModalTab('PRODUCTS')}
+                className={`flex-1 py-1.5 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                  supplierModalTab === 'PRODUCTS'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <Package className="w-3.5 h-3.5 text-[#fb6f92]" />
+                <span>Sản phẩm đang cung cấp ({supplierProductsList.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSupplierModalTab('INVOICES')}
+                className={`flex-1 py-1.5 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                  supplierModalTab === 'INVOICES'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5 text-blue-500" />
+                <span>Lịch sử nhập hàng ({invoices.filter(inv => inv.type === 'PURCHASE' && (inv.partnerId === selectedSupplierHistory.id || inv.partnerName === selectedSupplierHistory.name)).length})</span>
+              </button>
             </div>
+
+            {/* Tab 1: Sản phẩm đang cung cấp */}
+            {supplierModalTab === 'PRODUCTS' && (
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {loadingSupplierProducts ? (
+                  <p className="text-xs text-slate-400 text-center py-8">Đang tải danh sách sản phẩm...</p>
+                ) : supplierProductsList.length === 0 ? (
+                  <p className="text-xs text-slate-400 text-center py-8">Nhà cung cấp này chưa có sản phẩm liên kết nào.</p>
+                ) : (
+                  <div className="border border-slate-200 rounded-xl overflow-hidden">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                        <tr>
+                          <th className="p-2 w-10 text-center">#</th>
+                          <th className="p-2">Sản phẩm</th>
+                          <th className="p-2 w-28">Danh mục</th>
+                          <th className="p-2 w-16 text-center">ĐVT</th>
+                          <th className="p-2 w-28 text-right">Giá nhập gần nhất</th>
+                          <th className="p-2 w-20 text-center">Tồn kho HT</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 bg-white">
+                        {supplierProductsList.map((prod, idx) => (
+                          <tr key={prod.id || idx} className="hover:bg-slate-50/50">
+                            <td className="p-2 text-center text-slate-400 font-mono">{idx + 1}</td>
+                            <td className="p-2">
+                              <div className="font-bold text-slate-800">{prod.name}</div>
+                              <div className="text-[10px] text-slate-400 font-mono">Mã: {prod.code}</div>
+                            </td>
+                            <td className="p-2 text-slate-600">{prod.category || 'Thời trang'}</td>
+                            <td className="p-2 text-center text-slate-500">{prod.unit || 'Cái'}</td>
+                            <td className="p-2 text-right font-mono font-bold text-[#a93054]">
+                              {formatCurrency(prod.lastPurchasePrice || prod.costPrice || 0)}
+                            </td>
+                            <td className="p-2 text-center font-mono font-bold text-slate-700">
+                              {prod.currentStock ?? prod.openingQuantity ?? 0}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tab 2: Lịch sử hóa đơn nhập hàng */}
+            {supplierModalTab === 'INVOICES' && (
+              <div className="space-y-3 max-h-80 overflow-y-auto">
+                {invoices
+                  .filter(inv => inv.type === 'PURCHASE' && (inv.partnerId === selectedSupplierHistory.id || inv.partnerName === selectedSupplierHistory.name))
+                  .length === 0 ? (
+                    <p className="text-xs text-slate-400 text-center py-6">Chưa có hóa đơn mua hàng nào từ nhà cung cấp này.</p>
+                  ) : (
+                    invoices
+                      .filter(inv => inv.type === 'PURCHASE' && (inv.partnerId === selectedSupplierHistory.id || inv.partnerName === selectedSupplierHistory.name))
+                      .map(inv => (
+                        <div 
+                          key={inv.id} 
+                          onClick={() => setSelectedInvoiceForDetail(inv)}
+                          className="p-3.5 bg-slate-50 hover:bg-pink-50/50 border border-slate-100 hover:border-pink-200 rounded-xl flex items-center justify-between text-xs cursor-pointer transition"
+                        >
+                          <div>
+                            <div className="font-mono font-bold text-slate-800 flex items-center gap-2">
+                              <span className="text-[#a93054] hover:underline">{inv.code}</span>
+                              <span className="text-[10px] text-slate-400">({formatDate(inv.date)})</span>
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                                inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                              }`}>
+                                {inv.status === 'PAID' ? 'Đã trả đủ' : 'Còn nợ NCC'}
+                              </span>
+                            </div>
+                            <div className="text-slate-500 text-[11px] mt-1">
+                              {inv.items.map(i => `${i.itemName} (x${i.quantity})`).join(', ')}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-mono font-bold text-[#a93054]">{formatCurrency(inv.grandTotal)}</div>
+                            <div className="text-[10px] text-slate-400">Thuế VAT 133: {formatCurrency(inv.vatTotal)}</div>
+                          </div>
+                        </div>
+                      ))
+                  )}
+              </div>
+            )}
 
             <div className="flex justify-end pt-2 border-t border-rose-100">
               <button

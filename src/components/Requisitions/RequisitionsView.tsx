@@ -28,6 +28,7 @@ import {
   Calendar,
   AlertTriangle
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { 
   StockRequisition, 
   RequisitionItem, 
@@ -374,23 +375,16 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
       {/* Top Header & Overview Bar */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gradient-to-r from-rose-900 via-pink-900 to-slate-900 p-6 rounded-3xl text-white shadow-md">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold text-rose-200 flex items-center gap-1.5">
-              <ClipboardCheck className="w-3.5 h-3.5 text-[#fb6f92]" />
-              Quy Trình Mua Bán & Phê Duyệt Nội Bộ
-            </span>
-            {currentUser && (
+          {currentUser && (
+            <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full text-[11px] font-medium">
                 {currentUser.roleTitle}
               </span>
-            )}
-          </div>
+            </div>
+          )}
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span>Đề Xuất & Phê Duyệt Nhập / Xuất Hàng</span>
+            <span>Đề Xuất Nhập/Xuất</span>
           </h1>
-          <p className="text-xs md:text-sm text-rose-100/80 max-w-2xl">
-            Nhân viên Mua / Bán hàng lập phiếu đề xuất khi phát hiện thiếu hàng, khách đặt riêng hoặc cần đặt xưởng may. Cấp Quản lý & Giám đốc xét duyệt trực tiếp.
-          </p>
         </div>
 
         {/* Action Buttons */}
@@ -529,16 +523,17 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
             </button>
           </div>
 
-          <select
+          <Dropdown
+            size="sm"
             value={urgencyFilter}
             onChange={(e) => setUrgencyFilter(e.target.value as any)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 cursor-pointer"
+            className="bg-slate-50 border-slate-200 font-semibold text-slate-700"
           >
             <option value="ALL">Mọi Mức Ưu Tiên</option>
             <option value="URGENT">🚨 Khẩn cấp (Hết hàng)</option>
             <option value="HIGH">⚡ Ưu tiên cao</option>
             <option value="NORMAL">Bình thường</option>
-          </select>
+          </Dropdown>
         </div>
       </div>
 
@@ -755,14 +750,14 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Loại Yêu Cầu
                   </label>
-                  <select
+                  <Dropdown
                     value={formData.type}
                     onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold cursor-pointer"
+                    className="w-full bg-slate-50 border-slate-200 font-semibold"
                   >
                     <option value="IMPORT_REQUEST">📥 Yêu Cầu Nhập Hàng / Đặt May Xưởng</option>
                     <option value="EXPORT_REQUEST">📤 Yêu Cầu Xuất Hàng Đi Showroom/Đối tác</option>
-                  </select>
+                  </Dropdown>
                 </div>
 
                 {/* Mức độ ưu tiên */}
@@ -770,15 +765,15 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Mức Độ Ưu Tiên
                   </label>
-                  <select
+                  <Dropdown
                     value={formData.urgency}
                     onChange={(e) => setFormData(prev => ({ ...prev, urgency: e.target.value as any }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold cursor-pointer text-amber-800"
+                    className="w-full bg-slate-50 border-slate-200 font-semibold text-amber-800"
                   >
                     <option value="URGENT">🚨 Khẩn Cấp (Hết Hàng / Khách Đặt Cọc Chờ)</option>
                     <option value="HIGH">⚡ Ưu Tiên Cao (Chuẩn Bị BST)</option>
                     <option value="NORMAL">Bình Thường (Bổ Sung Định Kỳ)</option>
-                  </select>
+                  </Dropdown>
                 </div>
 
                 {/* Gợi ý xưởng may */}
@@ -786,16 +781,17 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Xưởng May / Nhà Cung Cấp Gợi Ý
                   </label>
-                  <select
+                  <Dropdown
                     value={formData.suggestedSupplierId}
                     onChange={(e) => setFormData(prev => ({ ...prev, suggestedSupplierId: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs cursor-pointer"
+                    className="w-full bg-slate-50 border-slate-200"
+                    searchPlaceholder="Tìm kiếm nhà cung cấp..."
                   >
                     <option value="">-- Chọn Nhà Cung Cấp (Tùy chọn) --</option>
                     {suppliers.map(sup => (
                       <option key={sup.id} value={sup.id}>{sup.name}</option>
                     ))}
-                  </select>
+                  </Dropdown>
                 </div>
               </div>
 
@@ -849,10 +845,12 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
                         <tr key={it.id} className="hover:bg-pink-50/20">
                           {/* Tên / Chọn kho */}
                           <td className="py-2 px-3 space-y-1">
-                            <select
+                            <Dropdown
+                              size="sm"
                               value={it.itemId || ''}
                               onChange={(e) => handleSelectInventoryItem(it.id, e.target.value)}
-                              className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-800"
+                              className="w-full bg-slate-50 border-slate-200 font-semibold text-slate-800"
+                              searchPlaceholder="Tìm kiếm sản phẩm kho..."
                             >
                               <option value="">-- Chọn sản phẩm có sẵn trong kho hàng --</option>
                               {inventory.map(inv => (
@@ -860,7 +858,7 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
                                   [{inv.code}] {inv.name} (Tồn: {inv.openingQuantity} {inv.unit})
                                 </option>
                               ))}
-                            </select>
+                            </Dropdown>
                             <input
                               type="text"
                               placeholder="Tên sản phẩm / Mẫu đặt may..."

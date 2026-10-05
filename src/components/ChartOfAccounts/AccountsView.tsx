@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ListTree, Search, Plus, Eye, BookOpen } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { Account, JournalEntry } from '../../types/accounting';
 import { formatCurrency } from '../../utils/formatters';
 
@@ -70,11 +71,12 @@ export const AccountsView: React.FC<AccountsViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto text-xs">
-          <span className="text-slate-500">Loại TK:</span>
-          <select
+          <span className="text-slate-500 shrink-0">Loại TK:</span>
+          <Dropdown
+            size="sm"
             value={typeFilter}
             onChange={e => setTypeFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-xs text-slate-700 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#fb6f92]"
+            className="bg-slate-50 border-slate-200 font-medium"
           >
             <option value="ALL">Tất cả tài khoản</option>
             <option value="ASSET">Tài sản (TK Loại 1 & 2)</option>
@@ -82,7 +84,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({
             <option value="EQUITY">Vốn chủ sở hữu (TK Loại 4)</option>
             <option value="REVENUE">Doanh thu (TK Loại 5)</option>
             <option value="EXPENSE">Chi phí (TK Loại 6 & 8)</option>
-          </select>
+          </Dropdown>
         </div>
       </div>
 

@@ -74,10 +74,15 @@ export function getSales(req: AuthenticatedRequest, res: Response): void {
         i.status,
         i.note,
         i.created_by as createdBy,
+        COALESCE(e.name, u.name, 'Nhân viên D&D') as createdByName,
+        COALESCE(e.name, u.name, 'Nhân viên D&D') as employeeName,
+        e.code as employeeCode,
         i.created_at as createdAt,
         i.updated_at as updatedAt
       FROM invoices i
       JOIN partners p ON p.id = i.partner_id
+      LEFT JOIN users u ON u.id = i.created_by
+      LEFT JOIN employees e ON (e.user_id = u.id OR e.id = i.created_by)
       WHERE i.type = 'SALES'
       ORDER BY i.date DESC, i.created_at DESC
     `).all() as any[];
@@ -147,10 +152,15 @@ export function getSaleById(req: AuthenticatedRequest, res: Response): void {
         i.status,
         i.note,
         i.created_by as createdBy,
+        COALESCE(e.name, u.name, 'Nhân viên D&D') as createdByName,
+        COALESCE(e.name, u.name, 'Nhân viên D&D') as employeeName,
+        e.code as employeeCode,
         i.created_at as createdAt,
         i.updated_at as updatedAt
       FROM invoices i
       JOIN partners p ON p.id = i.partner_id
+      LEFT JOIN users u ON u.id = i.created_by
+      LEFT JOIN employees e ON (e.user_id = u.id OR e.id = i.created_by)
       WHERE i.id = ? AND i.type = 'SALES'
     `).get(id) as any;
 
@@ -485,7 +495,7 @@ export function createSale(req: AuthenticatedRequest, res: Response): void {
         vatTotal: backendVatTotal,
         grandTotal: backendGrandTotal,
         note: body.note || 'Bán hàng thời trang Showroom D&D',
-        createdBy: req.user?.id || null
+        createdBy: req.user?.id || (body as any).createdBy || (body as any).userId || null
       });
 
       // 2. Tạo chi tiết hóa đơn (invoice_items)
@@ -633,9 +643,17 @@ export function createSale(req: AuthenticatedRequest, res: Response): void {
         i.paid_amount as paidAmount,
         (i.grand_total - i.paid_amount) as debtAmount,
         i.status,
-        i.note
+        i.note,
+        i.created_by as createdBy,
+        COALESCE(e.name, u.name, 'Nhân viên D&D') as createdByName,
+        COALESCE(e.name, u.name, 'Nhân viên D&D') as employeeName,
+        e.code as employeeCode,
+        i.created_at as createdAt,
+        i.updated_at as updatedAt
       FROM invoices i
       JOIN partners p ON p.id = i.partner_id
+      LEFT JOIN users u ON u.id = i.created_by
+      LEFT JOIN employees e ON (e.user_id = u.id OR e.id = i.created_by)
       WHERE i.id = ?
     `).get(invoiceId) as any;
 
@@ -767,3 +785,62 @@ export function addSalePayment(req: AuthenticatedRequest, res: Response): void {
     handleDbError(res, error);
   }
 }
+
+/**
+ * Xóa hóa đơn bán hàng và hoàn lại tồn kho
+ * DELETE /api/sales/:id
+ */
+export function deleteSale(req: AuthenticatedRequest, res: Response): void {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ success: false, error: 'Thiếu ID hóa đơn cần xóa.' });
+      return;
+    }
+
+    const invoice = db.prepare("SELECT * FROM invoices WHERE id = ? AND type = 'SALES'").get(id) as any;
+    if (!invoice) {
+      res.status(404).json({ success: false, error: 'Không tìm thấy hóa đơn bán hàng.' });
+      return;
+    }
+
+    const items = db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ?').all(id) as any[];
+
+    const tx = db.transaction(() => {
+      // 1. Hoàn lại số lượng tồn kho sản phẩm
+      for (const item of items) {
+        if (item.product_id) {
+          db.prepare(`
+            UPDATE products 
+            SET current_stock = current_stock + ?,
+                opening_value = (current_stock + ?) * cost_price,
+                updated_at = datetime('now')
+            WHERE id = ?
+          `).run(item.quantity, item.quantity, item.product_id);
+        }
+      }
+
+      // 2. Xóa các phiếu thu / chi liên kết
+      db.prepare('DELETE FROM cash_transactions WHERE invoice_id = ?').run(id);
+
+      // 3. Xóa các log kho liên kết
+      db.prepare('DELETE FROM inventory_logs WHERE invoice_id = ?').run(id);
+
+      // 4. Xóa các dòng mặt hàng
+      db.prepare('DELETE FROM invoice_items WHERE invoice_id = ?').run(id);
+
+      // 5. Xóa hóa đơn
+      db.prepare('DELETE FROM invoices WHERE id = ?').run(id);
+    });
+
+    tx();
+
+    res.json({
+      success: true,
+      message: `Đã xóa hóa đơn bán hàng ${invoice.code} và hoàn lại tồn kho thành công.`
+    });
+  } catch (error: any) {
+    handleDbError(res, error, 'Lỗi khi xóa hóa đơn bán hàng');
+  }
+}
+

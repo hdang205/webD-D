@@ -11,7 +11,9 @@ import {
   getStockAuditById,
   createStockAudit,
   getDefectiveGoods,
-  recordDefectiveGoods
+  recordDefectiveGoods,
+  createStockVoucher,
+  deleteStockVoucher
 } from '../controllers/inventoryController.js';
 
 const router = Router();
@@ -27,6 +29,12 @@ router.get('/summary', getInventorySummary);
 
 // GET /api/inventory/logs - Lịch sử chi tiết toàn bộ các lần nhập xuất kho
 router.get('/logs', getInventoryLogs);
+
+// PHIẾU XUẤT NHẬP KHO (STOCK VOUCHERS)
+// POST /api/inventory/vouchers - Tạo phiếu nhập/xuất kho
+router.post('/vouchers', requireRole('DIRECTOR', 'CHIEF_ACCOUNTANT', 'WAREHOUSE_MANAGER', 'STAFF'), createStockVoucher);
+// DELETE /api/inventory/vouchers/:id - Xóa phiếu nhập/xuất kho
+router.delete('/vouchers/:id', requireRole('DIRECTOR', 'CHIEF_ACCOUNTANT', 'WAREHOUSE_MANAGER'), deleteStockVoucher);
 
 // KIỂM KHO (STOCK AUDITS)
 // GET /api/inventory/audits - Danh sách toàn bộ các phiếu kiểm kho

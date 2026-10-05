@@ -412,6 +412,28 @@ export function createPurchase(req: AuthenticatedRequest, res: Response): void {
         });
       }
 
+      // 4.1 Cập nhật liên kết Nhà cung cấp - Sản phẩm & Giá nhập gần nhất
+      const upsertSupplierProdStmt = db.prepare(`
+        INSERT INTO supplier_products (
+          id, supplier_id, product_id, last_purchase_price, is_active, created_at
+        ) VALUES (
+          @id, @supplierId, @productId, @lastPurchasePrice, 1, datetime('now')
+        )
+        ON CONFLICT(supplier_id, product_id) DO UPDATE SET
+          last_purchase_price = excluded.last_purchase_price,
+          is_active = 1
+      `);
+
+      for (let i = 0; i < validatedItems.length; i++) {
+        const it = validatedItems[i];
+        upsertSupplierProdStmt.run({
+          id: `sp_${Date.now()}_${i + 1}_${Math.random().toString(36).substring(2, 6)}`,
+          supplierId: partner.id,
+          productId: it.productId,
+          lastPurchasePrice: it.unitPrice
+        });
+      }
+
       // 5. Nếu có thanh toán ngay một phần hoặc toàn bộ (paidAmount > 0)
       if (paidAmount > 0) {
         const cashId = `cash_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
@@ -574,3 +596,62 @@ export function addPurchasePayment(req: AuthenticatedRequest, res: Response): vo
     handleDbError(res, error);
   }
 }
+
+/**
+ * Xóa hóa đơn mua hàng / nhập hàng xưởng và điều chỉnh giảm tồn kho
+ * DELETE /api/purchases/:id
+ */
+export function deletePurchase(req: AuthenticatedRequest, res: Response): void {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ success: false, error: 'Thiếu ID hóa đơn cần xóa.' });
+      return;
+    }
+
+    const invoice = db.prepare("SELECT * FROM invoices WHERE id = ? AND type = 'PURCHASE'").get(id) as any;
+    if (!invoice) {
+      res.status(404).json({ success: false, error: 'Không tìm thấy hóa đơn nhập hàng.' });
+      return;
+    }
+
+    const items = db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ?').all(id) as any[];
+
+    const tx = db.transaction(() => {
+      // 1. Trừ lại số lượng tồn kho sản phẩm đã nhập
+      for (const item of items) {
+        if (item.product_id) {
+          db.prepare(`
+            UPDATE products 
+            SET current_stock = MAX(0, current_stock - ?),
+                opening_value = MAX(0, (current_stock - ?) * cost_price),
+                updated_at = datetime('now')
+            WHERE id = ?
+          `).run(item.quantity, item.quantity, item.product_id);
+        }
+      }
+
+      // 2. Xóa các phiếu chi thanh toán liên kết
+      db.prepare('DELETE FROM cash_transactions WHERE invoice_id = ?').run(id);
+
+      // 3. Xóa các phiếu log kho liên kết
+      db.prepare('DELETE FROM inventory_logs WHERE invoice_id = ?').run(id);
+
+      // 4. Xóa chi tiết hóa đơn
+      db.prepare('DELETE FROM invoice_items WHERE invoice_id = ?').run(id);
+
+      // 5. Xóa hóa đơn
+      db.prepare('DELETE FROM invoices WHERE id = ?').run(id);
+    });
+
+    tx();
+
+    res.json({
+      success: true,
+      message: `Đã xóa đơn nhập hàng ${invoice.code} thành công.`
+    });
+  } catch (error: any) {
+    handleDbError(res, error, 'Lỗi khi xóa hóa đơn mua hàng');
+  }
+}
+

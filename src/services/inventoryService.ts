@@ -139,6 +139,16 @@ export const InventoryService = {
   async recordDefect(payload: RecordDefectPayload): Promise<any> {
     const res: any = await apiClient.post('/api/inventory/defects', payload);
     return res;
+  },
+
+  // PHIẾU XUẤT NHẬP KHO THỦ CÔNG
+  async createVoucher(payload: any): Promise<any> {
+    const res: any = await apiClient.post('/api/inventory/vouchers', payload);
+    return res;
+  },
+
+  async deleteVoucher(id: string): Promise<any> {
+    return apiClient.delete(`/api/inventory/vouchers/${encodeURIComponent(id)}`);
   }
 };
 

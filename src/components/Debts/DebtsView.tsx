@@ -10,6 +10,7 @@ import {
   FileSpreadsheet,
   UserCheck
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { Partner, PartnerType, Invoice, CashTransaction } from '../../types/accounting';
 import { formatCurrency } from '../../utils/formatters';
 import { exportToExcel } from '../../utils/excelExport';
@@ -206,11 +207,8 @@ export const DebtsView: React.FC<DebtsViewProps> = ({
             <div className="p-2 bg-[#ffe5ec] text-[#a93054] rounded-xl">
               <Users className="w-5 h-5" />
             </div>
-            <span>Quản Lý Công Nợ Khách Hàng & Nhà Cung Cấp</span>
+            <span>Quản Lý Công Nợ</span>
           </h2>
-          <p className="text-xs text-[#6c595f] mt-1">
-            Theo dõi nợ phải thu khách hàng thời trang (TK 131) và nợ phải trả nhà cung cấp vải / may mặc (TK 331).
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -269,16 +267,17 @@ export const DebtsView: React.FC<DebtsViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs text-[#6c595f]">Phân loại:</span>
-          <select
+          <span className="text-xs text-[#6c595f] shrink-0">Phân loại:</span>
+          <Dropdown
+            size="sm"
             value={partnerTypeFilter}
             onChange={e => setPartnerTypeFilter(e.target.value as any)}
-            className="bg-[#fbf8ff] border border-pink-200 text-xs text-[#181a2e] rounded-lg px-3 py-1.5 focus:outline-none"
+            className="bg-[#fbf8ff] border-pink-200 font-medium"
           >
             <option value="ALL">Tất cả đối tác</option>
             <option value="CUSTOMER">Khách hàng thời trang (TK 131)</option>
             <option value="SUPPLIER">Nhà cung cấp xưởng may (TK 331)</option>
-          </select>
+          </Dropdown>
         </div>
       </div>
 
@@ -397,15 +396,15 @@ export const DebtsView: React.FC<DebtsViewProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#4e4447] font-semibold mb-1">Phân loại</label>
-                  <select
+                  <Dropdown
                     value={type}
                     onChange={e => setType(e.target.value as PartnerType)}
-                    className="w-full bg-[#fbf8ff] border border-pink-200 rounded-lg p-2 text-[#181a2e] focus:outline-none focus:border-[#fb6f92]"
+                    className="w-full bg-[#fbf8ff] border-pink-200"
                   >
                     <option value="CUSTOMER">Khách hàng (TK 131)</option>
                     <option value="SUPPLIER">Nhà cung cấp (TK 331)</option>
                     <option value="BOTH">Cả hai</option>
-                  </select>
+                  </Dropdown>
                 </div>
 
                 <div>

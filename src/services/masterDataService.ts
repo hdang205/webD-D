@@ -31,6 +31,10 @@ export const CategoryService = {
       method: 'POST',
       body: JSON.stringify(data)
     });
+    if (res?.data) {
+      const existing = StorageService.getCategories();
+      StorageService.saveCategories([res.data, ...existing.filter(c => c.id !== res.data!.id)]);
+    }
     return res.data!;
   },
 
@@ -39,6 +43,10 @@ export const CategoryService = {
       method: 'PUT',
       body: JSON.stringify(data)
     });
+    if (res?.data) {
+      const existing = StorageService.getCategories();
+      StorageService.saveCategories(existing.map(c => c.id === id ? res.data! : c));
+    }
     return res.data!;
   },
 
@@ -46,6 +54,8 @@ export const CategoryService = {
     await apiRequest(`/api/categories/${encodeURIComponent(id)}`, {
       method: 'DELETE'
     });
+    const existing = StorageService.getCategories();
+    StorageService.saveCategories(existing.filter(c => c.id !== id));
   }
 };
 
@@ -59,7 +69,10 @@ export const ProductService = {
       const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
 
       const res = await apiRequest<InventoryItem[]>(`/api/products${qs}`);
-      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+      if (res?.data && Array.isArray(res.data)) {
+        if (!params?.search && !params?.categoryId && !params?.stockStatus) {
+          StorageService.saveInventory(res.data);
+        }
         return res.data;
       }
     } catch {}
@@ -81,7 +94,7 @@ export const ProductService = {
     return res.data || null;
   },
 
-  async create(data: Partial<InventoryItem>): Promise<InventoryItem> {
+  async create(data: Partial<InventoryItem> & { supplierId?: string }): Promise<InventoryItem> {
     try {
       const res = await apiRequest<InventoryItem>('/api/products', {
         method: 'POST',
@@ -146,11 +159,9 @@ export const ProductService = {
   },
 
   async delete(id: string): Promise<void> {
-    try {
-      await apiRequest(`/api/products/${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      });
-    } catch {}
+    await apiRequest(`/api/products/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
     const existing = StorageService.getInventory();
     StorageService.saveInventory(existing.filter(i => i.id !== id));
   },
@@ -173,13 +184,7 @@ export const CustomerService = {
       const qs = params.toString() ? `?${params.toString()}` : '';
 
       const res = await apiRequest<Partner[]>(`/api/customers${qs}`);
-      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-        const stored = StorageService.getPartners();
-        const map = new Map<string, Partner>();
-        stored.forEach(p => map.set(p.id, p));
-        res.data.forEach(p => map.set(p.id, p));
-        const merged = Array.from(map.values());
-        StorageService.savePartners(merged);
+      if (res?.data && Array.isArray(res.data)) {
         return res.data;
       }
     } catch {}
@@ -269,11 +274,9 @@ export const CustomerService = {
   },
 
   async delete(id: string): Promise<void> {
-    try {
-      await apiRequest(`/api/customers/${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      });
-    } catch {}
+    await apiRequest(`/api/customers/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
     const existing = StorageService.getPartners();
     StorageService.savePartners(existing.filter(p => p.id !== id));
   }
@@ -284,13 +287,7 @@ export const SupplierService = {
     try {
       const qs = search ? `?search=${encodeURIComponent(search)}` : '';
       const res = await apiRequest<Partner[]>(`/api/suppliers${qs}`);
-      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-        const stored = StorageService.getPartners();
-        const map = new Map<string, Partner>();
-        stored.forEach(p => map.set(p.id, p));
-        res.data.forEach(p => map.set(p.id, p));
-        const merged = Array.from(map.values());
-        StorageService.savePartners(merged);
+      if (res?.data && Array.isArray(res.data)) {
         return res.data;
       }
     } catch {}
@@ -375,13 +372,35 @@ export const SupplierService = {
   },
 
   async delete(id: string): Promise<void> {
-    try {
-      await apiRequest(`/api/suppliers/${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      });
-    } catch {}
+    await apiRequest(`/api/suppliers/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
     const existing = StorageService.getPartners();
     StorageService.savePartners(existing.filter(p => p.id !== id));
+  },
+
+  async getProducts(supplierId: string, params?: { search?: string; categoryId?: string }): Promise<InventoryItem[]> {
+    try {
+      const searchParams = new URLSearchParams();
+      if (params?.search) searchParams.set('search', params.search);
+      if (params?.categoryId) searchParams.set('category_id', params.categoryId);
+      const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+
+      const res = await apiRequest<any>(`/api/suppliers/${encodeURIComponent(supplierId)}/products${qs}`);
+      if (res?.data && Array.isArray(res.data)) {
+        return res.data;
+      }
+    } catch (err) {
+      console.warn('Lỗi tải sản phẩm theo nhà cung cấp từ server:', err);
+    }
+    return [];
+  },
+
+  async linkProduct(supplierId: string, productId: string, lastPurchasePrice?: number): Promise<any> {
+    return apiRequest(`/api/suppliers/${encodeURIComponent(supplierId)}/products`, {
+      method: 'POST',
+      body: JSON.stringify({ productId, lastPurchasePrice })
+    });
   }
 };
 

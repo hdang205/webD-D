@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sliders, AlertCircle, ArrowUpRight, ArrowDownLeft, CheckCircle2, Package } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { InventoryProduct, InventoryService } from '../../services/inventoryService';
 import { formatNumber } from '../../utils/formatters';
 
@@ -144,18 +145,19 @@ export const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({
             <label className="font-semibold text-[#181a2e] block">
               Sản phẩm thời trang <span className="text-rose-500">*</span>
             </label>
-            <select
+            <Dropdown
               id="select-adjust-product"
               value={selectedProductId}
               onChange={(e) => setSelectedProductId(e.target.value)}
-              className="w-full bg-[#fbf8ff] border border-pink-200 rounded-xl px-3 py-2 text-xs text-[#181a2e] focus:outline-none focus:border-[#fb6f92]"
+              className="w-full bg-[#fbf8ff] border-pink-200"
+              searchPlaceholder="Tìm kiếm sản phẩm theo tên, mã..."
             >
               {productList.map(p => (
                 <option key={p.id} value={p.id}>
                   [{p.code}] {p.name} - (Tồn hiện tại: {formatNumber(p.currentStock ?? p.openingQuantity ?? 0)} {p.unit})
                 </option>
               ))}
-            </select>
+            </Dropdown>
           </div>
 
           {/* Current Stock Preview Card */}

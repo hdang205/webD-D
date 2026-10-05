@@ -26,6 +26,7 @@ import {
   WalletCards,
   AlertCircle
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { 
   Account, 
   JournalEntry, 
@@ -298,24 +299,63 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
     return Array.from(map.values()).sort((a, b) => b.quantitySold - a.quantitySold);
   }, [salesInvoices, inventory]);
 
-  // Staff Performance aggregation
+  // Staff Performance aggregation (Real DB Employees)
   const staffSales = useMemo(() => {
     const map = new Map<string, {
       staffName: string;
+      staffCode?: string;
       orderCount: number;
       totalRevenue: number;
       itemsSold: number;
     }>();
 
+    // Map employees by user_id and id
+    const empByUser = new Map<string, Employee>();
+    const empById = new Map<string, Employee>();
+    (employees || []).forEach(emp => {
+      if (emp.user_id) empByUser.set(emp.user_id, emp);
+      empById.set(emp.id, emp);
+    });
+
     // Loop through cash transactions & invoices
-    salesInvoices.forEach((inv, index) => {
-      // Find staff in partner or note or fallback to sample employees
-      let staffName = 'Trần Ngọc Lan (Stylist)';
-      if (index % 3 === 1) staffName = 'Vũ Mỹ Linh (Thu ngân)';
-      if (index % 3 === 2) staffName = 'Hoàng Thu Thảo (Tư vấn)';
+    salesInvoices.forEach((inv) => {
+      let staffName = '';
+      let staffCode = '';
+
+      if (inv.employeeName && inv.employeeName !== 'Admin') {
+        staffName = inv.employeeName;
+      } else if (inv.createdByName && inv.createdByName !== 'Admin') {
+        staffName = inv.createdByName;
+      }
+
+      if (inv.createdBy) {
+        const emp = empByUser.get(inv.createdBy) || empById.get(inv.createdBy);
+        if (emp) {
+          staffName = emp.name;
+          staffCode = emp.code;
+        } else if (currentUser && inv.createdBy === currentUser.id) {
+          staffName = currentUser.name;
+        }
+      }
+
+      if (!staffName) {
+        if (currentUser?.name) {
+          staffName = currentUser.name;
+        } else {
+          const salesEmp = (employees || []).find(e => e.role === 'SALES_CASHIER' || e.role === 'SALES_STAFF') || (employees || [])[0];
+          staffName = salesEmp?.name || 'Nhân viên bán hàng';
+          staffCode = salesEmp?.code || '';
+        }
+      }
+
+      if (!staffCode) {
+        const matched = (employees || []).find(e => e.name === staffName);
+        if (matched) staffCode = matched.code;
+      }
 
       const existing = map.get(staffName) || {
         staffName,
+        staffCode,
         orderCount: 0,
         totalRevenue: 0,
         itemsSold: 0
@@ -329,7 +369,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
     });
 
     return Array.from(map.values()).sort((a, b) => b.totalRevenue - a.totalRevenue);
-  }, [salesInvoices]);
+  }, [salesInvoices, employees, currentUser]);
 
   // Timeline Breakdown (By Day if Month is selected; By Month if Year is selected)
   const timelineBreakdown = useMemo(() => {
@@ -602,15 +642,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-black text-[#181a2e]">
-                  Báo Cáo Tình Hình Hoạt Động & Doanh Thu Cửa Hàng
+                  Báo Cáo Tài Chính
                 </h2>
-                <span className="bg-pink-100 text-[#a93054] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  Trực Quan • Đa Chiều
-                </span>
               </div>
-              <p className="text-xs text-[#6c595f] mt-0.5">
-                Theo dõi tức thì Doanh số, Lợi nhuận, Đơn hàng, Mẫu mã bán chạy & Dòng tiền theo <strong className="text-[#a93054]">Ngày / Tháng / Năm</strong>
-              </p>
             </div>
           </div>
 
@@ -634,15 +668,15 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </div>
 
         {/* 2. TIME FILTER SELECTOR (Theo Ngày / Theo Tháng / Theo Năm / Tùy Chỉnh) */}
-        <div className="mt-5 pt-4 border-t border-pink-100/70">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div className="mt-4 pt-3.5 border-t border-pink-100/70">
+          <div className="flex items-center justify-start gap-2.5 flex-nowrap overflow-x-auto pb-1">
             
             {/* Mode Switcher Buttons */}
-            <div className="flex items-center gap-1.5 bg-[#fbf8ff] p-1 rounded-xl border border-pink-100 text-xs font-bold">
+            <div className="inline-flex items-center gap-1 bg-[#fbf8ff] p-1 rounded-xl border border-pink-100 text-xs font-bold shrink-0">
               <button
                 id="filter-mode-day"
                 onClick={() => setTimeMode('DAY')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer ${
+                className={`h-8 flex items-center gap-1.5 px-3 rounded-lg transition cursor-pointer whitespace-nowrap ${
                   timeMode === 'DAY'
                     ? 'bg-[#fb6f92] text-white shadow-xs'
                     : 'text-[#4e4447] hover:text-[#181a2e]'
@@ -655,7 +689,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               <button
                 id="filter-mode-month"
                 onClick={() => setTimeMode('MONTH')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer ${
+                className={`h-8 flex items-center gap-1.5 px-3 rounded-lg transition cursor-pointer whitespace-nowrap ${
                   timeMode === 'MONTH'
                     ? 'bg-[#fb6f92] text-white shadow-xs'
                     : 'text-[#4e4447] hover:text-[#181a2e]'
@@ -668,7 +702,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               <button
                 id="filter-mode-year"
                 onClick={() => setTimeMode('YEAR')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer ${
+                className={`h-8 flex items-center gap-1.5 px-3 rounded-lg transition cursor-pointer whitespace-nowrap ${
                   timeMode === 'YEAR'
                     ? 'bg-[#fb6f92] text-white shadow-xs'
                     : 'text-[#4e4447] hover:text-[#181a2e]'
@@ -681,7 +715,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               <button
                 id="filter-mode-custom"
                 onClick={() => setTimeMode('CUSTOM')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer ${
+                className={`h-8 flex items-center gap-1.5 px-3 rounded-lg transition cursor-pointer whitespace-nowrap ${
                   timeMode === 'CUSTOM'
                     ? 'bg-[#fb6f92] text-white shadow-xs'
                     : 'text-[#4e4447] hover:text-[#181a2e]'
@@ -693,27 +727,27 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             </div>
 
             {/* Dynamic Controls based on selected Mode */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               
               {/* Day Mode Selector */}
               {timeMode === 'DAY' && (
-                <div className="flex items-center gap-2 bg-pink-50/50 p-1.5 rounded-xl border border-pink-100">
-                  <span className="text-xs font-semibold text-[#6c595f] pl-1">Chọn ngày:</span>
+                <div className="inline-flex items-center gap-2 bg-pink-50/50 p-1 rounded-xl border border-pink-100 shrink-0">
+                  <span className="text-xs font-semibold text-[#6c595f] pl-1.5">Chọn ngày:</span>
                   <input
                     type="date"
                     value={selectedDay}
                     onChange={(e) => setSelectedDay(e.target.value)}
-                    className="bg-white border border-pink-200 text-xs font-bold text-[#181a2e] rounded-lg px-2.5 py-1 focus:outline-none focus:border-[#fb6f92]"
+                    className="h-8 bg-white border border-pink-200 text-xs font-bold text-[#181a2e] rounded-lg px-2.5 focus:outline-none focus:border-[#fb6f92]"
                   />
                   <button
                     onClick={handleSetToday}
-                    className="text-[11px] font-bold px-2 py-1 bg-white hover:bg-pink-100 text-[#a93054] rounded-lg border border-pink-200 transition cursor-pointer"
+                    className="h-8 text-xs font-bold px-3 bg-white hover:bg-pink-100 text-[#a93054] rounded-lg border border-pink-200 transition cursor-pointer whitespace-nowrap active:scale-95"
                   >
                     Hôm nay
                   </button>
                   <button
                     onClick={handleSetYesterday}
-                    className="text-[11px] font-bold px-2 py-1 bg-white hover:bg-pink-100 text-[#6c595f] rounded-lg border border-pink-200 transition cursor-pointer"
+                    className="h-8 text-xs font-bold px-3 bg-white hover:bg-pink-100 text-[#6c595f] rounded-lg border border-pink-200 transition cursor-pointer whitespace-nowrap active:scale-95"
                   >
                     Hôm qua
                   </button>
@@ -722,12 +756,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
               {/* Month Mode Selector */}
               {timeMode === 'MONTH' && (
-                <div className="flex items-center gap-2 bg-pink-50/50 p-1.5 rounded-xl border border-pink-100">
-                  <span className="text-xs font-semibold text-[#6c595f] pl-1">Tháng:</span>
-                  <select
+                <div className="inline-flex items-center gap-2 bg-pink-50/50 p-1 rounded-xl border border-pink-100 shrink-0">
+                  <span className="text-xs font-semibold text-[#6c595f] pl-1.5">Tháng:</span>
+                  <Dropdown
+                    size="sm"
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
-                    className="bg-white border border-pink-200 text-xs font-bold text-[#181a2e] rounded-lg px-2.5 py-1 focus:outline-none focus:border-[#fb6f92] cursor-pointer"
+                    className="bg-white border-pink-200 font-bold"
                   >
                     {Array.from({ length: 12 }, (_, i) => {
                       const m = (i + 1).toString().padStart(2, '0');
@@ -737,28 +772,29 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                         </option>
                       );
                     })}
-                  </select>
+                  </Dropdown>
 
                   <span className="text-xs font-semibold text-[#6c595f]">Năm:</span>
-                  <select
+                  <Dropdown
+                    size="sm"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
-                    className="bg-white border border-pink-200 text-xs font-bold text-[#181a2e] rounded-lg px-2.5 py-1 focus:outline-none focus:border-[#fb6f92] cursor-pointer"
+                    className="bg-white border-pink-200 font-bold"
                   >
                     {['2024', '2025', '2026', '2027'].map(y => (
                       <option key={y} value={y}>{y}</option>
                     ))}
-                  </select>
+                  </Dropdown>
 
                   <button
                     onClick={handleSetThisMonth}
-                    className="text-[11px] font-bold px-2 py-1 bg-white hover:bg-pink-100 text-[#a93054] rounded-lg border border-pink-200 transition cursor-pointer"
+                    className="h-8 text-xs font-bold px-3 bg-white hover:bg-pink-100 text-[#a93054] rounded-lg border border-pink-200 transition cursor-pointer whitespace-nowrap active:scale-95"
                   >
                     Tháng này
                   </button>
                   <button
                     onClick={handleSetLastMonth}
-                    className="text-[11px] font-bold px-2 py-1 bg-white hover:bg-pink-100 text-[#6c595f] rounded-lg border border-pink-200 transition cursor-pointer"
+                    className="h-8 text-xs font-bold px-3 bg-white hover:bg-pink-100 text-[#6c595f] rounded-lg border border-pink-200 transition cursor-pointer whitespace-nowrap active:scale-95"
                   >
                     Tháng trước
                   </button>
@@ -767,20 +803,21 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
               {/* Year Mode Selector */}
               {timeMode === 'YEAR' && (
-                <div className="flex items-center gap-2 bg-pink-50/50 p-1.5 rounded-xl border border-pink-100">
-                  <span className="text-xs font-semibold text-[#6c595f] pl-1">Chọn năm tài chính:</span>
-                  <select
+                <div className="inline-flex items-center gap-2 bg-pink-50/50 p-1 rounded-xl border border-pink-100 shrink-0">
+                  <span className="text-xs font-semibold text-[#6c595f] pl-1.5">Chọn năm:</span>
+                  <Dropdown
+                    size="sm"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
-                    className="bg-white border border-pink-200 text-xs font-bold text-[#181a2e] rounded-lg px-3 py-1 focus:outline-none focus:border-[#fb6f92] cursor-pointer"
+                    className="bg-white border-pink-200 font-bold"
                   >
                     {['2024', '2025', '2026', '2027'].map(y => (
                       <option key={y} value={y}>Năm {y}</option>
                     ))}
-                  </select>
+                  </Dropdown>
                   <button
                     onClick={handleSetThisYear}
-                    className="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-pink-100 text-[#a93054] rounded-lg border border-pink-200 transition cursor-pointer"
+                    className="h-8 text-xs font-bold px-3 bg-white hover:bg-pink-100 text-[#a93054] rounded-lg border border-pink-200 transition cursor-pointer whitespace-nowrap active:scale-95"
                   >
                     Năm nay ({currentYearStr})
                   </button>
@@ -789,31 +826,35 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
               {/* Custom Date Range Selector */}
               {timeMode === 'CUSTOM' && (
-                <div className="flex items-center gap-2 bg-pink-50/50 p-1.5 rounded-xl border border-pink-100">
-                  <span className="text-xs font-semibold text-[#6c595f] pl-1">Từ:</span>
+                <div className="inline-flex items-center gap-2 bg-pink-50/50 p-1 rounded-xl border border-pink-100 shrink-0">
+                  <span className="text-xs font-semibold text-[#6c595f] pl-1.5">Từ:</span>
                   <input
                     type="date"
                     value={customStartDate}
                     onChange={(e) => setCustomStartDate(e.target.value)}
-                    className="bg-white border border-pink-200 text-xs font-bold text-[#181a2e] rounded-lg px-2 py-1 focus:outline-none focus:border-[#fb6f92]"
+                    className="h-8 bg-white border border-pink-200 text-xs font-bold text-[#181a2e] rounded-lg px-2.5 focus:outline-none focus:border-[#fb6f92]"
                   />
                   <span className="text-xs font-semibold text-[#6c595f]">Đến:</span>
                   <input
                     type="date"
                     value={customEndDate}
                     onChange={(e) => setCustomEndDate(e.target.value)}
-                    className="bg-white border border-pink-200 text-xs font-bold text-[#181a2e] rounded-lg px-2 py-1 focus:outline-none focus:border-[#fb6f92]"
+                    className="h-8 bg-white border border-pink-200 text-xs font-bold text-[#181a2e] rounded-lg px-2.5 focus:outline-none focus:border-[#fb6f92]"
                   />
                 </div>
               )}
 
-              {/* Active Period Badge */}
-              <div className="bg-pink-100/80 border border-pink-200 px-3 py-1.5 rounded-xl text-xs font-bold text-[#a93054] flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{dateRange.label}</span>
-              </div>
+
 
             </div>
+          </div>
+
+          {/* Khoảng thời gian đang chọn: Nằm ngay dưới hàng bộ lọc */}
+          <div className="mt-2.5 flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#a93054] bg-pink-50/80 border border-pink-200/80 px-2.5 py-1 rounded-lg">
+              <Clock className="w-3.5 h-3.5 text-[#a93054] shrink-0" />
+              <span>{dateRange.label}</span>
+            </span>
           </div>
         </div>
       </div>
@@ -980,12 +1021,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             
             {/* Column 1: Cơ Cấu Doanh Thu Bán Hàng */}
             <div className="bg-white border border-pink-100 rounded-2xl p-5 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-pink-100 pb-3">
-                <h3 className="text-sm font-bold text-[#181a2e] flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-[#fb6f92]" />
+              <div className="border-b border-pink-100 pb-3">
+                <h3 className="text-sm font-bold text-[#181a2e] flex items-center gap-2 whitespace-nowrap">
+                  <Receipt className="w-4 h-4 text-[#fb6f92] shrink-0" />
                   <span>Chi Tiết Doanh Số Bán Hàng</span>
                 </h3>
-                <span className="text-[11px] text-[#6c595f]">{dateRange.label}</span>
+                <p className="text-[11px] text-[#6c595f] mt-1 pl-6">
+                  {dateRange.label}
+                </p>
               </div>
 
               <div className="space-y-3 text-xs">
@@ -1025,11 +1068,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
             {/* Column 2: Giá Vốn & Chi Phí Cửa Hàng */}
             <div className="bg-white border border-pink-100 rounded-2xl p-5 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-pink-100 pb-3">
-                <h3 className="text-sm font-bold text-[#181a2e] flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-[#a93054]" />
+              <div className="border-b border-pink-100 pb-3">
+                <h3 className="text-sm font-bold text-[#181a2e] flex items-center gap-2 whitespace-nowrap">
+                  <Layers className="w-4 h-4 text-[#a93054] shrink-0" />
                   <span>Giá Vốn & Chi Phí Vận Hành</span>
                 </h3>
+                <p className="text-[11px] text-[#6c595f] mt-1 pl-6">
+                  {dateRange.label}
+                </p>
               </div>
 
               <div className="space-y-3 text-xs">
@@ -1061,17 +1107,22 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
             {/* Column 3: Top 3 Mẫu Váy Bán Chạy & Tồn Kho Nhất Kỳ */}
             <div className="bg-white border border-pink-100 rounded-2xl p-5 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-pink-100 pb-3">
-                <h3 className="text-sm font-bold text-[#181a2e] flex items-center gap-2">
-                  <Award className="w-4 h-4 text-amber-500" />
-                  <span>Top Mẫu Bán Chạy Trong Kỳ</span>
-                </h3>
+              <div className="flex items-start justify-between border-b border-pink-100 pb-3">
+                <div>
+                  <h3 className="text-sm font-bold text-[#181a2e] flex items-center gap-2 whitespace-nowrap">
+                    <Award className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Top Mẫu Bán Chạy Trong Kỳ</span>
+                  </h3>
+                  <p className="text-[11px] text-[#6c595f] mt-1 pl-6">
+                    {dateRange.label}
+                  </p>
+                </div>
                 <button
                   onClick={() => setActiveTab('BEST_SELLERS')}
-                  className="text-[11px] font-bold text-[#fb6f92] hover:underline flex items-center gap-0.5 cursor-pointer"
+                  className="text-[11px] font-bold text-[#fb6f92] hover:underline flex items-center gap-0.5 cursor-pointer whitespace-nowrap pt-0.5"
                 >
                   <span>Xem tất cả</span>
-                  <ChevronRight className="w-3 h-3" />
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
 
@@ -1387,7 +1438,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                         <tr key={s.staffName} className="hover:bg-[#fbf8ff] transition">
                           <td className="py-3 px-4">
                             <div className="font-bold text-[#181a2e]">{s.staffName}</div>
-                            <div className="text-[10px] text-[#6c595f]">Showroom D&D Fashion Phố Huế</div>
+                            <div className="text-[10px] text-[#6c595f]">{s.staffCode ? `Mã NV: ${s.staffCode} • ` : ''}Showroom D&D Fashion</div>
                           </td>
                           <td className="py-3 px-4 text-center font-mono font-bold text-[#181a2e]">
                             {s.orderCount} đơn

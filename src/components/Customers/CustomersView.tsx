@@ -20,6 +20,7 @@ import {
   ArrowUpRight,
   AlertCircle
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { Partner, Invoice, CustomerTier } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/accountingEngine';
 import { InvoiceDetailModal } from '../Invoices/InvoiceDetailModal';
@@ -280,12 +281,9 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
               <Users className="w-5 h-5" />
             </div>
             <h2 className="text-lg font-bold text-slate-800">
-              Quản Lý Khách Hàng & Thẻ VIP Boutique
+              Khách Hàng
             </h2>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Hồ sơ khách hàng, phân hạng thành viên VIP, hạn mức tín dụng công nợ (TK 131)
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -360,11 +358,12 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto text-xs">
-          <span className="text-slate-500 whitespace-nowrap">Hạng VIP:</span>
-          <select
+          <span className="text-slate-500 whitespace-nowrap shrink-0">Hạng VIP:</span>
+          <Dropdown
+            size="sm"
             value={tierFilter}
             onChange={e => setTierFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-xs text-slate-700 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#fb6f92]"
+            className="bg-slate-50 border-slate-200 font-medium"
           >
             <option value="ALL">Tất cả phân hạng</option>
             <option value="DIAMOND">VIP Diamond</option>
@@ -372,7 +371,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
             <option value="SILVER">Thành viên Bạc</option>
             <option value="WHOLESALE">Đại lý bán buôn</option>
             <option value="STANDARD">Thành viên chuẩn</option>
-          </select>
+          </Dropdown>
         </div>
       </div>
 
@@ -604,17 +603,17 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
 
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Phân Hạng Khách Hàng</label>
-                  <select
+                  <Dropdown
                     value={formData.tier}
                     onChange={e => setFormData({ ...formData, tier: e.target.value as CustomerTier })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 focus:bg-white focus:border-[#fb6f92] focus:outline-none"
+                    className="w-full bg-slate-50 border-slate-200"
                   >
                     <option value="STANDARD">Thành Viên Chuẩn</option>
                     <option value="SILVER">Thành Viên Bạc (Silver)</option>
                     <option value="GOLD">VIP Gold</option>
                     <option value="DIAMOND">VIP Diamond</option>
                     <option value="WHOLESALE">Đại Lý Bán Sỉ</option>
-                  </select>
+                  </Dropdown>
                 </div>
               </div>
 

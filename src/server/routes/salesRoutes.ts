@@ -3,7 +3,8 @@ import {
   getSales, 
   getSaleById, 
   createSale, 
-  addSalePayment 
+  addSalePayment,
+  deleteSale
 } from '../controllers/salesController.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
@@ -28,6 +29,13 @@ router.post(
   '/:id/payments', 
   requireRole('DIRECTOR', 'CHIEF_ACCOUNTANT', 'SALES_CASHIER'), 
   addSalePayment
+);
+
+// Xóa hóa đơn bán hàng (Giám đốc, Kế toán trưởng)
+router.delete(
+  '/:id',
+  requireRole('DIRECTOR', 'CHIEF_ACCOUNTANT'),
+  deleteSale
 );
 
 export default router;

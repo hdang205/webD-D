@@ -1,23 +1,23 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Wallet, 
-  ReceiptText, 
-  Users, 
-  Package, 
-  BookOpenCheck, 
-  ListTree, 
-  PieChart, 
-  ShoppingBag, 
-  Truck, 
-  Building2, 
-  Tag, 
-  CreditCard, 
-  Lock, 
-  Store, 
-  LogOut, 
-  UserCheck, 
-  ClipboardCheck, 
+import {
+  LayoutDashboard,
+  Wallet,
+  ReceiptText,
+  Users,
+  Package,
+  BookOpenCheck,
+  ListTree,
+  PieChart,
+  ShoppingBag,
+  Truck,
+  Building2,
+  Tag,
+  CreditCard,
+  Lock,
+  Store,
+  LogOut,
+  UserCheck,
+  ClipboardCheck,
   HeartHandshake,
   ShieldCheck,
   CheckCircle2,
@@ -26,7 +26,7 @@ import {
 import { AuthUser, UserRole } from '../types/accounting';
 import { isTabAllowedForRole, ROLE_CONFIGS } from '../utils/rbac';
 
-export type TabKey = 
+export type TabKey =
   | 'pos'
   | 'login'
   | 'auth'
@@ -98,40 +98,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'DASHBOARD',
       items: [
-        { id: 'dashboard' as TabKey, label: '📈 Tổng Quan ERP', icon: LayoutDashboard },
+        { id: 'dashboard' as TabKey, label: 'Tổng Quan ERP', icon: LayoutDashboard },
       ]
     },
     {
       title: 'QUẢN LÝ',
       items: [
-        { id: 'products' as TabKey, label: '🏷️ Sản Phẩm', icon: Tag, badge: productCount },
-        { id: 'categories' as TabKey, label: '📂 Danh Mục Hàng', icon: ListTree },
-        { id: 'customers' as TabKey, label: '👥 Khách Hàng', icon: Users, badge: customerCount },
-        { id: 'suppliers' as TabKey, label: '🏢 Nhà Cung Cấp', icon: Building2, badge: supplierCount },
-        { id: 'employees' as TabKey, label: '👔 Người Dùng (Nhân Sự)', icon: UserCheck, badge: employeeCount, badgeColor: 'bg-indigo-600' },
+        { id: 'products' as TabKey, label: 'Sản Phẩm', icon: Tag, badge: productCount },
+        { id: 'categories' as TabKey, label: 'Danh Mục Hàng', icon: ListTree },
+        { id: 'customers' as TabKey, label: 'Khách Hàng', icon: Users, badge: customerCount },
+        { id: 'suppliers' as TabKey, label: 'Nhà Cung Cấp', icon: Building2, badge: supplierCount },
+        { id: 'employees' as TabKey, label: 'Người Dùng (Nhân Sự)', icon: UserCheck, badge: employeeCount, badgeColor: 'bg-indigo-600' },
       ]
     },
     {
       title: 'GIAO DỊCH',
       items: [
-        { id: 'sales' as TabKey, label: '📑 Bán Hàng (Hóa Đơn)', icon: ShoppingBag },
-        { id: 'pos' as TabKey, label: '⚡ Bán Hàng POS Quầy', icon: Store, highlight: true },
-        { id: 'purchases' as TabKey, label: '🏭 Nhập Hàng Xưởng', icon: Truck, badge: unpaidInvoiceCount > 0 ? unpaidInvoiceCount : undefined, badgeColor: 'bg-rose-600' },
-        { id: 'requisitions' as TabKey, label: '📋 Đề Xuất Nhập/Xuất', icon: ClipboardCheck, badge: pendingRequisitionsCount > 0 ? pendingRequisitionsCount : undefined, badgeColor: 'bg-amber-500' },
+        { id: 'sales' as TabKey, label: 'Bán Hàng (Hóa Đơn)', icon: ShoppingBag },
+        { id: 'pos' as TabKey, label: 'Bán Hàng POS Quầy', icon: Store, highlight: true },
+        { id: 'purchases' as TabKey, label: 'Nhập Hàng Xưởng', icon: Truck, badge: unpaidInvoiceCount > 0 ? unpaidInvoiceCount : undefined, badgeColor: 'bg-rose-600' },
+        { id: 'requisitions' as TabKey, label: 'Đề Xuất Nhập/Xuất', icon: ClipboardCheck, badge: pendingRequisitionsCount > 0 ? pendingRequisitionsCount : undefined, badgeColor: 'bg-amber-500' },
       ]
     },
     {
       title: 'KHO',
       items: [
-        { id: 'inventory' as TabKey, label: '📦 Tồn Kho & Xuất Nhập', icon: Package, badge: lowStockCount > 0 ? lowStockCount : undefined, badgeColor: 'bg-rose-500' },
+        { id: 'inventory' as TabKey, label: 'Tồn Kho & Xuất Nhập', icon: Package, badge: lowStockCount > 0 ? lowStockCount : undefined, badgeColor: 'bg-rose-500' },
       ]
     },
     {
       title: 'KẾ TOÁN',
       items: [
-        { id: 'cashbook' as TabKey, label: '💰 Thu Chi (Sổ Quỹ)', icon: Wallet },
-        { id: 'debts' as TabKey, label: '💳 Quản Lý Công Nợ', icon: CreditCard },
-        { id: 'reports' as TabKey, label: '📊 Báo Cáo Tài Chính', icon: PieChart },
+        { id: 'cashbook' as TabKey, label: 'Thu Chi (Sổ Quỹ)', icon: Wallet },
+        { id: 'debts' as TabKey, label: 'Quản Lý Công Nợ', icon: CreditCard },
+        { id: 'reports' as TabKey, label: 'Báo Cáo Tài Chính', icon: PieChart },
       ]
     }
   ];
@@ -165,13 +165,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     key={item.id}
                     id={`tab-btn-${item.id}`}
                     onClick={() => onSelectTab(item.id)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
-                      isActive
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer whitespace-nowrap ${isActive
                         ? 'bg-slate-900 text-white shadow-xs'
                         : item.highlight
-                        ? 'bg-rose-50/80 text-[#a93054] hover:bg-rose-100/80 font-bold border border-rose-200/60'
-                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
-                    }`}
+                          ? 'bg-rose-50/80 text-[#a93054] hover:bg-rose-100/80 font-bold border border-rose-200/60'
+                          : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      }`}
                   >
                     <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-pink-400' : item.highlight ? 'text-[#a93054]' : 'text-slate-500'}`} />
                     <span className="flex-1 text-left">{item.label}</span>

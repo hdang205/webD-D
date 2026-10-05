@@ -23,6 +23,7 @@ import {
   Download,
   CreditCard
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { Employee, EmployeeDepartment, EmployeeStatus, Invoice, CashTransaction } from '../../types/accounting';
 import { EmployeeModal } from './EmployeeModal';
 import { EmployeeDetailModal } from './EmployeeDetailModal';
@@ -158,10 +159,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-800">Quản Lý Nhân Sự & Đội Ngũ Cửa Hàng</h2>
-              <p className="text-xs text-slate-500">
-                Thêm, sửa, xóa nhân viên, phân quyền truy cập, theo dõi KPI bán hàng & lập bảng lương tháng (TK 334 / 6421)
-              </p>
+              <h2 className="text-xl font-bold text-slate-800">Người Dùng (Nhân Sự)</h2>
             </div>
           </div>
         </div>
@@ -287,10 +285,11 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
               />
             </div>
 
-            <select
+            <Dropdown
+              size="sm"
               value={selectedDept}
               onChange={(e) => setSelectedDept(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#fb6f92] text-slate-700 font-medium cursor-pointer"
+              className="bg-slate-50 border-slate-200 text-slate-700 font-medium"
             >
               <option value="ALL">Tất cả phòng ban</option>
               <option value="SALES_POS">🛍️ Showroom & Thu Ngân POS</option>
@@ -298,18 +297,19 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
               <option value="WAREHOUSE">📦 Kho Vận & Thủ Quỹ</option>
               <option value="MANAGEMENT">👔 Ban Giám Đốc</option>
               <option value="MARKETING_DESIGN">🎨 Thiết Kế Lookbook</option>
-            </select>
+            </Dropdown>
 
-            <select
+            <Dropdown
+              size="sm"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#fb6f92] text-slate-700 font-medium cursor-pointer"
+              className="bg-slate-50 border-slate-200 text-slate-700 font-medium"
             >
               <option value="ALL">Tất cả trạng thái</option>
               <option value="ACTIVE">🟢 Đang làm việc</option>
               <option value="ON_LEAVE">🟡 Tạm nghỉ</option>
               <option value="RESIGNED">🔴 Đã thôi việc</option>
-            </select>
+            </Dropdown>
           </div>
 
         </div>

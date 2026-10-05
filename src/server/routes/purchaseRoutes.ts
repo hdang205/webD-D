@@ -3,7 +3,8 @@ import {
   getPurchases, 
   getPurchaseById, 
   createPurchase, 
-  addPurchasePayment 
+  addPurchasePayment,
+  deletePurchase
 } from '../controllers/purchaseController.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
@@ -28,6 +29,13 @@ router.post(
   '/:id/payments', 
   requireRole('DIRECTOR', 'CHIEF_ACCOUNTANT'), 
   addPurchasePayment
+);
+
+// Xóa hóa đơn mua hàng (Giám đốc, Kế toán trưởng)
+router.delete(
+  '/:id',
+  requireRole('DIRECTOR', 'CHIEF_ACCOUNTANT'),
+  deletePurchase
 );
 
 export default router;

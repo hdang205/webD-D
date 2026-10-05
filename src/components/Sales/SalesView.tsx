@@ -124,12 +124,9 @@ export const SalesView: React.FC<SalesViewProps> = ({
               <ShoppingBag className="w-5 h-5" />
             </div>
             <h2 className="text-lg font-bold text-slate-800">
-              Quản Lý Bán Hàng & Hóa Đơn Bán Lẻ / Bán Buôn (TK 511)
+              Bán Hàng (Hóa Đơn)
             </h2>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Lập và xem chi tiết hóa đơn bán hàng thời trang, thuế GTGT đầu ra (3331), chiết khấu VIP & công nợ phải thu (131)
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

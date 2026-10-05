@@ -51,5 +51,9 @@ export const PurchaseService = {
 
   async addPayment(id: string, payment: { amount: number; date?: string; paymentFund?: string; note?: string }): Promise<any> {
     return apiClient.post(`/api/purchases/${encodeURIComponent(id)}/payments`, payment);
+  },
+
+  async delete(id: string): Promise<any> {
+    return apiClient.delete(`/api/purchases/${encodeURIComponent(id)}`);
   }
 };

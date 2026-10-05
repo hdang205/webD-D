@@ -14,16 +14,17 @@ import {
   DollarSign,
   Eye
 } from 'lucide-react';
-import { Invoice, Partner, InventoryItem } from '../../types/accounting';
+import { Invoice, Partner, InventoryItem, AuthUser } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/accountingEngine';
 import { exportToExcel } from '../../utils/excelExport';
-import { InvoiceModal } from '../Invoices/InvoiceModal';
+import { CreatePurchaseModal } from './CreatePurchaseModal';
 import { InvoiceDetailModal } from '../Invoices/InvoiceDetailModal';
 
 interface PurchasesViewProps {
   invoices: Invoice[];
   partners: Partner[];
   inventory: InventoryItem[];
+  currentUser?: AuthUser | null;
   onAddInvoice: (invoice: Omit<Invoice, 'id'>, andPrint?: boolean) => void;
   onUpdatePayment: (id: string, paidAmount: number) => void;
   onDeleteInvoice: (id: string) => void;
@@ -34,6 +35,7 @@ export const PurchasesView: React.FC<PurchasesViewProps> = ({
   invoices,
   partners,
   inventory,
+  currentUser,
   onAddInvoice,
   onUpdatePayment,
   onDeleteInvoice,
@@ -126,12 +128,9 @@ export const PurchasesView: React.FC<PurchasesViewProps> = ({
               <Truck className="w-5 h-5" />
             </div>
             <h2 className="text-lg font-bold text-slate-800">
-              Quản Lý Nhập Hàng & Hóa Đơn Mua Hàng Từ Xưởng (TK 156 / 331)
+              Nhập Hàng Xưởng
             </h2>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Theo dõi hóa đơn mua vào, chi tiết lô hàng, thuế GTGT được khấu trừ (TK 1331) & công nợ phải trả xưởng may (TK 331)
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -363,14 +362,14 @@ export const PurchasesView: React.FC<PurchasesViewProps> = ({
         onUpdatePayment={onUpdatePayment}
       />
 
-      {/* Invoice Creation Modal */}
-      <InvoiceModal
+      {/* Dedicated Purchase Creation Modal */}
+      <CreatePurchaseModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={onAddInvoice}
         partners={partners}
         inventory={inventory}
-        initialType="PURCHASE"
+        currentUser={currentUser}
       />
 
     </div>

@@ -13,6 +13,7 @@ import {
   Loader2,
   Sparkles
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { Partner } from '../../types/accounting';
 import { formatCurrency, getCurrentISODate } from '../../utils/formatters';
 
@@ -271,14 +272,14 @@ export const CustomerDebtModal: React.FC<CustomerDebtModalProps> = ({
                 <CreditCard className="w-3.5 h-3.5 text-[#fb6f92]" />
                 <span>Phương Thức Thanh Toán *</span>
               </label>
-              <select
+              <Dropdown
                 value={paymentMethod}
                 onChange={e => setPaymentMethod(e.target.value as 'CASH' | 'BANK')}
-                className="w-full bg-[#fbf8ff] border border-pink-200 rounded-xl p-2 font-semibold text-slate-800 focus:outline-none focus:border-[#fb6f92]"
+                className="w-full bg-[#fbf8ff] border-pink-200 font-semibold text-slate-800"
               >
                 <option value="CASH">💵 Tiền Mặt (TK Quỹ 1111)</option>
                 <option value="BANK">🏦 Chuyển Khoản Ngân Hàng (TK 1121)</option>
-              </select>
+              </Dropdown>
             </div>
           </div>
 

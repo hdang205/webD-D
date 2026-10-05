@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Printer, Plus, Trash2, PackagePlus, PackageMinus } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { InventoryItem, InventoryLog, InventoryMovementType, Partner } from '../../types/accounting';
 import { getCurrentISODate, formatCurrency } from '../../utils/formatters';
 import { numberToVietnameseWords } from '../../utils/numberToWords';
@@ -242,16 +243,17 @@ export const StockVoucherModal: React.FC<StockVoucherModalProps> = ({
               <label className="block text-[#4e4447] font-semibold mb-1">
                 {type === 'IMPORT' ? 'Nhà Cung Cấp / Xưởng' : 'Khách Hàng / Showroom'}
               </label>
-              <select
+              <Dropdown
                 value={partnerId}
                 onChange={e => handlePartnerSelect(e.target.value)}
-                className="w-full bg-white border border-pink-200 rounded-lg px-3 py-1.5 text-slate-900 focus:outline-none focus:border-[#fb6f92]"
+                className="w-full bg-white border-pink-200"
+                searchPlaceholder="Tìm kiếm đối tác..."
               >
                 <option value="">-- Chọn đối tác mẫu --</option>
                 {partners.map(p => (
                   <option key={p.id} value={p.id}>{p.code} - {p.name}</option>
                 ))}
-              </select>
+              </Dropdown>
             </div>
 
             <div>
@@ -279,22 +281,22 @@ export const StockVoucherModal: React.FC<StockVoucherModalProps> = ({
 
             <div>
               <label className="block text-[#4e4447] font-semibold mb-1">Tài Khoản Kho</label>
-              <select
+              <Dropdown
                 value={stockAccountCode}
                 onChange={e => setStockAccountCode(e.target.value)}
-                className="w-full bg-white border border-pink-200 rounded-lg px-3 py-1.5 text-slate-900 focus:outline-none focus:border-[#fb6f92]"
+                className="w-full bg-white border-pink-200 font-medium"
               >
                 <option value="156">TK 156 - Hàng hóa thời trang</option>
                 <option value="152">TK 152 - Nguyên vật liệu may mặc</option>
-              </select>
+              </Dropdown>
             </div>
 
             <div>
               <label className="block text-[#4e4447] font-semibold mb-1">TK Đối Ứng</label>
-              <select
+              <Dropdown
                 value={oppositeAccountCode}
                 onChange={e => setOppositeAccountCode(e.target.value)}
-                className="w-full bg-white border border-pink-200 rounded-lg px-3 py-1.5 text-slate-900 focus:outline-none focus:border-[#fb6f92]"
+                className="w-full bg-white border-pink-200 font-medium"
               >
                 {type === 'IMPORT' ? (
                   <>
@@ -304,12 +306,13 @@ export const StockVoucherModal: React.FC<StockVoucherModalProps> = ({
                   </>
                 ) : (
                   <>
-                    <option value="632">TK 632 - Giá vốn hàng bán</option>
-                    <option value="641">TK 641 - Chi phí bán hàng (mẫu, trưng bày)</option>
-                    <option value="642">TK 642 - Chi phí quản lý doanh nghiệp</option>
+                    <option value="632">TK 632 - Giá vốn hàng bán (COGS)</option>
+                    <option value="154">TK 154 - Chi phí SXKD dở dang</option>
+                    <option value="641">TK 641 - Chi phí bán hàng</option>
+                    <option value="642">TK 642 - Chi phí quản lý DN</option>
                   </>
                 )}
-              </select>
+              </Dropdown>
             </div>
 
             <div>
@@ -370,10 +373,12 @@ export const StockVoucherModal: React.FC<StockVoucherModalProps> = ({
                       <td className="p-2 text-center text-[#6c595f] font-mono">{idx + 1}</td>
                       
                       <td className="p-2">
-                        <select
+                        <Dropdown
+                          size="sm"
                           value={item.itemId}
                           onChange={e => handleItemSelect(idx, e.target.value)}
-                          className="w-full bg-white border border-pink-200 rounded px-2 py-1 text-slate-800 focus:outline-none focus:border-[#fb6f92]"
+                          className="w-full bg-white border-pink-200"
+                          searchPlaceholder="Tìm kiếm sản phẩm..."
                         >
                           <option value="">-- Chọn sản phẩm --</option>
                           {inventory.map(inv => (
@@ -381,7 +386,7 @@ export const StockVoucherModal: React.FC<StockVoucherModalProps> = ({
                               {inv.code} - {inv.name} (Tồn: {inv.openingQuantity})
                             </option>
                           ))}
-                        </select>
+                        </Dropdown>
                       </td>
 
                       <td className="p-2">

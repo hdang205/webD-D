@@ -185,7 +185,7 @@ def create_demo_script_document(output_path):
         ("Dữ liệu khởi tạo chuẩn", "Trước khi quay, chạy lệnh `npm run db:seed` để khôi phục cơ sở dữ liệu mẫu chuẩn của D&D Fashion với đầy đủ 20 mẫu thời trang, khách VIP, xưởng may và tồn kho."),
         ("Độ phân giải & Zoom", "Màn hình 1080p (1920x1080) hoặc 2K. Mở trình duyệt Chrome/Edge, phóng to cửa sổ toàn màn hình (F11 hoặc tối đa cửa sổ), Zoom trình duyệt 100% (hoặc 90% nếu cần không gian rộng)."),
         ("Thiết lập âm thanh", "Micro thu âm rõ ràng, bật chế độ lọc ồn (Noise Suppression). Đọc với tốc độ vừa phải, ngữ điệu tự tin, dứt khoát, nhấn nhá ở các tính năng nổi bật."),
-        ("Phím tắt vàng khi thao tác", "• F1: Bật Trợ lý Kế toán AI (Gemini)\n• F2: Mở nhanh Trạm POS Quầy\n• F3: Mở Đề xuất Nhập/Xuất kho\n• F4: Khóa màn hình nhanh (Security Lock)"),
+        ("Phím tắt vàng khi thao tác", "• F2: Mở nhanh Trạm POS Quầy\n• F3: Mở Đề xuất Nhập/Xuất kho\n• F4: Khóa màn hình nhanh (Security Lock)"),
         ("Tài khoản demo sẵn sàng", "Chuẩn bị sẵn danh sách username/password để đăng nhập mượt mà không bị ngập ngừng.")
     ]
 
@@ -291,7 +291,7 @@ def create_demo_script_document(output_path):
         r.font.color.rgb = COLOR_WHITE
 
     timeline_data = [
-        ("Phần 1", "00:00 - 01:15", "Mở đầu, giới thiệu tổng quan hệ sinh thái D&D Fashion ERP", "Kiến trúc React 19 + Express + SQLite trigger + GenAI"),
+        ("Phần 1", "00:00 - 01:15", "Mở đầu, giới thiệu tổng quan hệ sinh thái D&D Fashion ERP", "Kiến trúc React 19 + Express + SQLite trigger"),
         ("Phần 2", "01:15 - 02:30", "Xác thực JWT, Phân quyền RBAC & Đổi mật khẩu chuẩn bcrypt", "Bảo mật tài khoản, không lưu plaintext, mã hóa bcrypt an toàn"),
         ("Phần 3", "02:30 - 04:00", "Dashboard Điều Hành Doanh Nghiệp 6 chỉ số trọng yếu", "100% dữ liệu sống từ SQLite, biểu đồ 6 tháng, cảnh báo nợ/hết hàng"),
         ("Phần 4", "04:00 - 05:45", "Quản lý Master Data (Sản phẩm, Danh mục, Khách VIP, NCC, Nhân sự)", "Mẫu mã thời trang đa size/màu, tính toàn vẹn danh mục, liên kết tài khoản"),
@@ -300,7 +300,7 @@ def create_demo_script_document(output_path):
         ("Phần 7", "09:30 - 10:45", "Đề xuất Nhập/Xuất kho & Quy trình Duyệt đa cấp (F3)", "Quy trình đề xuất đặt may/bổ sung, cấp quản lý duyệt, 1-click chuyển đơn mua"),
         ("Phần 8", "10:45 - 12:15", "Quản lý Tồn Kho, Thẻ kho 01/02-VT, Điều chỉnh kho & Kiểm kê", "Thẻ kho truy vết chi tiết từng giây, phiếu điều chỉnh an toàn, xử lý hàng lỗi"),
         ("Phần 9", "12:15 - 14:00", "Kế toán Tài chính, Sổ quỹ thu chi & Quản lý Công Nợ 131/331", "Sổ quỹ 1111/1121, phiếu thu chi tự động định khoản, thu nợ/trả nợ 1-click, Excel"),
-        ("Phần 10", "14:00 - 15:30", "Báo cáo Tài chính Đa chiều & Trợ lý Kế toán Thông minh Gemini AI", "P&L Lãi Lỗ, Top bán chạy, chuẩn VAS TT133/200, Trợ lý Gemini AI (F1)"),
+        ("Phần 10", "14:00 - 15:30", "Báo cáo Tài chính Đa chiều & Phân tích Quản trị", "P&L Lãi Lỗ, Top bán chạy, chuẩn VAS TT133/200"),
         ("Phần 11", "15:30 - 16:00", "Khóa màn hình bảo mật F4 & Tổng kết bài thuyết trình", "Tổng kết ưu thế vượt trội, khẳng định giá trị ứng dụng thực tiễn")
     ]
 
@@ -414,7 +414,7 @@ def create_demo_script_document(output_path):
          "Trong ngành thời trang bán lẻ, bài toán quản lý mẫu mã đa kích cỡ, nhiều màu sắc, cùng vòng quay hàng tồn kho nhanh và quy trình từ xưởng may đến quầy thu ngân luôn là thách thức lớn. Hệ thống D&D Fashion ERP ra đời để giải quyết trọn vẹn chuỗi giá trị này: từ nhập vải, đặt may xưởng, kiểm soát tồn kho theo thẻ kho, bán lẻ quầy POS, quản lý công nợ khách sỉ, đến sổ quỹ thu chi và báo cáo tài chính."),
         ("00:55 - 01:15\nTổng quan công nghệ", 
          "Mở tab trình bày ngắn về công nghệ hoặc để màn hình sẵn sàng đăng nhập.", 
-         "Về mặt công nghệ, hệ thống được xây dựng trên nền tảng hiện đại: Frontend với React 19, TypeScript và Tailwind CSS tối ưu trải nghiệm người dùng; Backend Node.js Express kết hợp hệ quản trị cơ sở dữ liệu SQLite bền vững với cơ chế Trigger tự động và Atomic Rollback; bảo mật xác thực JWT, mã hóa mật khẩu bcrypt, cùng sự trợ lực của Trí tuệ nhân tạo Google Gemini AI.")
+         "Về mặt công nghệ, hệ thống được xây dựng trên nền tảng hiện đại: Frontend với React 19, TypeScript và Tailwind CSS tối ưu trải nghiệm người dùng; Backend Node.js Express kết hợp hệ quản trị cơ sở dữ liệu SQLite bền vững với cơ chế Trigger tự động và Atomic Rollback; bảo mật xác thực JWT, mã hóa mật khẩu bcrypt.")
     ]
     add_scene_section(1, "Mở Đầu & Giới Thiệu Tổng Quan Hệ Sinh Thái D&D Fashion", "00:00 - 01:15", 
                       "Tạo ấn tượng mạnh ban đầu về sự bài bản, chuyên nghiệp của giải pháp ERP thời trang và cấu trúc công nghệ tiên tiến.",
@@ -589,34 +589,28 @@ def create_demo_script_document(output_path):
                       "Nhấn mạnh tính năng nút 'Thu nợ' tự điền sẵn dữ liệu, giúp kế toán tiết kiệm 80% thời gian tác nghiệp.")
 
     # -------------------------------------------------------------
-    # SCENE 10: BÁO CÁO TÀI CHÍNH & TRỢ LÝ TRÍ TUỆ NHÂN TẠO GEMINI AI
+    # SCENE 10: BÁO CÁO TÀI CHÍNH & PHÂN TÍCH QUẢN TRỊ
     # -------------------------------------------------------------
     s10_steps = [
-        ("14:00 - 14:35\nTab Kế Toán → Báo Cáo Tài Chính\n(`reports`)", 
+        ("14:00 - 15:30\nTab Kế Toán → Báo Cáo Tài Chính\n(`reports`)", 
          "Click menu '📊 Báo Cáo Tài Chính'. Xem các tab con: Tổng quan cửa hàng, Doanh thu theo thời gian, Top sản phẩm bán chạy (Best Sellers), Báo cáo Lãi Lỗ P&L.", 
-         "Phân hệ Báo Cáo Tài Chính cung cấp góc nhìn đa chiều về sức khỏe doanh nghiệp thời trang: Báo cáo doanh thu theo từng mốc ngày, tháng, quý, năm; Bảng xếp hạng Top sản phẩm bán chạy nhất; Hiệu suất bán hàng của từng nhân viên; và Báo cáo Kết quả Hoạt động Kinh doanh P&L phản ánh chi tiết Doanh thu thuần, Giá vốn hàng bán và Lợi nhuận gộp."),
-        ("14:35 - 15:05\nNhấn F1 mở Trợ Lý Gemini AI\n(`ai-assistant`)", 
-         "Bấm phím tắt F1 (hoặc click icon Sparkles trên Header). Modal Trợ Lý AI xuất hiện với giao diện hiện đại, chuyên nghiệp.", 
-         "Và đây là tính năng đột phá mang đậm dấu ấn công nghệ 4.0: Trợ Lý Kế Toán & Cố Vấn Thời Trang Trí Tuệ Nhân Tạo Google Gemini AI – kích hoạt tức thì bằng phím tắt F1!"),
-        ("15:05 - 15:30\nHỏi đáp nghiệp vụ kế toán & cố vấn", 
-         "Click vào câu hỏi mẫu: 'Chi trả tiền thuê mặt bằng showroom 15 triệu hạch toán Nợ/Có như thế nào?' hoặc gõ câu hỏi thực tế. AI phân tích và trả lời chuẩn Thông tư 133/200.", 
-         "Trợ lý AI được nạp dữ liệu ngữ cảnh thực tế của cửa hàng D&D và am hiểu sâu sắc Chế độ kế toán Việt Nam. Người dùng có thể hỏi về cách định khoản các chi phí đặc thù như thuê mặt bằng, chi phí chụp lookbook, khấu hao máy móc, hoặc yêu cầu AI phân tích cơ cấu giá vốn của các bộ sưu tập thời trang mới. Câu trả lời chuẩn xác, nhanh chóng và vô cùng hữu ích!")
+         "Phân hệ Báo Cáo Tài Chính cung cấp góc nhìn đa chiều về sức khỏe doanh nghiệp thời trang: Báo cáo doanh thu theo từng mốc ngày, tháng, quý, năm; Bảng xếp hạng Top sản phẩm bán chạy nhất; Hiệu suất bán hàng của từng nhân viên; và Báo cáo Kết quả Hoạt động Kinh doanh P&L phản ánh chi tiết Doanh thu thuần, Giá vốn hàng bán và Lợi nhuận gộp theo chuẩn Chế độ Kế toán Việt Nam Thông tư 133 và 200.")
     ]
-    add_scene_section(10, "Báo Cáo Tài Chính Đa Chiều & Trợ Lý Gemini AI Đột Phá", "14:00 - 15:30",
-                      "Kết hợp giữa báo cáo phân tích quản trị sắc bén và công nghệ Trí tuệ nhân tạo Gemini AI tiên tiến nhất hiện nay.",
+    add_scene_section(10, "Báo Cáo Tài Chính Đa Chiều & Phân Tích Quản Trị", "14:00 - 15:30",
+                      "Báo cáo phân tích quản trị sắc bén, trực quan và chuẩn mực kế toán Việt Nam.",
                       s10_steps,
-                      "Hãy nhấn phím F1 dứt khoát trên bàn phím để kích hoạt AI modal một cách ấn tượng. Để AI generate câu trả lời trong khoảng 2-3 giây rồi lướt xem câu trả lời chi tiết.")
+                      "Lướt qua các biểu đồ doanh thu và bảng tổng hợp số liệu P&L chi tiết để thể hiện năng lực quản trị tài chính toàn diện của hệ thống.")
 
     # -------------------------------------------------------------
     # SCENE 11: KHÓA MÀN HÌNH (F4) & TỔNG KẾT BẾ MẠC
     # -------------------------------------------------------------
     s11_steps = [
         ("15:30 - 15:45\nNhấn F4 Khóa Màn Hình Nhanh\n(Screen Lock)", 
-         "Đóng modal AI. Bấm phím tắt F4. Màn hình bảo mật Khóa Màn Hình hiển thị làm mờ toàn bộ giao diện làm việc, yêu cầu nhập mật khẩu để mở khóa.", 
+         "Bấm phím tắt F4. Màn hình bảo mật Khóa Màn Hình hiển thị làm mờ toàn bộ giao diện làm việc, yêu cầu nhập mật khẩu để mở khóa.", 
          "Trước khi kết thúc, em xin giới thiệu thêm một tính năng tiện ích rất thực tế tại các showroom thời trang: Phím tắt F4 Khóa Màn Hình Nhanh. Khi nhân viên thu ngân hoặc kế toán cần rời khỏi quầy trong giây lát, chỉ cần nhấn F4, toàn bộ màn hình sẽ được khóa an toàn, ngăn chặn việc lộ dữ liệu doanh thu hoặc sửa đổi chứng từ."),
         ("15:45 - 16:15\nMở khóa & Lời kết bế mạc video", 
          "Nhập mật khẩu mở khóa thành công. Quay lại màn hình chính Dashboard. Di chuyển chuột nhẹ nhàng và nhìn vào camera gửi lời cảm ơn.", 
-         "Tổng kết lại, D&D FASHION ERP đã hiện thực hóa trọn vẹn một giải pháp quản trị toàn diện: từ giao diện tinh tế, thân thiện, kiến trúc công nghệ hiện đại, cơ sở dữ liệu SQLite bền vững với cơ chế bảo toàn dữ liệu nghiêm ngặt, cho đến sự hỗ trợ đắc lực của Trí tuệ nhân tạo AI. Hệ thống hoàn toàn sẵn sàng ứng dụng thực tế vào việc vận hành chuỗi thời trang chuyên nghiệp.\n\nEm xin chân thành cảm ơn quý thầy cô và các bạn đã chú ý lắng nghe và theo dõi phần trình diễn demo. Kính chúc quý thầy cô nhiều sức khỏe và thành công!")
+         "Tổng kết lại, D&D FASHION ERP đã hiện thực hóa trọn vẹn một giải pháp quản trị toàn diện: từ giao diện tinh tế, thân thiện, kiến trúc công nghệ hiện đại, cơ sở dữ liệu SQLite bền vững với cơ chế bảo toàn dữ liệu nghiêm ngặt. Hệ thống hoàn toàn sẵn sàng ứng dụng thực tế vào việc vận hành chuỗi thời trang chuyên nghiệp.\n\nEm xin chân thành cảm ơn quý thầy cô và các bạn đã chú ý lắng nghe và theo dõi phần trình diễn demo. Kính chúc quý thầy cô nhiều sức khỏe và thành công!")
     ]
     add_scene_section(11, "Khóa Màn Hình Nhanh (F4) & Lời Kết Bế Mạc Thuyết Trình", "15:30 - 16:15",
                       "Kết thúc video một cách trọn vẹn, thuyết phục, lịch thiệp và để lại ấn tượng sâu đậm về tính hoàn thiện cao của dự án.",
@@ -654,7 +648,7 @@ def create_demo_script_document(output_path):
         ("5", "Nhập hàng & Trigger tăng kho", "Lập đơn nhập xưởng HDM, xác nhận tồn kho tăng tự động qua SQLite Trigger."),
         ("6", "Đề xuất & Duyệt 1-Click", "Nhấn F3 tạo đề xuất, duyệt đề xuất và chuyển đổi thành đơn mua hàng."),
         ("7", "Thẻ kho & Sổ quỹ & Công nợ", "Kiểm tra thẻ kho mẫu 01/02-VT, lập phiếu thu/chi có định khoản, đối soát công nợ 131/331."),
-        ("8", "Trợ lý Gemini AI & Phím tắt", "Nhấn F1 gọi AI tư vấn nghiệp vụ kế toán, nhấn F4 test khóa màn hình bảo mật.")
+        ("8", "Phím tắt F4 & Khóa Màn Hình", "Nhấn F4 test khóa màn hình bảo mật và mở khóa an toàn.")
     ]
 
     for r_idx, (stt, item, standard) in enumerate(checklist_items):

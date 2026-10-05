@@ -30,7 +30,6 @@ import { InventoryView } from './components/Inventory/InventoryView';
 import { AccountsView } from './components/ChartOfAccounts/AccountsView';
 import { JournalView } from './components/GeneralJournal/JournalView';
 import { ReportsView } from './components/Reports/ReportsView';
-import { AIAssistantModal } from './components/AIAssistant/AIAssistantModal';
 import { SettingsModal } from './components/CompanySettings/SettingsModal';
 import { PrintDocumentModal } from './components/PrintModal/PrintDocumentModal';
 import { TransactionModal } from './components/CashBook/TransactionModal';
@@ -154,10 +153,7 @@ export default function App() {
   // Global hotkeys listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'F1') {
-        e.preventDefault();
-        setIsAIAssistantOpen(prev => !prev);
-      } else if (e.key === 'F2') {
+      if (e.key === 'F2') {
         e.preventDefault();
         setActiveTab('pos');
       } else if (e.key === 'F3') {
@@ -189,7 +185,6 @@ export default function App() {
   const [careReminders, setCareReminders] = useState<CareReminder[]>(StorageService.getCareReminders);
 
   // Modals state
-  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [printDoc, setPrintDoc] = useState<{ 
     doc: CashTransaction | Invoice | InventoryLog | null; 
@@ -220,24 +215,27 @@ export default function App() {
     // 1. Tải sản phẩm từ SQLite
     ProductService.getAll()
       .then(items => { 
-        if (items && items.length > 0) setInventory(items); 
-        else setInventory(StorageService.getInventory());
+        if (items && Array.isArray(items)) {
+          setInventory(items);
+          StorageService.saveInventory(items);
+        } else {
+          setInventory(StorageService.getInventory());
+        }
       })
       .catch(() => setInventory(StorageService.getInventory()));
 
-    // 2. Tải đối tác (Khách hàng & Nhà cung cấp) từ SQLite (kết hợp đồng bộ cùng StorageService)
+    // 2. Tải đối tác (Khách hàng & Nhà cung cấp) từ SQLite (dùng kết quả thật từ SQLite làm nguồn chuẩn)
     Promise.all([
       CustomerService.getAll().catch(() => []),
       SupplierService.getAll().catch(() => [])
     ]).then(([custs, supps]) => {
-      const storedPartners = StorageService.getPartners();
       const map = new Map<string, Partner>();
-      (storedPartners || []).forEach(p => { if (p && p.id && p.name) map.set(p.id, p); });
       (custs || []).forEach(c => { if (c && c.id && c.name) map.set(c.id, c); });
       (supps || []).forEach(s => { if (s && s.id && s.name) map.set(s.id, s); });
       const merged = Array.from(map.values());
       if (merged.length > 0) {
         setPartners(merged);
+        StorageService.savePartners(merged);
       } else {
         setPartners(StorageService.getPartners());
       }
@@ -246,8 +244,12 @@ export default function App() {
     // 3. Tải nhân sự từ SQLite
     EmployeeService.getAll()
       .then(emps => { 
-        if (emps && emps.length > 0) setEmployees(emps); 
-        else setEmployees(StorageService.getEmployees());
+        if (emps && Array.isArray(emps)) {
+          setEmployees(emps); 
+          StorageService.saveEmployees(emps);
+        } else {
+          setEmployees(StorageService.getEmployees());
+        }
       })
       .catch(() => setEmployees(StorageService.getEmployees()));
 
@@ -257,18 +259,16 @@ export default function App() {
       SaleService.getAll().catch(() => [])
     ]).then(([purchases, sales]) => {
       const allInvoices = [...(sales || []), ...(purchases || [])];
-      if (allInvoices.length > 0) {
-        setInvoices(allInvoices);
-      } else {
-        setInvoices(StorageService.getInvoices());
-      }
+      setInvoices(allInvoices);
+      StorageService.saveInvoices(allInvoices);
     }).catch(() => setInvoices(StorageService.getInvoices()));
 
     // 5. Tải phiếu nhập xuất kho từ SQLite
     InventoryService.getLogs()
       .then(res => {
-        if (res?.logs && res.logs.length > 0) {
+        if (res?.logs && Array.isArray(res.logs)) {
           setInventoryLogs(res.logs);
+          StorageService.saveInventoryLogs(res.logs);
         } else {
           setInventoryLogs(StorageService.getInventoryLogs());
         }
@@ -278,13 +278,9 @@ export default function App() {
     // 6. Tải giao dịch thu chi sổ quỹ từ SQLite
     DebtService.getTransactions()
       .then(txs => {
-        if (txs && txs.length > 0) {
-          setCashTransactions(prev => {
-            const map = new Map<string, CashTransaction>();
-            (prev || []).forEach(t => { if (t && t.id) map.set(t.id, t); });
-            txs.forEach(t => { if (t && t.id) map.set(t.id, t); });
-            return Array.from(map.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          });
+        if (txs && Array.isArray(txs)) {
+          setCashTransactions(txs);
+          StorageService.saveCashTransactions(txs);
         }
       })
       .catch(() => {});
@@ -311,6 +307,7 @@ export default function App() {
         paidAmount: saleData.paidAmount,
         paymentMethod: saleData.paymentMethod,
         note: saleData.note || 'Bán lẻ POS Showroom D&D Fashion',
+        createdBy: currentUser?.id,
         items: saleData.items.map(it => ({
           productId: it.itemId || (it as any).productId,
           itemCode: it.itemCode,
@@ -322,7 +319,12 @@ export default function App() {
 
       const res = await SaleService.create(payload);
       if (res && res.success && res.invoice) {
-        const createdInvoice = res.invoice;
+        const createdInvoice: Invoice = {
+          ...res.invoice,
+          createdBy: res.invoice.createdBy || currentUser?.id,
+          createdByName: res.invoice.createdByName || currentUser?.name,
+          employeeName: res.invoice.employeeName || currentUser?.name
+        };
         const autoJE = generateAutoJournalEntryFromInvoice(createdInvoice);
 
         setInvoices(prev => [createdInvoice, ...prev]);
@@ -364,8 +366,28 @@ export default function App() {
     }
   };
 
-  // Handlers: Cash Transactions
-  const handleAddCashTransaction = (transData: Omit<CashTransaction, 'id'>, andPrint: boolean = false) => {
+  // Handlers: Cash Transactions (Kết nối API SQLite thật)
+  const handleAddCashTransaction = async (transData: Omit<CashTransaction, 'id'>, andPrint: boolean = false) => {
+    try {
+      const res = await DebtService.createTransaction(transData);
+      if (res && res.success && res.transaction) {
+        const createdTrans = res.transaction;
+        const autoJE = generateAutoJournalEntryFromCash(createdTrans);
+        setCashTransactions(prev => [createdTrans, ...prev]);
+        setJournalEntries(prev => [autoJE, ...prev]);
+        if (andPrint) {
+          setPrintDoc({
+            doc: createdTrans,
+            kind: 'CASH',
+          });
+        }
+        showToast(res.message || `Lập chứng từ ${createdTrans.code} thành công!`, 'success');
+        return;
+      }
+    } catch (err: any) {
+      console.warn('API tạo giao dịch sổ quỹ thất bại, lưu cục bộ:', err);
+    }
+
     const newTrans: CashTransaction = {
       ...transData,
       id: `cash_${Date.now()}`,
@@ -383,9 +405,16 @@ export default function App() {
         kind: 'CASH',
       });
     }
+    showToast(`Đã lưu chứng từ ${newTrans.code}!`, 'success');
   };
 
-  const handleDeleteCashTransaction = (id: string) => {
+  const handleDeleteCashTransaction = async (id: string) => {
+    try {
+      await DebtService.deleteTransaction(id);
+      showToast('Đã xóa chứng từ sổ quỹ thành công!', 'success');
+    } catch (err: any) {
+      console.warn('Lỗi khi xóa chứng từ sổ quỹ trên server:', err);
+    }
     setCashTransactions(prev => prev.filter(t => t.id !== id));
   };
 
@@ -450,6 +479,7 @@ export default function App() {
           customerCash: (invoiceData as any).customerCash,
           paymentMethod: (invoiceData as any).paymentMethod,
           note: invoiceData.note,
+          createdBy: currentUser?.id,
           items: invoiceData.items.map(it => ({
             productId: it.itemId || (it as any).productId,
             itemCode: it.itemCode,
@@ -461,7 +491,12 @@ export default function App() {
 
         const res = await SaleService.create(payload);
         if (res && res.success && res.invoice) {
-          const createdInvoice = res.invoice;
+          const createdInvoice: Invoice = {
+            ...res.invoice,
+            createdBy: res.invoice.createdBy || currentUser?.id,
+            createdByName: res.invoice.createdByName || currentUser?.name,
+            employeeName: res.invoice.employeeName || currentUser?.name
+          };
           const autoJE = generateAutoJournalEntryFromInvoice(createdInvoice);
           setInvoices(prev => [createdInvoice, ...prev]);
           setJournalEntries(prev => [autoJE, ...prev]);
@@ -540,12 +575,58 @@ export default function App() {
     }));
   };
 
-  const handleDeleteInvoice = (id: string) => {
+  const handleDeleteInvoice = async (id: string) => {
+    const target = invoices.find(i => i.id === id);
+    try {
+      if (target?.type === 'PURCHASE') {
+        await PurchaseService.delete(id);
+      } else {
+        await SaleService.delete(id);
+      }
+      showToast(`Đã xóa hóa đơn ${target?.code || id} thành công!`, 'success');
+
+      // Tải lại tồn kho & log kho từ SQLite
+      ProductService.getAll().then(items => {
+        if (items && Array.isArray(items)) setInventory(items);
+      });
+      InventoryService.getLogs().then(res => {
+        if (res?.logs) setInventoryLogs(res.logs);
+      });
+    } catch (err: any) {
+      console.warn('Lỗi khi xóa hóa đơn trên SQLite:', err);
+      showToast(err.message || 'Lỗi khi xóa hóa đơn', 'error');
+    }
     setInvoices(prev => prev.filter(i => i.id !== id));
   };
 
-  // Handlers: Inventory Vouchers (Phiếu Nhập Kho & Phiếu Xuất Kho)
-  const handleAddStockVoucher = (voucherData: Omit<InventoryLog, 'id'>, andPrint: boolean = false) => {
+  // Handlers: Inventory Vouchers (Phiếu Nhập Kho & Phiếu Xuất Kho - Kết nối API SQLite thật)
+  const handleAddStockVoucher = async (voucherData: Omit<InventoryLog, 'id'>, andPrint: boolean = false) => {
+    try {
+      const res = await InventoryService.createVoucher(voucherData);
+      if (res && res.success && res.voucher) {
+        const createdVoucher = res.voucher;
+        const autoJE = generateAutoJournalEntryFromStockVoucher(createdVoucher);
+        setInventoryLogs(prev => [createdVoucher, ...prev]);
+        setJournalEntries(prev => [autoJE, ...prev]);
+
+        // Cập nhật lại tồn kho sản phẩm từ SQLite
+        ProductService.getAll().then(items => {
+          if (items && Array.isArray(items)) setInventory(items);
+        });
+
+        if (andPrint) {
+          setPrintDoc({
+            doc: createdVoucher,
+            kind: createdVoucher.type === 'IMPORT' ? 'STOCK_IMPORT' : 'STOCK_EXPORT',
+          });
+        }
+        showToast(res.message || `Tạo phiếu kho ${createdVoucher.code} thành công!`, 'success');
+        return;
+      }
+    } catch (err: any) {
+      console.warn('API tạo phiếu kho thất bại, lưu cục bộ:', err);
+    }
+
     const newVoucher: InventoryLog = {
       ...voucherData,
       id: `stock_voucher_${Date.now()}`,
@@ -579,9 +660,19 @@ export default function App() {
         kind: newVoucher.type === 'IMPORT' ? 'STOCK_IMPORT' : 'STOCK_EXPORT',
       });
     }
+    showToast(`Đã lưu phiếu kho ${newVoucher.code}!`, 'success');
   };
 
-  const handleDeleteStockVoucher = (id: string) => {
+  const handleDeleteStockVoucher = async (id: string) => {
+    try {
+      await InventoryService.deleteVoucher(id);
+      ProductService.getAll().then(items => {
+        if (items && Array.isArray(items)) setInventory(items);
+      });
+      showToast('Đã xóa phiếu kho thành công!', 'success');
+    } catch (err: any) {
+      console.warn('Lỗi khi xóa phiếu kho trên SQLite:', err);
+    }
     setInventoryLogs(prev => prev.filter(v => v.id !== id));
   };
 
@@ -1092,7 +1183,6 @@ export default function App() {
         companyInfo={companyInfo}
         periodFilter={periodFilter}
         onPeriodChange={setPeriodFilter}
-        onOpenAIAssistant={() => setIsAIAssistantOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onExportBackup={StorageService.exportFullBackupJSON}
         onResetData={() => {
@@ -1276,6 +1366,7 @@ export default function App() {
                   invoices={invoices}
                   partners={partners}
                   inventory={inventory}
+                  currentUser={currentUser}
                   onAddInvoice={handleAddInvoice}
                   onUpdatePayment={handleUpdateInvoicePayment}
                   onDeleteInvoice={handleDeleteInvoice}
@@ -1405,18 +1496,6 @@ export default function App() {
         )}
 
       </div>
-
-      {/* Global AI Assistant Gemini Modal */}
-      <AIAssistantModal
-        isOpen={isAIAssistantOpen}
-        onClose={() => setIsAIAssistantOpen(false)}
-        companyInfo={companyInfo}
-        contextData={{
-          totalCashTransactions: cashTransactions.length,
-          totalInvoices: invoices.length,
-          companyInfo,
-        }}
-      />
 
       {/* Company Settings Modal */}
       <SettingsModal
@@ -1557,7 +1636,6 @@ export default function App() {
           <span className="text-emerald-400 font-sans">● Máy In Bill POS: Sẵn Sàng</span>
           <span className="text-slate-600">•</span>
           <span className="text-slate-300">Phím tắt:</span>
-          <span className="bg-slate-800 px-1.5 py-0.5 rounded text-pink-300 border border-slate-700">[F1] AI Trợ Lý</span>
           <span className="bg-slate-800 px-1.5 py-0.5 rounded text-pink-300 border border-slate-700">[F2] Thu Ngân POS</span>
           <span className="bg-slate-800 px-1.5 py-0.5 rounded text-pink-300 border border-slate-700">[F3] Đề Xuất</span>
           <span className="bg-slate-800 px-1.5 py-0.5 rounded text-amber-300 border border-slate-700">[F4] Khóa Máy</span>
@@ -1585,7 +1663,6 @@ export default function App() {
         currentUser={currentUser}
         onLogout={handleLogout}
         onFastSwitchUser={handleFastSwitchUser}
-        onOpenAIAssistant={() => setIsAIAssistantOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onExportBackup={StorageService.exportFullBackupJSON}
         onLockScreen={() => setIsScreenLocked(true)}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Save, Printer, ArrowDownLeft, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { CashTransaction, TransactionType, Partner, Account } from '../../types/accounting';
 import { getCurrentISODate } from '../../utils/formatters';
 
@@ -201,10 +202,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             {/* Select Partner */}
             <div>
               <label className="block text-slate-700 font-bold mb-1">Đối tác liên quan</label>
-              <select
+              <Dropdown
                 value={partnerId}
                 onChange={e => handlePartnerChange(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#fb6f92]"
+                className="w-full bg-white border-slate-200"
+                searchPlaceholder="Tìm kiếm đối tác..."
               >
                 <option value="">-- Chọn khách hàng / xưởng cung cấp --</option>
                 {partners.map(p => (
@@ -212,7 +214,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     {p.code} - {p.name}
                   </option>
                 ))}
-              </select>
+              </Dropdown>
             </div>
 
             {/* Person Name */}
@@ -261,22 +263,23 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             <div className="grid grid-cols-2 gap-3 font-mono">
               <div>
                 <span className="text-slate-500 block text-[11px] mb-1">Tài khoản Quỹ ({isReceipt ? 'Nợ TK' : 'Có TK'}):</span>
-                <select
+                <Dropdown
                   value={fundAccountCode}
                   onChange={e => setFundAccountCode(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl p-2 text-slate-900 font-bold"
+                  className="w-full bg-white border-slate-200 font-bold font-mono"
                 >
                   <option value="1111">1111 - Tiền mặt tại quỹ</option>
                   <option value="1121">1121 - Tiền gửi ngân hàng</option>
-                </select>
+                </Dropdown>
               </div>
 
               <div>
                 <span className="text-slate-500 block text-[11px] mb-1">Tài khoản Đối ứng ({isReceipt ? 'Có TK' : 'Nợ TK'}):</span>
-                <select
+                <Dropdown
                   value={oppositeAccountCode}
                   onChange={e => setOppositeAccountCode(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl p-2 text-slate-900 font-bold"
+                  className="w-full bg-white border-slate-200 font-bold font-mono"
+                  searchPlaceholder="Tìm tài khoản đối ứng..."
                 >
                   <option value="511">511 - Doanh thu bán hàng</option>
                   <option value="131">131 - Phải thu khách hàng</option>
@@ -286,7 +289,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   <option value="334">334 - Phải trả lương nhân viên</option>
                   <option value="156">156 - Mua hàng hóa thời trang</option>
                   <option value="141">141 - Tạm ứng nhân viên</option>
-                </select>
+                </Dropdown>
               </div>
             </div>
           </div>

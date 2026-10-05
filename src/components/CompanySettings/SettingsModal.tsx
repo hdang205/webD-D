@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Save, Building2, Upload, Download, RotateCcw } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { CompanyInfo, AccountingStandard } from '../../types/accounting';
 
 interface SettingsModalProps {
@@ -94,14 +95,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
             <div>
               <label className="block text-slate-700 font-semibold mb-1">Chế Độ Kế Toán Áp Dụng</label>
-              <select
+              <Dropdown
                 value={formData.accountingStandard}
                 onChange={e => setFormData({ ...formData, accountingStandard: e.target.value as AccountingStandard })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 focus:bg-white focus:border-[#fb6f92] focus:outline-none"
+                className="w-full bg-slate-50 border-slate-200"
               >
                 <option value="TT133">Thông tư 133/2016/TT-BTC (Doanh nghiệp nhỏ và vừa)</option>
                 <option value="TT200">Thông tư 200/2014/TT-BTC (Doanh nghiệp lớn / đầy đủ)</option>
-              </select>
+              </Dropdown>
             </div>
           </div>
 

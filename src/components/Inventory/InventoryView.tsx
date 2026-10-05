@@ -21,6 +21,7 @@ import {
   Filter,
   RefreshCw
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { InventoryItem, InventoryLog, Partner, AuthUser } from '../../types/accounting';
 import { formatCurrency, formatNumber, formatDate } from '../../utils/formatters';
 import { exportToExcel } from '../../utils/excelExport';
@@ -458,89 +459,89 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
       )}
 
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-pink-100 p-5 rounded-2xl shadow-xs">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-[#ffe5ec] text-[#a93054] rounded-xl">
+      <div className="bg-white border border-pink-100 p-4 sm:p-5 rounded-2xl shadow-xs space-y-3.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="p-2 bg-[#ffe5ec] text-[#a93054] rounded-xl shrink-0">
               <Package className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-[#181a2e]">
-                Kho Hàng & Phiếu Nhập Xuất
+              <h2 className="text-lg font-bold text-[#181a2e] whitespace-nowrap">
+                Tồn Kho & Xuất Nhập
               </h2>
-              <p className="text-xs text-[#6c595f] mt-0.5">
-                {canManageVouchers
-                  ? 'Quản lý tồn kho thực tế SQLite, điều chỉnh kiểm kê, tra cứu thẻ kho & lập phiếu xuất nhập'
-                  : 'Tra cứu tồn kho thực tế, kiểm tra số lượng size/màu & lập đề xuất khi hàng sắp hết'}
+              <p className="text-xs text-[#6c595f] hidden sm:block">
+                Quản lý theo dõi xuất - nhập - tồn kho & luân chuyển sản phẩm thời trang
               </p>
             </div>
           </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={loadInventoryData}
+              className="h-9 inline-flex items-center gap-1.5 bg-[#fbf8ff] hover:bg-pink-50 text-[#a93054] font-semibold text-xs px-3.5 rounded-xl border border-pink-200 transition cursor-pointer active:scale-95 whitespace-nowrap"
+              title="Làm mới dữ liệu từ SQLite"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>Đồng Bộ Kho</span>
+            </button>
+          </div>
         </div>
 
-        {/* Top Action Buttons - Role Aware */}
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={loadInventoryData}
-            className="flex items-center gap-1.5 bg-[#fbf8ff] hover:bg-pink-50 text-[#a93054] font-semibold text-xs px-3 py-2 rounded-xl border border-pink-200 transition cursor-pointer"
-            title="Làm mới dữ liệu từ SQLite"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Đồng Bộ Kho</span>
-          </button>
-
+        {/* Action Buttons Tier - Phiếu Kiểm Kho, Báo Hàng Lỗi, Điều Chỉnh Tồn Kho, Lập Phiếu Nhập Kho, Lập Phiếu Xuất Kho, Thêm Sản Phẩm, Xuất Excel */}
+        <div className="pt-3 border-t border-pink-100/70 flex flex-wrap items-center justify-start gap-1.5">
           {canManageVouchers && (
             <>
               <button
                 id="btn-open-audit-modal"
                 onClick={() => setIsAuditModalOpen(true)}
-                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
+                className="h-9 inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs tracking-tight px-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
               >
-                <ClipboardCheck className="w-4 h-4" />
+                <ClipboardCheck className="w-3.5 h-3.5" />
                 <span>Phiếu Kiểm Kho</span>
               </button>
 
               <button
                 id="btn-open-defect-modal"
                 onClick={() => setIsDefectModalOpen(true)}
-                className="flex items-center gap-1.5 bg-linear-to-r from-amber-600 to-rose-600 hover:opacity-95 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
+                className="h-9 inline-flex items-center gap-1 bg-linear-to-r from-amber-600 to-rose-600 hover:opacity-95 text-white font-bold text-xs tracking-tight px-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
               >
-                <AlertTriangle className="w-4 h-4" />
+                <AlertTriangle className="w-3.5 h-3.5" />
                 <span>Báo Hàng Lỗi</span>
               </button>
 
               <button
                 id="btn-open-adjust-modal"
                 onClick={() => handleOpenAdjustModal()}
-                className="flex items-center gap-1.5 bg-[#f4f2ff] hover:bg-[#edecff] text-[#a93054] font-bold text-xs px-3.5 py-2 rounded-xl border border-pink-200 transition cursor-pointer shadow-xs active:scale-95"
+                className="h-9 inline-flex items-center gap-1 bg-[#f4f2ff] hover:bg-[#edecff] text-[#a93054] font-bold text-xs tracking-tight px-2 rounded-xl border border-pink-200 transition cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
               >
-                <Sliders className="w-4 h-4 text-[#a93054]" />
+                <Sliders className="w-3.5 h-3.5 text-[#a93054]" />
                 <span>Điều Chỉnh Tồn Kho</span>
               </button>
 
               <button
                 id="btn-create-import-voucher"
                 onClick={() => handleOpenVoucherModal('IMPORT')}
-                className="flex items-center gap-1.5 bg-[#fb6f92] hover:bg-[#e0557b] text-white font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
+                className="h-9 inline-flex items-center gap-1 bg-[#fb6f92] hover:bg-[#e0557b] text-white font-bold text-xs tracking-tight px-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
               >
-                <PackagePlus className="w-4 h-4" />
+                <PackagePlus className="w-3.5 h-3.5" />
                 <span>Lập Phiếu Nhập Kho</span>
               </button>
 
               <button
                 id="btn-create-export-voucher"
                 onClick={() => handleOpenVoucherModal('EXPORT')}
-                className="flex items-center gap-1.5 bg-[#a93054] hover:bg-[#89153d] text-white font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
+                className="h-9 inline-flex items-center gap-1 bg-[#a93054] hover:bg-[#89153d] text-white font-bold text-xs tracking-tight px-2 rounded-xl transition cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
               >
-                <PackageMinus className="w-4 h-4" />
+                <PackageMinus className="w-3.5 h-3.5" />
                 <span>Lập Phiếu Xuất Kho</span>
               </button>
 
               {roleConfig.canEditProducts && (
                 <button
                   onClick={() => setIsItemModalOpen(true)}
-                  className="flex items-center gap-1.5 bg-white hover:bg-[#fbf8ff] text-[#181a2e] font-semibold text-xs px-3 py-2 rounded-xl border border-pink-200 transition cursor-pointer"
+                  className="h-9 inline-flex items-center gap-1 bg-white hover:bg-[#fbf8ff] text-[#181a2e] font-semibold text-xs tracking-tight px-2 rounded-xl border border-pink-200 transition cursor-pointer active:scale-95 whitespace-nowrap"
                 >
-                  <Plus className="w-4 h-4 text-[#a93054]" />
+                  <Plus className="w-3.5 h-3.5 text-[#a93054]" />
                   <span>Thêm Sản Phẩm</span>
                 </button>
               )}
@@ -550,19 +551,19 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
           {(!canManageVouchers && onNavigateToRequisitions) && (
             <button
               onClick={onNavigateToRequisitions}
-              className="flex items-center gap-1.5 bg-[#fb6f92] hover:bg-[#e0557b] text-white font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer shadow-xs"
+              className="h-9 inline-flex items-center gap-1 bg-[#fb6f92] hover:bg-[#e0557b] text-white font-bold text-xs tracking-tight px-2 rounded-xl transition cursor-pointer shadow-xs whitespace-nowrap"
             >
-              <ClipboardCheck className="w-4 h-4" />
+              <ClipboardCheck className="w-3.5 h-3.5" />
               <span>Đề Xuất Nhập Mẫu Hết Hàng</span>
             </button>
           )}
 
           <button
             onClick={handleExportExcel}
-            className="flex items-center gap-1.5 bg-white hover:bg-[#fbf8ff] text-[#4e4447] font-semibold text-xs px-3 py-2 rounded-xl border border-pink-200 transition cursor-pointer shadow-2xs"
+            className="h-9 inline-flex items-center gap-1 bg-white hover:bg-[#fbf8ff] text-[#4e4447] font-semibold text-xs tracking-tight px-2 rounded-xl border border-pink-200 transition cursor-pointer shadow-2xs whitespace-nowrap"
           >
             <Download className="w-3.5 h-3.5 text-[#fb6f92]" />
-            <span>Xuất Excel (.xlsx)</span>
+            <span>Xuất Excel</span>
           </button>
         </div>
       </div>
@@ -748,20 +749,19 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
         <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
           {/* Category Filter Dropdown */}
           {activeTab === 'STOCK' && (
-            <div className="flex items-center gap-1 bg-white border border-pink-200 rounded-xl px-2.5 py-1 text-xs">
-              <Filter className="w-3.5 h-3.5 text-slate-400" />
-              <select
-                id="select-category-filter"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-transparent border-none text-xs text-[#181a2e] focus:outline-none cursor-pointer pr-1"
-              >
-                <option value="ALL">Tất cả danh mục ({displayProducts.length})</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
+            <Dropdown
+              id="select-category-filter"
+              size="sm"
+              prefixIcon={<Filter className="w-3.5 h-3.5 text-slate-400" />}
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-white border-pink-200 font-medium"
+            >
+              <option value="ALL">Tất cả danh mục ({displayProducts.length})</option>
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </Dropdown>
           )}
 
           {/* Status Filter Tabs (Chỉ cho Tab Stock) */}
@@ -932,9 +932,10 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
 
                               {roleConfig.canEditProducts && (
                                 <button
-                                  onClick={() => {
+                                  onClick={async () => {
                                     if (confirm(`Xác nhận xóa sản phẩm ${item.name}?`)) {
-                                      onDeleteItem(item.id);
+                                      await onDeleteItem(item.id);
+                                      loadInventoryData();
                                     }
                                   }}
                                   className="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition cursor-pointer"
@@ -1386,9 +1387,10 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                           </button>
                           {canManageVouchers && (
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 if (confirm(`Xóa phiếu nhập ${log.code}? Tồn kho sẽ được hoàn lại tương ứng.`)) {
-                                  onDeleteStockVoucher(log.id);
+                                  await onDeleteStockVoucher(log.id);
+                                  loadInventoryData();
                                 }
                               }}
                               className="p-1 text-slate-400 hover:text-rose-600 rounded transition cursor-pointer"
@@ -1453,9 +1455,10 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                           </button>
                           {canManageVouchers && (
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 if (confirm(`Xóa phiếu xuất ${log.code}? Tồn kho sẽ được phục hồi tương ứng.`)) {
-                                  onDeleteStockVoucher(log.id);
+                                  await onDeleteStockVoucher(log.id);
+                                  loadInventoryData();
                                 }
                               }}
                               className="p-1 text-slate-400 hover:text-rose-600 rounded transition cursor-pointer"
@@ -1488,7 +1491,10 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
       <ItemModal
         isOpen={isItemModalOpen}
         onClose={() => setIsItemModalOpen(false)}
-        onSave={onAddItem}
+        onSave={async (item) => {
+          await onAddItem(item);
+          loadInventoryData();
+        }}
       />
 
       {/* Stock Voucher Modal for creating Import/Export vouchers */}
@@ -1498,7 +1504,10 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
         inventory={inventory}
         partners={partners}
         onClose={() => setIsVoucherModalOpen(false)}
-        onSave={onAddStockVoucher}
+        onSave={async (voucher, andPrint) => {
+          await onAddStockVoucher(voucher, andPrint);
+          loadInventoryData();
+        }}
       />
 
       {/* Stock Audit Modal */}

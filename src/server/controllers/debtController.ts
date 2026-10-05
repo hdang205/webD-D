@@ -485,3 +485,118 @@ export function getDebtTransactions(_req: Request, res: Response): void {
     handleDbError(res, error, 'Lỗi khi tải danh sách giao dịch sổ quỹ');
   }
 }
+
+/**
+ * Tạo mới phiếu thu / phiếu chi sổ quỹ
+ * POST /api/debts/transactions
+ */
+export function createCashTransaction(req: AuthenticatedRequest, res: Response): void {
+  try {
+    const {
+      code,
+      date,
+      type,
+      personName,
+      personAddress,
+      reason,
+      amount,
+      oppositeAccountCode,
+      fundAccountCode,
+      partnerId,
+      note
+    } = req.body;
+
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      res.status(400).json({ success: false, error: 'Số tiền thu/chi phải lớn hơn 0.' });
+      return;
+    }
+
+    if (!reason || !reason.trim()) {
+      res.status(400).json({ success: false, error: 'Lý do thu/chi không được để trống.' });
+      return;
+    }
+
+    const validTypes = ['CASH_RECEIPT', 'CASH_PAYMENT', 'BANK_DEPOSIT', 'BANK_WITHDRAWAL'];
+    if (!type || !validTypes.includes(type)) {
+      res.status(400).json({ success: false, error: 'Loại nghiệp vụ thu/chi không hợp lệ.' });
+      return;
+    }
+
+    const timestamp = Date.now();
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const isReceipt = type === 'CASH_RECEIPT' || type === 'BANK_DEPOSIT';
+    const isBank = type === 'BANK_DEPOSIT' || type === 'BANK_WITHDRAWAL';
+    const prefix = isReceipt ? (isBank ? 'BC' : 'PT') : (isBank ? 'BN' : 'PC');
+    const transId = `cash_${timestamp}_${rand.toLowerCase()}`;
+    const transCode = (typeof code === 'string' && code.trim()) ? code.trim() : `${prefix}-${timestamp.toString().slice(-6)}`;
+    const transDate = (typeof date === 'string' && date.trim()) ? date.trim() : new Date().toISOString().split('T')[0];
+
+    db.prepare(`
+      INSERT INTO cash_transactions (
+        id, code, date, type, person_name, person_address, reason, amount,
+        opposite_account_code, fund_account_code, partner_id, created_by,
+        created_by_name, note, created_at
+      ) VALUES (
+        @id, @code, @date, @type, @personName, @personAddress, @reason, @amount,
+        @oppositeAccountCode, @fundAccountCode, @partnerId, @createdBy,
+        @createdByName, @note, datetime('now')
+      )
+    `).run({
+      id: transId,
+      code: transCode,
+      date: transDate,
+      type,
+      personName: (personName && personName.trim()) || (isReceipt ? 'Người nộp tiền' : 'Người nhận tiền'),
+      personAddress: personAddress || '',
+      reason: reason.trim(),
+      amount: numAmount,
+      oppositeAccountCode: oppositeAccountCode || (isReceipt ? '511' : '642'),
+      fundAccountCode: fundAccountCode || (isBank ? '1121' : '1111'),
+      partnerId: partnerId || null,
+      createdBy: req.user?.id || null,
+      createdByName: req.user?.name || 'Thủ Quỹ D&D',
+      note: note || ''
+    });
+
+    const created = db.prepare('SELECT * FROM cash_transactions WHERE id = ?').get(transId);
+
+    res.status(201).json({
+      success: true,
+      message: `Lập ${isReceipt ? 'phiếu thu' : 'phiếu chi'} ${transCode} thành công.`,
+      transaction: formatCashTransaction(created)
+    });
+  } catch (error) {
+    handleDbError(res, error, 'Lỗi khi tạo giao dịch sổ quỹ');
+  }
+}
+
+/**
+ * Xóa giao dịch thu chi sổ quỹ
+ * DELETE /api/debts/transactions/:id
+ */
+export function deleteCashTransaction(req: AuthenticatedRequest, res: Response): void {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ success: false, error: 'Thiếu ID giao dịch cần xóa.' });
+      return;
+    }
+
+    const existing = db.prepare('SELECT * FROM cash_transactions WHERE id = ?').get(id) as any;
+    if (!existing) {
+      res.status(404).json({ success: false, error: 'Không tìm thấy chứng từ thu chi.' });
+      return;
+    }
+
+    db.prepare('DELETE FROM cash_transactions WHERE id = ?').run(id);
+
+    res.json({
+      success: true,
+      message: `Đã xóa chứng từ ${existing.code} thành công.`
+    });
+  } catch (error) {
+    handleDbError(res, error, 'Lỗi khi xóa giao dịch sổ quỹ');
+  }
+}
+

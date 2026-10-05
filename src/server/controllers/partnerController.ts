@@ -103,6 +103,131 @@ export function getSuppliers(req: Request, res: Response): void {
 }
 
 /**
+ * Lấy danh sách sản phẩm do nhà cung cấp cung cấp
+ * GET /api/suppliers/:id/products?search=...&category_id=...
+ */
+export function getSupplierProducts(req: Request, res: Response): void {
+  try {
+    const supplierId = req.params.id?.trim();
+    if (!supplierId) {
+      res.status(400).json({ success: false, message: 'ID nhà cung cấp không hợp lệ' });
+      return;
+    }
+
+    const supplier = db.prepare("SELECT id, code, name FROM partners WHERE (id = ? OR code = ?) AND type IN ('SUPPLIER', 'BOTH')").get(supplierId, supplierId) as any;
+    if (!supplier) {
+      res.status(404).json({ success: false, message: 'Không tìm thấy nhà cung cấp' });
+      return;
+    }
+
+    const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+    const categoryId = typeof req.query.category_id === 'string' ? req.query.category_id.trim() : '';
+
+    let sql = `
+      SELECT 
+        p.id,
+        p.code,
+        p.name,
+        p.unit,
+        p.category_id as categoryId,
+        c.name as category,
+        c.code as categoryCode,
+        p.size,
+        p.color,
+        p.barcode,
+        p.image_url as imageUrl,
+        p.cost_price as costPrice,
+        p.selling_price as sellingPrice,
+        p.current_stock as openingQuantity,
+        p.current_stock as currentStock,
+        p.min_stock_level as minStockLevel,
+        sp.last_purchase_price as lastPurchasePrice,
+        sp.supplier_product_code as supplierProductCode,
+        sp.created_at as suppliedSince
+      FROM supplier_products sp
+      JOIN products p ON p.id = sp.product_id
+      LEFT JOIN categories c ON c.id = p.category_id
+      WHERE sp.supplier_id = ? AND sp.is_active = 1
+    `;
+    const params: any[] = [supplier.id];
+
+    if (search) {
+      sql += ` AND (p.name LIKE ? OR p.code LIKE ? OR p.barcode LIKE ?) `;
+      const pattern = `%${search}%`;
+      params.push(pattern, pattern, pattern);
+    }
+
+    if (categoryId && categoryId !== 'ALL') {
+      sql += ` AND p.category_id = ? `;
+      params.push(categoryId);
+    }
+
+    sql += ` ORDER BY p.name ASC `;
+
+    const rows = db.prepare(sql).all(...params);
+
+    res.status(200).json({
+      success: true,
+      supplier: {
+        id: supplier.id,
+        code: supplier.code,
+        name: supplier.name
+      },
+      data: rows
+    });
+  } catch (error) {
+    handleDbError(res, error, 'Lỗi khi tải danh sách sản phẩm của nhà cung cấp');
+  }
+}
+
+/**
+ * Gán một sản phẩm có sẵn cho nhà cung cấp
+ * POST /api/suppliers/:id/products
+ */
+export function linkSupplierProduct(req: Request, res: Response): void {
+  try {
+    const supplierId = req.params.id?.trim();
+    const { productId, lastPurchasePrice, supplierProductCode } = req.body || {};
+
+    if (!supplierId || !productId) {
+      res.status(400).json({ success: false, message: 'ID nhà cung cấp và ID sản phẩm là bắt buộc' });
+      return;
+    }
+
+    const supplier = db.prepare("SELECT id FROM partners WHERE (id = ? OR code = ?) AND type IN ('SUPPLIER', 'BOTH')").get(supplierId, supplierId) as any;
+    if (!supplier) {
+      res.status(404).json({ success: false, message: 'Không tìm thấy nhà cung cấp' });
+      return;
+    }
+
+    const product = db.prepare('SELECT id, cost_price FROM products WHERE id = ? OR code = ?').get(productId, productId) as any;
+    if (!product) {
+      res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' });
+      return;
+    }
+
+    const price = Number(lastPurchasePrice ?? product.cost_price ?? 0);
+    const linkId = `sp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+    db.prepare(`
+      INSERT INTO supplier_products (id, supplier_id, product_id, supplier_product_code, last_purchase_price, is_active, created_at)
+      VALUES (?, ?, ?, ?, ?, 1, datetime('now'))
+      ON CONFLICT(supplier_id, product_id) DO UPDATE SET
+        last_purchase_price = excluded.last_purchase_price,
+        supplier_product_code = COALESCE(excluded.supplier_product_code, supplier_products.supplier_product_code),
+        is_active = 1
+    `).run(linkId, supplier.id, product.id, supplierProductCode || null, price);
+
+    res.status(200).json({
+      success: true,
+      message: 'Gán sản phẩm cho nhà cung cấp thành công'
+    });
+  } catch (error) {
+    handleDbError(res, error, 'Lỗi khi gán sản phẩm cho nhà cung cấp');
+  }
+}
+
+/**
  * Lấy chi tiết một đối tác (Khách hàng hoặc NCC)
  * GET /api/customers/:id hoặc GET /api/suppliers/:id
  */

@@ -105,59 +105,56 @@ export const Dashboard: React.FC<DashboardProps> = ({
     <div id="dashboard-view" className="space-y-6 pb-8">
       
       {/* Top Banner & Quick Action Buttons */}
-      <div className="bg-white border border-pink-100 rounded-2xl p-5 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-bold text-[#181a2e] flex items-center gap-2">
-              <span>Tổng Quan Hoạt Động Kinh Doanh Thời Trang</span>
-              <span className="text-xs font-semibold text-[#a93054] bg-[#ffe5ec] px-2.5 py-0.5 rounded-full border border-pink-200">
-                Live từ SQLite
-              </span>
+      <div className="bg-white border border-pink-100 rounded-2xl p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
+          <div className="shrink-0">
+            <h2 className="text-base sm:text-lg font-bold text-[#181a2e] whitespace-nowrap">
+              Tổng Quan Hoạt Động Kinh Doanh Thời Trang
             </h2>
-            <p className="text-xs text-[#6c595f] mt-1">
-              Số liệu thời gian thực từ database D&D Fashion — cập nhật mỗi lần tải trang.
+            <p className="text-[11px] text-[#6c595f] mt-0.5">
               {!isLoading && (
-                <span className="ml-2 text-emerald-600 font-medium">
+                <span className="text-emerald-600 font-medium">
                   ● Cập nhật lúc {lastRefreshed.toLocaleTimeString('vi-VN')}
                 </span>
               )}
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-start gap-2 sm:gap-2.5 shrink-0">
             <button
               id="btn-refresh-dashboard"
               onClick={loadStats}
               disabled={isLoading}
-              className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl transition shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
+              className="h-9 inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 rounded-xl transition shadow-xs cursor-pointer active:scale-95 disabled:opacity-50 whitespace-nowrap"
             >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
               <span>Làm mới</span>
             </button>
+
             <button
               id="btn-quick-receipt"
               onClick={() => onOpenNewCashModal('CASH_RECEIPT')}
-              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-xs cursor-pointer active:scale-95"
+              className="h-9 inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 rounded-xl transition shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-3.5 h-3.5" />
               <span>Lập Phiếu Thu</span>
             </button>
 
             <button
               id="btn-quick-payment"
               onClick={() => onOpenNewCashModal('CASH_PAYMENT')}
-              className="flex items-center gap-1.5 bg-[#a93054] hover:bg-[#89153d] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-xs cursor-pointer active:scale-95"
+              className="h-9 inline-flex items-center gap-1.5 bg-[#a93054] hover:bg-[#89153d] text-white text-xs font-bold px-3.5 rounded-xl transition shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-3.5 h-3.5" />
               <span>Lập Phiếu Chi</span>
             </button>
 
             <button
               id="btn-quick-sales-inv"
               onClick={() => onOpenNewInvoiceModal('SALES')}
-              className="flex items-center gap-1.5 bg-[#fb6f92] hover:bg-[#e0557b] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-xs cursor-pointer active:scale-95"
+              className="h-9 inline-flex items-center gap-1.5 bg-[#fb6f92] hover:bg-[#e0557b] text-white text-xs font-bold px-3.5 rounded-xl transition shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
             >
-              <Receipt className="w-4 h-4" />
+              <Receipt className="w-3.5 h-3.5" />
               <span>Tạo Hóa Đơn Bán</span>
             </button>
           </div>

@@ -24,6 +24,7 @@ import {
   MapPin,
   Mail
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { InventoryItem, Partner, Invoice, InvoiceItem, CustomerTier } from '../../types/accounting';
 import { formatCurrency } from '../../utils/accountingEngine';
 import { CustomerService } from '../../services/masterDataService';
@@ -351,12 +352,11 @@ export const POSView: React.FC<POSViewProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold">Màn Hình Thu Ngân POS Showroom D&amp;D</h2>
+              <h2 className="text-lg font-bold">Bán Hàng POS Quầy</h2>
               <span className="text-[10px] font-bold bg-emerald-500 text-white px-2 py-0.5 rounded-full animate-pulse">
                 LIVE
               </span>
             </div>
-            <p className="text-xs text-rose-200">Quét mã, tạo đơn bán lẻ &amp; tự động định khoản kế toán VAS</p>
           </div>
         </div>
 
@@ -574,11 +574,12 @@ export const POSView: React.FC<POSViewProps> = ({
               </div>
             </div>
 
-            <select
+            <Dropdown
               id="select-pos-customer"
               value={selectedPartnerId}
               onChange={(e) => handleSelectPartner(e.target.value)}
-              className="w-full bg-white border border-rose-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#fb6f92]"
+              className="w-full bg-white border-rose-200"
+              searchPlaceholder="Tìm kiếm khách hàng theo tên hoặc SĐT..."
             >
               <option value="">Khách Lẻ Mua Tại Quầy (Không tích điểm)</option>
               {partners.filter(p => p.type === 'CUSTOMER' || p.type === 'BOTH').map(cust => (
@@ -586,7 +587,7 @@ export const POSView: React.FC<POSViewProps> = ({
                   {cust.name} ({cust.code} - SĐT: {cust.phone || 'N/A'})
                 </option>
               ))}
-            </select>
+            </Dropdown>
 
             {selectedPartnerId && (
               <div className="flex items-center justify-between bg-white px-2.5 py-1 rounded-lg border border-pink-100 text-[11px]">
@@ -692,16 +693,17 @@ export const POSView: React.FC<POSViewProps> = ({
                 <Percent className="w-3 h-3 text-[#fb6f92]" /> Chiết khấu:
               </span>
               <div className="flex items-center gap-2">
-                <select
+                <Dropdown
+                  size="sm"
                   value={discountPercent}
                   onChange={(e) => setDiscountPercent(Number(e.target.value))}
-                  className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-[11px] font-bold text-slate-700"
+                  className="bg-slate-50 border-slate-200 font-bold"
                 >
                   <option value={0}>0%</option>
                   <option value={5}>5% (Silver)</option>
                   <option value={10}>10% (Gold)</option>
                   <option value={15}>15% (VIP Diamond)</option>
-                </select>
+                </Dropdown>
                 <span className="text-rose-600 font-bold">-{formatCurrency(discountAmount)}</span>
               </div>
             </div>
@@ -999,16 +1001,16 @@ export const POSView: React.FC<POSViewProps> = ({
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">Hạng thành viên ban đầu</label>
-                <select
+                <Dropdown
                   value={newCustomerForm.tier}
                   onChange={(e) => setNewCustomerForm({ ...newCustomerForm, tier: e.target.value as CustomerTier })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#fb6f92] cursor-pointer"
+                  className="w-full bg-slate-50 border-slate-200 font-bold"
                 >
                   <option value="STANDARD">STANDARD - Khách tiêu chuẩn</option>
                   <option value="SILVER">SILVER - Giảm 5% hóa đơn</option>
                   <option value="GOLD">GOLD - Giảm 10% hóa đơn (VIP)</option>
                   <option value="DIAMOND">DIAMOND - Giảm 10% hóa đơn (VIP Kim Cương)</option>
-                </select>
+                </Dropdown>
               </div>
 
               <div className="flex gap-2 pt-3 border-t border-rose-100">

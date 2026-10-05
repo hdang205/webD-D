@@ -1204,3 +1204,204 @@ export function recordDefectiveGoods(req: AuthenticatedRequest, res: Response): 
   }
 }
 
+/**
+ * Tạo mới phiếu xuất nhập kho (thủ công từ StockVoucherModal)
+ * POST /api/inventory/vouchers
+ */
+export function createStockVoucher(req: AuthenticatedRequest, res: Response): void {
+  try {
+    const {
+      code,
+      type,
+      date,
+      partnerId,
+      partnerName,
+      delivererOrReceiver,
+      warehouseName,
+      stockAccountCode,
+      oppositeAccountCode,
+      note,
+      items
+    } = req.body;
+
+    if (!type || (type !== 'IMPORT' && type !== 'EXPORT')) {
+      res.status(400).json({ success: false, error: 'Loại phiếu kho không hợp lệ (phải là IMPORT hoặc EXPORT).' });
+      return;
+    }
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      res.status(400).json({ success: false, error: 'Phiếu kho phải có ít nhất 1 mặt hàng.' });
+      return;
+    }
+
+    const voucherId = `stock_voucher_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const voucherCode = (typeof code === 'string' && code.trim()) 
+      ? code.trim() 
+      : `${type === 'IMPORT' ? 'PN' : 'PX'}${Date.now().toString().slice(-6)}`;
+    const voucherDate = (typeof date === 'string' && date.trim()) 
+      ? date.trim() 
+      : new Date().toISOString().split('T')[0];
+
+    let totalValue = 0;
+
+    const tx = db.transaction(() => {
+      // 1. Chèn vào bảng inventory_logs
+      db.prepare(`
+        INSERT INTO inventory_logs (
+          id, code, date, type, partner_id, partner_name, deliverer_or_receiver,
+          warehouse_name, stock_account_code, opposite_account_code, total_value,
+          note, created_by, created_at
+        ) VALUES (
+          ?, ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?,
+          ?, ?, datetime('now')
+        )
+      `).run(
+        voucherId,
+        voucherCode,
+        voucherDate,
+        type,
+        partnerId || null,
+        partnerName || null,
+        delivererOrReceiver || null,
+        warehouseName || 'Kho Tổng Thời Trang D&D',
+        stockAccountCode || '156',
+        oppositeAccountCode || (type === 'IMPORT' ? '331' : '632'),
+        0,
+        note || (type === 'IMPORT' ? 'Phiếu nhập kho hàng' : 'Phiếu xuất kho hàng'),
+        req.user?.id || null
+      );
+
+      // 2. Chèn chi tiết mặt hàng và cập nhật tồn kho sản phẩm
+      for (const it of items) {
+        const itemId = `inv_item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+        const qty = Number(it.quantity) || 0;
+        const price = Number(it.unitPrice) || 0;
+        const amount = Number(it.totalAmount) || (qty * price);
+        totalValue += amount;
+
+        const prod = db.prepare('SELECT id, code, name, unit, cost_price, current_stock FROM products WHERE id = ? OR code = ?').get(it.itemId || it.productId || it.itemCode, it.itemCode || it.productId) as any;
+
+        const resolvedProdId = prod?.id || it.itemId || it.productId;
+        const resolvedCode = prod?.code || it.itemCode || 'SKU';
+        const resolvedName = prod?.name || it.itemName || 'Sản phẩm';
+        const resolvedUnit = prod?.unit || it.unit || 'Cái';
+
+        db.prepare(`
+          INSERT INTO inventory_log_items (
+            id, inventory_log_id, product_id, movement_type,
+            item_code, item_name, unit, quantity, unit_price, total_amount
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          itemId,
+          voucherId,
+          resolvedProdId,
+          type,
+          resolvedCode,
+          resolvedName,
+          resolvedUnit,
+          qty,
+          price,
+          amount
+        );
+
+        if (prod) {
+          if (type === 'IMPORT') {
+            db.prepare(`
+              UPDATE products 
+              SET current_stock = current_stock + ?,
+                  opening_value = (current_stock + ?) * cost_price,
+                  updated_at = datetime('now')
+              WHERE id = ?
+            `).run(qty, qty, prod.id);
+          } else {
+            db.prepare(`
+              UPDATE products 
+              SET current_stock = MAX(0, current_stock - ?),
+                  opening_value = MAX(0, (current_stock - ?) * cost_price),
+                  updated_at = datetime('now')
+              WHERE id = ?
+            `).run(qty, qty, prod.id);
+          }
+        }
+      }
+
+      db.prepare('UPDATE inventory_logs SET total_value = ? WHERE id = ?').run(totalValue, voucherId);
+    });
+
+    tx();
+
+    const createdVoucher = db.prepare('SELECT * FROM inventory_logs WHERE id = ?').get(voucherId) as any;
+    const createdItems = db.prepare('SELECT * FROM inventory_log_items WHERE inventory_log_id = ?').all(voucherId);
+
+    res.status(201).json({
+      success: true,
+      message: `Tạo ${type === 'IMPORT' ? 'phiếu nhập kho' : 'phiếu xuất kho'} ${voucherCode} thành công.`,
+      voucher: { ...createdVoucher, items: createdItems }
+    });
+  } catch (error: any) {
+    handleDbError(res, error, 'Lỗi khi tạo phiếu xuất nhập kho');
+  }
+}
+
+/**
+ * Xóa phiếu xuất nhập kho và hoàn lại tồn kho
+ * DELETE /api/inventory/vouchers/:id
+ */
+export function deleteStockVoucher(req: AuthenticatedRequest, res: Response): void {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ success: false, error: 'Thiếu ID phiếu kho cần xóa.' });
+      return;
+    }
+
+    const voucher = db.prepare('SELECT * FROM inventory_logs WHERE id = ?').get(id) as any;
+    if (!voucher) {
+      res.status(404).json({ success: false, error: 'Không tìm thấy phiếu kho.' });
+      return;
+    }
+
+    const items = db.prepare('SELECT * FROM inventory_log_items WHERE inventory_log_id = ?').all(id) as any[];
+
+    const tx = db.transaction(() => {
+      // 1. Hoàn lại số lượng tồn kho sản phẩm
+      for (const it of items) {
+        if (it.product_id) {
+          if (voucher.type === 'IMPORT') {
+            db.prepare(`
+              UPDATE products 
+              SET current_stock = MAX(0, current_stock - ?),
+                  opening_value = MAX(0, (current_stock - ?) * cost_price),
+                  updated_at = datetime('now')
+              WHERE id = ?
+            `).run(it.quantity, it.quantity, it.product_id);
+          } else {
+            db.prepare(`
+              UPDATE products 
+              SET current_stock = current_stock + ?,
+                  opening_value = (current_stock + ?) * cost_price,
+                  updated_at = datetime('now')
+              WHERE id = ?
+            `).run(it.quantity, it.quantity, it.product_id);
+          }
+        }
+      }
+
+      // 2. Xóa chi tiết và phiếu kho
+      db.prepare('DELETE FROM inventory_log_items WHERE inventory_log_id = ?').run(id);
+      db.prepare('DELETE FROM inventory_logs WHERE id = ?').run(id);
+    });
+
+    tx();
+
+    res.json({
+      success: true,
+      message: `Đã xóa phiếu kho ${voucher.code} và cân bằng lại tồn kho thành công.`
+    });
+  } catch (error: any) {
+    handleDbError(res, error, 'Lỗi khi xóa phiếu kho');
+  }
+}
+
+

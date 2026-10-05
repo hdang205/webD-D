@@ -59,7 +59,6 @@ Giao diện người dùng đã được tinh giản tối ưu cho bài thuyết
 - **Máy chủ (Backend)**: Node.js, Express, better-sqlite3.
 - **Cơ sở dữ liệu (Database)**: SQLite bền vững (`data/database.sqlite`), Trigger tự động cập nhật kho, Foreign Keys toàn vẹn.
 - **Xác thực & Phân quyền**: JSON Web Token (JWT), bcryptjs, Middleware kiểm soát truy cập theo vai trò (RBAC).
-- **Trí tuệ nhân tạo (AI)**: Google GenAI SDK (Trợ lý AI hỗ trợ hạch toán và phân tích báo cáo).
 
 ---
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Save, Plus, Trash2, BookOpenCheck } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { JournalEntry, JournalDetail, Account } from '../../types/accounting';
 import { getCurrentISODate, formatCurrency } from '../../utils/formatters';
 
@@ -174,17 +175,19 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                   {details.map((d, idx) => (
                     <tr key={idx} className="hover:bg-pink-50/20">
                       <td className="py-2 px-3">
-                        <select
+                        <Dropdown
+                          size="sm"
                           value={d.accountCode}
                           onChange={e => handleAccountChange(idx, e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded p-1.5 text-slate-800 text-xs focus:bg-white focus:border-[#fb6f92] focus:outline-none"
+                          className="w-full bg-slate-50 border-slate-200 text-xs"
+                          searchPlaceholder="Tìm kiếm tài khoản..."
                         >
                           {accounts.map(a => (
                             <option key={a.code} value={a.code}>
                               {a.code} - {a.name}
                             </option>
                           ))}
-                        </select>
+                        </Dropdown>
                       </td>
                       <td className="py-2 px-3">
                         <input

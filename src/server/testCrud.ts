@@ -218,7 +218,7 @@ async function runCrudTests() {
         code: prodCode,
         name: 'Đầm Maxi Họa Tiết Biển Mùa Hè',
         unit: 'Chiếc',
-        categoryId: 'cat_vay',
+        categoryId: 'cat_damvay',
         size: 'L',
         color: 'Xanh Ngọc',
         costPrice: 250000,
@@ -243,7 +243,7 @@ async function runCrudTests() {
       body: JSON.stringify({
         code: prodCode,
         name: 'Đầm trùng mã',
-        categoryId: 'cat_vay'
+        categoryId: 'cat_damvay'
       })
     });
     const passProdDup = resProdDup.status === 409;
@@ -309,7 +309,7 @@ async function runCrudTests() {
       body: JSON.stringify({
         code: custCode,
         name: 'Chị Hoàng Thảo My',
-        phone: '0912 345 678',
+        phone: `0987${Date.now().toString().slice(-6)}`,
         email: 'thaomy@gmail.com',
         address: 'Vinhome Riverside Long Biên, Hà Nội',
         tier: 'GOLD'

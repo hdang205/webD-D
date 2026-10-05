@@ -78,12 +78,7 @@ export const StorageService = {
   saveAccounts: (data: Account[]) => saveStoredData(STORAGE_KEYS.ACCOUNTS, data),
 
   getCategories: (): Category[] => {
-    const list = loadStoredData<Category[]>(STORAGE_KEYS.CATEGORIES, EXPORTED_CATEGORIES);
-    if (!list || list.length === 0) {
-      saveStoredData(STORAGE_KEYS.CATEGORIES, EXPORTED_CATEGORIES);
-      return EXPORTED_CATEGORIES;
-    }
-    return list;
+    return loadStoredData<Category[]>(STORAGE_KEYS.CATEGORIES, EXPORTED_CATEGORIES);
   },
   saveCategories: (data: Category[]) => saveStoredData(STORAGE_KEYS.CATEGORIES, data),
 
@@ -91,12 +86,7 @@ export const StorageService = {
   savePartners: (data: Partner[]) => saveStoredData(STORAGE_KEYS.PARTNERS, data),
 
   getInventory: (): InventoryItem[] => {
-    const list = loadStoredData<InventoryItem[]>(STORAGE_KEYS.INVENTORY, EXPORTED_PRODUCTS);
-    if (!list || list.length < 50) {
-      saveStoredData(STORAGE_KEYS.INVENTORY, EXPORTED_PRODUCTS);
-      return EXPORTED_PRODUCTS;
-    }
-    return list;
+    return loadStoredData<InventoryItem[]>(STORAGE_KEYS.INVENTORY, EXPORTED_PRODUCTS);
   },
   saveInventory: (data: InventoryItem[]) => saveStoredData(STORAGE_KEYS.INVENTORY, data),
 

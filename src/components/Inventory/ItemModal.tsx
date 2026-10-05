@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Save, Package } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { InventoryItem } from '../../types/accounting';
 
 interface ItemModalProps {
@@ -99,10 +100,10 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
           <div>
             <label className="block text-slate-300 font-semibold mb-1">Nhóm ngành thời trang</label>
-            <select
+            <Dropdown
               value={category}
               onChange={e => setCategory(e.target.value)}
-              className="w-full bg-[#16191E] border border-white/10 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+              className="w-full bg-[#16191E] border-white/20 text-slate-200"
             >
               <option value="Áo Sơ Mi">Áo Sơ Mi</option>
               <option value="Áo T-Shirt">Áo T-Shirt</option>
@@ -112,7 +113,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
               <option value="Phụ Kiện & Túi Xách">Phụ Kiện & Túi Xách</option>
               <option value="Giày Dép">Giày Dép</option>
               <option value="Khác">Khác</option>
-            </select>
+            </Dropdown>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

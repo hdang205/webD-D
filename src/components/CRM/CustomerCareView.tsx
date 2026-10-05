@@ -27,6 +27,7 @@ import {
   AlertCircle,
   HelpCircle
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { 
   CustomerCareLog, 
   CareReminder, 
@@ -439,17 +440,18 @@ Em xin phép lấy số đo vòng eo & chiều cao của Chị để lập ngay 
               <label className="block text-xs font-bold text-slate-700">
                 Chọn Khách Hàng (Hoặc Nhập Khách Mới)
               </label>
-              <select
+              <Dropdown
                 value={advisorState.selectedPartnerId}
                 onChange={(e) => setAdvisorState(prev => ({ ...prev, selectedPartnerId: e.target.value }))}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold cursor-pointer"
+                className="w-full bg-slate-50 border-slate-200 font-semibold"
+                searchPlaceholder="Tìm kiếm khách hàng..."
               >
                 {customers.map(c => (
                   <option key={c.id} value={c.id}>
                     👤 {c.name} {c.phone ? `(${c.phone})` : ''}
                   </option>
                 ))}
-              </select>
+              </Dropdown>
             </div>
 
             {/* Dáng người */}
@@ -557,31 +559,31 @@ Em xin phép lấy số đo vòng eo & chiều cao của Chị để lập ngay 
                 <label className="block text-[11px] font-bold text-slate-600 mb-1">
                   Nhu Cầu / Dịp Mặc
                 </label>
-                <select
+                <Dropdown
                   value={advisorState.targetOccasion}
                   onChange={(e) => setAdvisorState(prev => ({ ...prev, targetOccasion: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold cursor-pointer"
+                  className="w-full bg-slate-50 border-slate-200 font-semibold"
                 >
                   <option value="Dự tiệc cưới / Gala">Dự Tiệc Cưới / Gala</option>
                   <option value="Công sở thanh lịch">Công Sở Thanh Lịch</option>
                   <option value="Dạo phố / Hẹn hò">Dạo Phố / Hẹn Hò</option>
                   <option value="Chụp ảnh Lookbook">Chụp Ảnh Lookbook</option>
-                </select>
+                </Dropdown>
               </div>
               <div>
                 <label className="block text-[11px] font-bold text-slate-600 mb-1">
                   Phong Cách Ưa Thích
                 </label>
-                <select
+                <Dropdown
                   value={advisorState.stylePreference}
                   onChange={(e) => setAdvisorState(prev => ({ ...prev, stylePreference: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold cursor-pointer"
+                  className="w-full bg-slate-50 border-slate-200 font-semibold"
                 >
                   <option value="Dạ hội sang trọng">Dạ Hội Sang Trọng</option>
                   <option value="Tối giản Minimalism">Tối Giản Minimalism</option>
                   <option value="Tiểu thư điệu đà">Tiểu Thư Điệu Đà</option>
                   <option value="Quyến rũ chiết eo">Quyến Rũ Chiết Eo</option>
-                </select>
+                </Dropdown>
               </div>
             </div>
 
@@ -756,17 +758,18 @@ Em xin phép lấy số đo vòng eo & chiều cao của Chị để lập ngay 
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              <select
+              <Dropdown
+                size="sm"
                 value={channelFilter}
                 onChange={(e) => setChannelFilter(e.target.value as any)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold cursor-pointer"
+                className="bg-slate-50 border-slate-200 font-semibold"
               >
                 <option value="ALL">Mọi Kênh Tư Vấn</option>
                 <option value="SHOWROOM">🏢 Trực tiếp Showroom</option>
                 <option value="ZALO">💬 Zalo OA</option>
                 <option value="PHONE">📞 Điện thoại Hotline</option>
                 <option value="FACEBOOK">🌐 Facebook Lookbook</option>
-              </select>
+              </Dropdown>
 
               <button
                 onClick={() => setShowLogModal(true)}
@@ -990,17 +993,18 @@ Em xin phép lấy số đo vòng eo & chiều cao của Chị để lập ngay 
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Chọn Khách Hàng
                 </label>
-                <select
+                <Dropdown
                   value={logFormData.partnerId}
                   onChange={(e) => setLogFormData(prev => ({ ...prev, partnerId: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold cursor-pointer"
+                  className="w-full bg-slate-50 border-slate-200 font-semibold"
+                  searchPlaceholder="Tìm kiếm khách hàng..."
                 >
                   {customers.map(c => (
                     <option key={c.id} value={c.id}>
                       {c.name} ({c.phone || 'Chưa có SĐT'})
                     </option>
                   ))}
-                </select>
+                </Dropdown>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -1008,30 +1012,30 @@ Em xin phép lấy số đo vòng eo & chiều cao của Chị để lập ngay 
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Kênh Tương Tác
                   </label>
-                  <select
+                  <Dropdown
                     value={logFormData.channel}
                     onChange={(e) => setLogFormData(prev => ({ ...prev, channel: e.target.value as any }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs cursor-pointer"
+                    className="w-full bg-slate-50 border-slate-200"
                   >
                     <option value="SHOWROOM">Trực Tiếp Showroom</option>
                     <option value="ZALO">Zalo OA</option>
                     <option value="PHONE">Hotline / Điện Thoại</option>
                     <option value="FACEBOOK">Facebook Fanpage</option>
-                  </select>
+                  </Dropdown>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Mức Độ Khách
                   </label>
-                  <select
+                  <Dropdown
                     value={logFormData.priority}
                     onChange={(e) => setLogFormData(prev => ({ ...prev, priority: e.target.value as any }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-rose-700 cursor-pointer"
+                    className="w-full bg-slate-50 border-slate-200 font-bold text-rose-700"
                   >
                     <option value="HOT">🔥 Khách Rất Tiềm Năng (HOT)</option>
                     <option value="WARM">⭐ Khách Thân Thiết (WARM)</option>
                     <option value="COLD">❄️ Khách Mới Tìm Hiểu (COLD)</option>
-                  </select>
+                  </Dropdown>
                 </div>
               </div>
 

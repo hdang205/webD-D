@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Lock
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { Employee, EmployeeDepartment, EmployeeStatus } from '../../types/accounting';
 
 interface EmployeeModalProps {
@@ -284,15 +285,15 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Giới Tính
                   </label>
-                  <select
+                  <Dropdown
                     value={formData.gender}
                     onChange={(e) => setFormData({ ...formData, gender: e.target.value as any })}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#fb6f92]"
+                    className="w-full bg-white border-slate-200"
                   >
                     <option value="FEMALE">Nữ</option>
                     <option value="MALE">Nam</option>
                     <option value="OTHER">Khác</option>
-                  </select>
+                  </Dropdown>
                 </div>
 
                 <div>
@@ -380,7 +381,7 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Phòng Ban / Bộ Phận *
                   </label>
-                  <select
+                  <Dropdown
                     value={formData.department}
                     onChange={(e) => {
                       const dept = e.target.value as EmployeeDepartment;
@@ -404,14 +405,14 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
                       }
                       setFormData({ ...formData, department: dept, position: defPosition, role: defRole });
                     }}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#fb6f92] font-semibold text-slate-800"
+                    className="w-full bg-white border-slate-200 font-semibold text-slate-800"
                   >
                     <option value="SALES_POS">🛍️ Showroom & Thu Ngân POS</option>
                     <option value="ACCOUNTING">📊 Kế Toán - Tài Chính (VAS)</option>
                     <option value="WAREHOUSE">📦 Kho Vận & Thủ Quỹ</option>
                     <option value="MANAGEMENT">👔 Ban Giám Đốc & Quản Lý</option>
                     <option value="MARKETING_DESIGN">🎨 Thiết Kế Lookbook & Marketing</option>
-                  </select>
+                  </Dropdown>
                 </div>
 
                 <div>
@@ -460,15 +461,15 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Trạng Thái Làm Việc
                   </label>
-                  <select
+                  <Dropdown
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as EmployeeStatus })}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#fb6f92] font-semibold"
+                    className="w-full bg-white border-slate-200 font-semibold"
                   >
                     <option value="ACTIVE">🟢 Đang Làm Việc</option>
                     <option value="ON_LEAVE">🟡 Tạm Nghỉ / Nghỉ Phép</option>
                     <option value="RESIGNED">🔴 Đã Thôi Việc</option>
-                  </select>
+                  </Dropdown>
                 </div>
               </div>
             </div>

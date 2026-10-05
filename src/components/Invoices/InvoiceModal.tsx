@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Save, Printer, Plus, Trash2, Receipt, Sparkles } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { 
   Invoice, 
   InvoiceType, 
@@ -419,11 +420,12 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
             <label className="block text-slate-700 font-bold mb-1">
               {type === 'SALES' ? 'Khách hàng / Đơn vị mua hàng *' : 'Nhà cung cấp / Xưởng may thời trang *'}
             </label>
-            <select
+            <Dropdown
               value={partnerId}
               onChange={e => handlePartnerChange(e.target.value)}
               required
-              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#fb6f92]"
+              className="w-full bg-white border-slate-200 font-semibold"
+              searchPlaceholder="Tìm kiếm khách hàng / nhà cung cấp..."
             >
               <option value="">-- Chọn đối tác từ danh bạ --</option>
               {type === 'SALES' && (
@@ -436,7 +438,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
                     {p.code} - {p.name} {p.phone ? `(${p.phone})` : ''}
                   </option>
                 ))}
-            </select>
+            </Dropdown>
           </div>
 
           {/* Invoice Items Table */}
@@ -474,11 +476,13 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
                     <tr key={idx} className="hover:bg-slate-50/50">
                       <td className="p-2.5 text-center text-slate-400 font-mono">{idx + 1}</td>
                       <td className="p-2.5">
-                        <select
+                        <Dropdown
+                          size="sm"
                           value={row.itemId}
                           onChange={e => handleItemSelect(idx, e.target.value)}
                           required
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#fb6f92]"
+                          className="w-full bg-slate-50 border-slate-200 font-medium"
+                          searchPlaceholder="Tìm kiếm sản phẩm..."
                         >
                           <option value="">-- Chọn sản phẩm --</option>
                           {inventory.map(inv => (
@@ -486,7 +490,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
                               {inv.code} - {inv.name} (Tồn: {inv.openingQuantity})
                             </option>
                           ))}
-                        </select>
+                        </Dropdown>
                       </td>
                       <td className="p-2.5 text-center text-slate-600">{row.unit}</td>
                       <td className="p-2.5">
@@ -508,16 +512,17 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
                         />
                       </td>
                       <td className="p-2.5">
-                        <select
+                        <Dropdown
+                          size="sm"
                           value={row.vatRate}
                           onChange={e => handleVatChange(idx, Number(e.target.value))}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-center text-slate-900 font-bold"
+                          className="w-full bg-slate-50 border-slate-200 font-bold"
                         >
                           <option value="0">0%</option>
                           <option value="5">5%</option>
                           <option value="8">8%</option>
                           <option value="10">10%</option>
-                        </select>
+                        </Dropdown>
                       </td>
                       <td className="p-2.5 text-right font-mono font-bold text-slate-900">
                         {formatCurrency(row.totalAmount)}
@@ -550,14 +555,15 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-slate-500 font-normal">Hình thức:</span>
-                    <select
+                    <Dropdown
+                      size="sm"
                       value={paymentMethod}
                       onChange={e => setPaymentMethod(e.target.value as any)}
-                      className="bg-white border border-pink-200 rounded-lg px-2.5 py-1 text-slate-800 font-semibold focus:outline-none"
+                      className="bg-white border-pink-200 font-semibold"
                     >
                       <option value="CASH">Tiền mặt (TK 1111)</option>
                       <option value="BANK">Chuyển khoản (TK 1121)</option>
-                    </select>
+                    </Dropdown>
                   </div>
                 </div>
 
@@ -565,15 +571,15 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
                   {/* Trạng thái thanh toán */}
                   <div>
                     <label className="block text-slate-700 font-bold mb-1">Trạng thái thanh toán *</label>
-                    <select
+                    <Dropdown
                       value={paymentStatusOption}
                       onChange={e => setPaymentStatusOption(e.target.value as any)}
-                      className="w-full bg-white border border-pink-200 rounded-xl px-3 py-2 text-slate-900 font-semibold focus:outline-none"
+                      className="w-full bg-white border-pink-200 font-semibold"
                     >
                       <option value="PAID">Đã thanh toán đủ (PAID)</option>
                       <option value="PARTIAL">Thanh toán một phần (PARTIAL)</option>
                       <option value="UNPAID">Chưa thanh toán / Ghi nợ 131 (UNPAID)</option>
-                    </select>
+                    </Dropdown>
                   </div>
 
                   {/* Số tiền thanh toán thực tế nếu partial */}

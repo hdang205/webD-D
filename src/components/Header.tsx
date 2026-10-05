@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Building2, 
   Calendar, 
-  Sparkles, 
   Settings, 
   Download, 
   RotateCcw,
@@ -25,6 +24,7 @@ import {
   Menu,
   Smartphone
 } from 'lucide-react';
+import { Dropdown } from './Common/Dropdown';
 import { CompanyInfo, PeriodFilter, FilterPeriod, AuthUser, UserRole } from '../types/accounting';
 import { TabKey } from './Sidebar';
 import { getDefaultTabForRole } from '../utils/rbac';
@@ -33,7 +33,6 @@ interface HeaderProps {
   companyInfo: CompanyInfo;
   periodFilter: PeriodFilter;
   onPeriodChange: (filter: PeriodFilter) => void;
-  onOpenAIAssistant: () => void;
   onOpenSettings: () => void;
   onExportBackup?: () => void;
   onResetData?: () => void;
@@ -54,7 +53,6 @@ export const Header: React.FC<HeaderProps> = ({
   companyInfo,
   periodFilter,
   onPeriodChange,
-  onOpenAIAssistant,
   onOpenSettings,
   activeTabTitle,
   activeTab,
@@ -111,19 +109,20 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Period Filter Select */}
           {activeTab !== 'login' && activeTab !== 'auth' && (
-            <div className="hidden md:flex items-center bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 shadow-2xs">
-              <Calendar className="w-3.5 h-3.5 text-pink-400 mr-2" />
-              <select 
-                className="bg-transparent border-none text-xs text-white focus:outline-none cursor-pointer pr-1 font-medium"
+            <div className="hidden md:flex items-center">
+              <Dropdown
+                size="sm"
+                prefixIcon={<Calendar className="w-3.5 h-3.5 text-pink-400" />}
                 value={periodFilter.period}
                 onChange={(e) => onPeriodChange({ period: e.target.value as FilterPeriod })}
+                className="bg-slate-800 border-slate-700 text-white font-medium hover:border-slate-600"
               >
-                <option value="THIS_MONTH" className="bg-slate-900 text-white">Tháng này (T8/2026)</option>
-                <option value="LAST_MONTH" className="bg-slate-900 text-white">Tháng trước</option>
-                <option value="THIS_QUARTER" className="bg-slate-900 text-white">Quý này (Q3/2026)</option>
-                <option value="THIS_YEAR" className="bg-slate-900 text-white">Năm nay (2026)</option>
-                <option value="ALL" className="bg-slate-900 text-white">Tất cả thời gian</option>
-              </select>
+                <option value="THIS_MONTH">Tháng này (T8/2026)</option>
+                <option value="LAST_MONTH">Tháng trước</option>
+                <option value="THIS_QUARTER">Quý này (Q3/2026)</option>
+                <option value="THIS_YEAR">Năm nay (2026)</option>
+                <option value="ALL">Tất cả thời gian</option>
+              </Dropdown>
             </div>
           )}
 
@@ -201,16 +200,6 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* AI Assistant Button */}
-          <button
-            id="btn-ai-assistant"
-            onClick={onOpenAIAssistant}
-            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-pink-300 hover:text-white border border-slate-700 font-semibold text-xs px-2.5 py-1.5 rounded-xl shadow-2xs transition cursor-pointer active:scale-95"
-            title="Trợ lý AI Hạch toán"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-pink-400" />
-            <span className="hidden sm:inline">Trợ lý AI</span>
-          </button>
 
           {/* Settings Button */}
           <button

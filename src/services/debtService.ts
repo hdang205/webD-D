@@ -45,5 +45,20 @@ export const DebtService = {
     } catch {
       return [];
     }
+  },
+
+  /**
+   * Tạo phiếu thu / chi sổ quỹ
+   */
+  async createTransaction(payload: any): Promise<any> {
+    const res: any = await apiClient.post('/api/debts/transactions', payload);
+    return res;
+  },
+
+  /**
+   * Xóa phiếu thu / chi sổ quỹ
+   */
+  async deleteTransaction(id: string): Promise<any> {
+    return apiClient.delete(`/api/debts/transactions/${encodeURIComponent(id)}`);
   }
 };

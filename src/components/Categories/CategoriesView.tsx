@@ -137,14 +137,11 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-white tracking-tight">Quản Lý Danh Mục Nhóm Hàng</h1>
+              <h1 className="text-xl font-bold text-white tracking-tight">Danh Mục Hàng</h1>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-rose-300 border border-slate-700">
                 {categories.length} nhóm
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-medium mt-0.5">
-              Phân loại danh mục thời trang chuẩn hóa theo cơ sở dữ liệu SQLite TT133/200
-            </p>
           </div>
         </div>
 

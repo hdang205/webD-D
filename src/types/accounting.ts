@@ -89,6 +89,9 @@ export interface Invoice {
   paidAmount: number;
   status: InvoiceStatus;
   note?: string;
+  createdBy?: string;
+  createdByName?: string;
+  employeeName?: string;
 }
 
 export type PartnerType = 'CUSTOMER' | 'SUPPLIER' | 'BOTH';

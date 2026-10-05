@@ -101,6 +101,21 @@ CREATE INDEX IF NOT EXISTS idx_partners_type ON partners(type);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_partners_phone ON partners(phone);
 CREATE INDEX IF NOT EXISTS idx_partners_code ON partners(code);
 
+-- 5.1. BẢNG LIÊN KẾT NHÀ CUNG CẤP - SẢN PHẨM (Supplier Products)
+CREATE TABLE IF NOT EXISTS supplier_products (
+    id TEXT PRIMARY KEY,
+    supplier_id TEXT NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
+    product_id TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    supplier_product_code TEXT,
+    last_purchase_price REAL DEFAULT 0,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(supplier_id, product_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_supplier_products_supplier ON supplier_products(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_supplier_products_product ON supplier_products(product_id);
+
 -- 6. BẢNG NGƯỜI DÙNG & TÀI KHOẢN ĐĂNG NHẬP (Users)
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,

@@ -11,6 +11,7 @@ import {
   Download,
   Info
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { Invoice, InvoiceType, Partner, InventoryItem } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { exportToExcel } from '../../utils/excelExport';
@@ -98,14 +99,11 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({
             <div className="p-2 bg-[#ffe5ec] text-[#a93054] rounded-xl">
               <Receipt className="w-5 h-5" />
             </div>
-            <span>Nghiệp Vụ Hóa Đơn Bán Hàng & Mua Hàng</span>
+            <span>Hóa Đơn</span>
           </h2>
-          <p className="text-xs text-[#6c595f] mt-1">
-            Ghi nhận doanh thu bán buôn/bán lẻ (TK 511), thuế GTGT (TK 3331/1331) & công nợ khách hàng (TK 131/331).
-          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-start gap-2">
           <button
             id="btn-add-sales-invoice"
             onClick={() => handleOpenAdd('SALES')}
@@ -159,29 +157,31 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({
 
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-[#6c595f]">Loại:</span>
-            <select
+            <span className="text-[#6c595f] shrink-0">Loại:</span>
+            <Dropdown
+              size="sm"
               value={typeFilter}
               onChange={e => setTypeFilter(e.target.value as any)}
-              className="bg-[#fbf8ff] border border-pink-200 text-xs text-[#181a2e] rounded-lg px-2.5 py-1.5 focus:outline-none"
+              className="bg-[#fbf8ff] border-pink-200 font-medium"
             >
               <option value="ALL">Tất cả hóa đơn</option>
               <option value="SALES">Hóa đơn Bán hàng (Đầu ra)</option>
               <option value="PURCHASE">Hóa đơn Mua hàng (Đầu vào)</option>
-            </select>
+            </Dropdown>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-[#6c595f]">Trạng thái:</span>
-            <select
+            <span className="text-[#6c595f] shrink-0">Trạng thái:</span>
+            <Dropdown
+              size="sm"
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value as any)}
-              className="bg-[#fbf8ff] border border-pink-200 text-xs text-[#181a2e] rounded-lg px-2.5 py-1.5 focus:outline-none"
+              className="bg-[#fbf8ff] border-pink-200 font-medium"
             >
               <option value="ALL">Tất cả thanh toán</option>
               <option value="UNPAID">Chưa thanh toán hết</option>
               <option value="PAID">Đã thanh toán đủ</option>
-            </select>
+            </Dropdown>
           </div>
         </div>
       </div>

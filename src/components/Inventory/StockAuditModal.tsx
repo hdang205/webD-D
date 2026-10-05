@@ -11,8 +11,12 @@ import {
   Sliders,
   TrendingDown,
   TrendingUp,
-  Minus
+  Minus,
+  CheckSquare,
+  Square,
+  Filter
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { InventoryProduct, InventoryService } from '../../services/inventoryService';
 import { AuthUser } from '../../types/accounting';
 import { formatNumber } from '../../utils/formatters';
@@ -50,15 +54,15 @@ export const StockAuditModal: React.FC<StockAuditModalProps> = ({
   const [note, setNote] = useState('');
   const [items, setItems] = useState<StockAuditItemInput[]>([]);
   
-  const [selectedProductId, setSelectedProductId] = useState('');
   const [productSearch, setProductSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [stockStatusFilter, setStockStatusFilter] = useState<'ALL' | 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK'>('ALL');
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  // Khởi tạo state khi mở modal
+  // Khởi tạo state khi mở modal: MẶC ĐỊNH ĐỂ RỖNG, không tự động nạp tất cả SP
   useEffect(() => {
     if (isOpen) {
       setDate(new Date().toISOString().split('T')[0]);
@@ -67,97 +71,100 @@ export const StockAuditModal: React.FC<StockAuditModalProps> = ({
       setNote('');
       setErrorMessage(null);
       setShowConfirmDialog(false);
-      setSelectedProductId('');
       setProductSearch('');
-
-      // Nếu danh sách sản phẩm có sẵn, mặc định chọn 5 sản phẩm đầu tiên hoặc để trống
-      if (productList.length > 0) {
-        // Lấy 5 sản phẩm đầu tiên làm mẫu kiểm đếm tiện lợi
-        const sampleItems: StockAuditItemInput[] = productList.slice(0, 5).map(p => {
-          const sysStock = p.currentStock ?? p.openingQuantity ?? 0;
-          return {
-            productId: p.id,
-            itemCode: p.code,
-            itemName: p.name,
-            unit: p.unit,
-            category: p.category,
-            costPrice: p.costPrice,
-            systemStock: sysStock,
-            actualStock: sysStock, // Mặc định khớp ban đầu
-            note: ''
-          };
-        });
-        setItems(sampleItems);
-      } else {
-        setItems([]);
-      }
+      setSelectedCategory('ALL');
+      setStockStatusFilter('ALL');
+      // Không load toàn bộ sản phẩm vào phiếu nếu người dùng chưa chọn
+      setItems([]);
     }
-  }, [isOpen, productList, currentUser]);
+  }, [isOpen, currentUser]);
 
-  if (!isOpen) return null;
+  const categories = useMemo(() => {
+    return Array.from(new Set(productList.map(p => p.category).filter(Boolean))) as string[];
+  }, [productList]);
 
-  // Lọc sản phẩm để thêm vào phiếu
-  const availableToAdd = productList.filter(p => !items.some(it => it.productId === p.id));
-  const filteredAvailable = availableToAdd.filter(p => {
-    const matchesSearch = !productSearch || 
-      p.name.toLowerCase().includes(productSearch.toLowerCase()) || 
-      p.code.toLowerCase().includes(productSearch.toLowerCase());
-    const matchesCat = selectedCategory === 'ALL' || p.category === selectedCategory;
-    return matchesSearch && matchesCat;
-  });
+  // Bộ lọc sản phẩm: Tìm kiếm (mã, tên, barcode), Danh mục, Trạng thái tồn kho
+  const filteredProducts = useMemo(() => {
+    return productList.filter(p => {
+      const sysStock = p.currentStock ?? p.openingQuantity ?? 0;
+      const minStock = p.minStockLevel || 10;
+      
+      const q = productSearch.trim().toLowerCase();
+      const matchesSearch = !q || 
+        p.name.toLowerCase().includes(q) || 
+        p.code.toLowerCase().includes(q) ||
+        (p.barcode && p.barcode.toLowerCase().includes(q));
 
-  const categories = Array.from(new Set(productList.map(p => p.category).filter(Boolean))) as string[];
+      const matchesCat = selectedCategory === 'ALL' || p.category === selectedCategory;
 
-  const handleAddItem = (product: InventoryProduct) => {
-    const sysStock = product.currentStock ?? product.openingQuantity ?? 0;
-    setItems(prev => [
-      ...prev,
-      {
-        productId: product.id,
-        itemCode: product.code,
-        itemName: product.name,
-        unit: product.unit,
-        category: product.category,
-        costPrice: product.costPrice,
-        systemStock: sysStock,
-        actualStock: sysStock,
-        note: ''
+      let matchesStock = true;
+      if (stockStatusFilter === 'IN_STOCK') {
+        matchesStock = sysStock > 0;
+      } else if (stockStatusFilter === 'LOW_STOCK') {
+        matchesStock = sysStock > 0 && sysStock <= minStock;
+      } else if (stockStatusFilter === 'OUT_OF_STOCK') {
+        matchesStock = sysStock <= 0;
       }
-    ]);
-    setSelectedProductId('');
-    setProductSearch('');
+
+      return matchesSearch && matchesCat && matchesStock;
+    });
+  }, [productList, productSearch, selectedCategory, stockStatusFilter]);
+
+  // Chọn hoặc bỏ chọn một sản phẩm
+  const toggleProductSelection = (product: InventoryProduct) => {
+    const isAlreadyIn = items.some(it => it.productId === product.id);
+    if (isAlreadyIn) {
+      setItems(prev => prev.filter(it => it.productId !== product.id));
+    } else {
+      const sysStock = product.currentStock ?? product.openingQuantity ?? 0;
+      setItems(prev => [
+        ...prev,
+        {
+          productId: product.id,
+          itemCode: product.code,
+          itemName: product.name,
+          unit: product.unit,
+          category: product.category,
+          costPrice: product.costPrice,
+          systemStock: sysStock,
+          actualStock: sysStock,
+          note: ''
+        }
+      ]);
+    }
     setErrorMessage(null);
   };
 
-  const handleAddAllFromCategory = () => {
-    if (selectedCategory === 'ALL') {
-      // Thêm tối đa 20 sản phẩm đầu tiên chưa có
-      const toAdd = availableToAdd.slice(0, 20).map(p => ({
-        productId: p.id,
-        itemCode: p.code,
-        itemName: p.name,
-        unit: p.unit,
-        category: p.category,
-        costPrice: p.costPrice,
-        systemStock: p.currentStock ?? p.openingQuantity ?? 0,
-        actualStock: p.currentStock ?? p.openingQuantity ?? 0,
-        note: ''
-      }));
-      setItems(prev => [...prev, ...toAdd]);
-    } else {
-      const toAdd = availableToAdd.filter(p => p.category === selectedCategory).map(p => ({
-        productId: p.id,
-        itemCode: p.code,
-        itemName: p.name,
-        unit: p.unit,
-        category: p.category,
-        costPrice: p.costPrice,
-        systemStock: p.currentStock ?? p.openingQuantity ?? 0,
-        actualStock: p.currentStock ?? p.openingQuantity ?? 0,
-        note: ''
-      }));
+  // Chọn tất cả kết quả đang hiển thị theo bộ lọc
+  const handleSelectAllFiltered = () => {
+    const existingIds = new Set(items.map(it => it.productId));
+    const toAdd: StockAuditItemInput[] = [];
+    filteredProducts.forEach(p => {
+      if (!existingIds.has(p.id)) {
+        const sysStock = p.currentStock ?? p.openingQuantity ?? 0;
+        toAdd.push({
+          productId: p.id,
+          itemCode: p.code,
+          itemName: p.name,
+          unit: p.unit,
+          category: p.category,
+          costPrice: p.costPrice,
+          systemStock: sysStock,
+          actualStock: sysStock,
+          note: ''
+        });
+      }
+    });
+    if (toAdd.length > 0) {
       setItems(prev => [...prev, ...toAdd]);
     }
+  };
+
+  // Bỏ chọn tất cả kết quả đang lọc
+  const handleDeselectAllFiltered = () => {
+    if (filteredProducts.length === 0) return;
+    const filteredIds = new Set(filteredProducts.map(p => p.id));
+    setItems(prev => prev.filter(it => !filteredIds.has(it.productId)));
   };
 
   const handleRemoveItem = (index: number) => {
@@ -277,6 +284,8 @@ export const StockAuditModal: React.FC<StockAuditModalProps> = ({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto animate-fadeIn">
       <div className="bg-white rounded-3xl shadow-2xl border border-pink-100 w-full max-w-5xl my-6 flex flex-col max-h-[92vh] overflow-hidden">
@@ -365,76 +374,155 @@ export const StockAuditModal: React.FC<StockAuditModalProps> = ({
             </div>
           </div>
 
-          {/* Product Search & Quick Add Bar */}
+          {/* Khu Vực Tìm Kiếm & Lọc Sản Phẩm Kiểm Kê */}
           <div className="p-4 bg-white rounded-2xl border border-pink-100 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="text-xs font-bold text-[#181a2e] flex items-center gap-1.5">
-                <Plus className="w-4 h-4 text-[#fb6f92]" />
-                Chọn Sản Phẩm Cần Kiểm Đếm
+                <Search className="w-4 h-4 text-[#fb6f92]" />
+                Tìm Kiếm & Chọn Sản Phẩm Cần Kiểm Đếm
               </span>
-              <span className="text-[11px] text-[#6c595f]">
-                Còn {availableToAdd.length} sản phẩm chưa thêm vào phiếu
-              </span>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[#6c595f]">
+                  Tìm thấy <b>{filteredProducts.length}</b> SP • Đã chọn <b className="text-[#a93054]">{items.length}</b> SP vào phiếu
+                </span>
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Category selector */}
-              <select
-                value={selectedCategory}
-                onChange={e => setSelectedCategory(e.target.value)}
-                className="bg-[#fbf8ff] border border-pink-200 rounded-xl px-3 py-2 text-xs font-medium text-[#4e4447] focus:outline-hidden"
-              >
-                <option value="ALL">Tất cả nhóm hàng</option>
-                {categories.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-
-              {/* Search product */}
-              <div className="relative flex-1 min-w-[200px]">
+            {/* Filter controls row */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+              {/* Search text */}
+              <div className="sm:col-span-6 relative">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
                 <input
                   type="text"
                   value={productSearch}
                   onChange={e => setProductSearch(e.target.value)}
-                  placeholder="Tìm theo tên hoặc mã SP để thêm..."
+                  placeholder="Tìm theo mã SP (vd: AK001), tên SP, barcode..."
                   className="w-full bg-[#fbf8ff] border border-pink-200 rounded-xl pl-9 pr-3 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-[#fb6f92]"
                 />
               </div>
 
-              {/* Add All Button */}
-              <button
-                type="button"
-                onClick={handleAddAllFromCategory}
-                disabled={availableToAdd.length === 0}
-                className="px-3 py-2 bg-pink-50 hover:bg-pink-100 text-[#a93054] text-xs font-semibold rounded-xl border border-pink-200 transition cursor-pointer disabled:opacity-50"
-              >
-                + Thêm Hàng Loạt Theo Nhóm
-              </button>
+              {/* Category select */}
+              <div className="sm:col-span-3">
+                <Dropdown
+                  value={selectedCategory}
+                  onChange={e => setSelectedCategory(e.target.value)}
+                  className="w-full bg-[#fbf8ff] border-pink-200 font-medium text-[#4e4447]"
+                >
+                  <option value="ALL">Tất cả danh mục</option>
+                  {categories.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </Dropdown>
+              </div>
+
+              {/* Stock status select */}
+              <div className="sm:col-span-3">
+                <Dropdown
+                  value={stockStatusFilter}
+                  onChange={e => setStockStatusFilter(e.target.value as any)}
+                  className="w-full bg-[#fbf8ff] border-pink-200 font-medium text-[#4e4447]"
+                >
+                  <option value="ALL">Tất cả trạng thái tồn</option>
+                  <option value="IN_STOCK">Còn hàng (Tồn &gt; 0)</option>
+                  <option value="LOW_STOCK">Sắp hết hàng (&le; định mức)</option>
+                  <option value="OUT_OF_STOCK">Hết hàng (Tồn = 0)</option>
+                </Dropdown>
+              </div>
             </div>
 
-            {/* Quick Suggestions Chips if searching */}
-            {productSearch && filteredAvailable.length > 0 && (
-              <div className="max-h-40 overflow-y-auto border border-pink-100 rounded-xl p-2 bg-[#fbf8ff] space-y-1">
-                {filteredAvailable.slice(0, 8).map(p => (
-                  <div
-                    key={p.id}
-                    onClick={() => handleAddItem(p)}
-                    className="flex items-center justify-between p-2 hover:bg-pink-50 rounded-lg cursor-pointer transition text-xs"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-[#a93054]">{p.code}</span>
-                      <span className="text-slate-800 font-medium">{p.name}</span>
-                      <span className="text-[10px] text-slate-500">({p.unit})</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-[11px]">
-                      <span className="text-[#6c595f]">Tồn hệ thống: <b>{p.currentStock ?? p.openingQuantity ?? 0}</b></span>
-                      <span className="text-pink-600 font-bold hover:underline">+ Thêm</span>
-                    </div>
-                  </div>
-                ))}
+            {/* Quick action buttons row */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-pink-50">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSelectAllFiltered}
+                  disabled={filteredProducts.length === 0}
+                  className="px-3 py-1.5 bg-pink-50 hover:bg-pink-100 text-[#a93054] text-xs font-semibold rounded-xl border border-pink-200 transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <CheckSquare className="w-3.5 h-3.5" />
+                  <span>Chọn tất cả kết quả ({filteredProducts.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDeselectAllFiltered}
+                  disabled={items.length === 0}
+                  className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-semibold rounded-xl border border-slate-200 transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <Square className="w-3.5 h-3.5" />
+                  <span>Bỏ chọn</span>
+                </button>
               </div>
-            )}
+
+              <span className="text-[11px] text-slate-500 italic">
+                * Tích chọn ô vuông để thêm hoặc loại bỏ sản phẩm khỏi phiếu kiểm
+              </span>
+            </div>
+
+            {/* Checklist of products */}
+            <div className="max-h-48 overflow-y-auto border border-pink-100 rounded-xl p-2 bg-[#fbf8ff] divide-y divide-pink-50">
+              {filteredProducts.length === 0 ? (
+                <div className="py-6 text-center text-xs text-slate-400">
+                  Không tìm thấy sản phẩm nào phù hợp với bộ lọc tìm kiếm.
+                </div>
+              ) : (
+                filteredProducts.map(p => {
+                  const isSelected = items.some(it => it.productId === p.id);
+                  const sysStock = p.currentStock ?? p.openingQuantity ?? 0;
+                  const isLow = sysStock > 0 && sysStock <= (p.minStockLevel || 10);
+                  const isOut = sysStock <= 0;
+
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => toggleProductSelection(p)}
+                      className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition text-xs select-none ${
+                        isSelected ? 'bg-pink-50/80 font-medium' : 'hover:bg-pink-50/40'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {}} // Handled by onClick on container
+                          className="w-4 h-4 rounded text-[#fb6f92] focus:ring-[#fb6f92] cursor-pointer"
+                        />
+                        <span className="font-mono font-bold text-[#a93054] px-1.5 py-0.5 bg-white rounded border border-pink-100">
+                          {p.code}
+                        </span>
+                        <span className="text-slate-800">{p.name}</span>
+                        {p.category && (
+                          <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                            {p.category}
+                          </span>
+                        )}
+                        <span className="text-[10px] text-slate-400">({p.unit})</span>
+                      </div>
+
+                      <div className="flex items-center gap-3 text-[11px]">
+                        <span className="text-[#6c595f]">
+                          Tồn HT: <b>{sysStock}</b>
+                        </span>
+                        {isOut ? (
+                          <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                            Hết hàng
+                          </span>
+                        ) : isLow ? (
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                            Sắp hết
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            Còn hàng
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
 
           {/* Audit Items Table */}

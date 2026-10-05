@@ -9,6 +9,7 @@ import {
   Download,
   Wallet
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { CashTransaction, TransactionType, Partner, Account } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { exportToExcel } from '../../utils/excelExport';
@@ -100,14 +101,11 @@ export const CashBookView: React.FC<CashBookViewProps> = ({
             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
               <Wallet className="w-5 h-5" />
             </div>
-            <span>Sổ Quỹ Tiền Mặt & Tiền Gửi Ngân Hàng</span>
+            <span>Thu Chi (Sổ Quỹ)</span>
           </h2>
-          <p className="text-xs text-[#6c595f] mt-1">
-            Theo dõi dòng tiền thu chi, quản lý quỹ tiền mặt (TK 1111) và tài khoản ngân hàng (TK 1121).
-          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-start gap-2">
           <button
             id="btn-add-receipt"
             onClick={() => handleOpenAddModal('CASH_RECEIPT')}
@@ -183,16 +181,17 @@ export const CashBookView: React.FC<CashBookViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs text-[#6c595f]">Lọc quỹ:</span>
-          <select
+          <span className="text-xs text-[#6c595f] shrink-0">Lọc quỹ:</span>
+          <Dropdown
+            size="sm"
             value={fundFilter}
             onChange={e => setFundFilter(e.target.value as any)}
-            className="bg-[#fbf8ff] border border-pink-200 text-xs text-[#181a2e] rounded-lg px-3 py-1.5 focus:outline-none"
+            className="bg-[#fbf8ff] border-pink-200 font-medium"
           >
             <option value="ALL">Tất cả tài khoản quỹ</option>
             <option value="1111">Tiền mặt tại quỹ (TK 1111)</option>
             <option value="1121">Tiền gửi ngân hàng (TK 1121)</option>
-          </select>
+          </Dropdown>
         </div>
       </div>
 

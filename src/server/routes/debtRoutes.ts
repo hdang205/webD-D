@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { collectDebt, payDebt, getDebtTransactions } from '../controllers/debtController.js';
+import { 
+  collectDebt, 
+  payDebt, 
+  getDebtTransactions,
+  createCashTransaction,
+  deleteCashTransaction
+} from '../controllers/debtController.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
 const router = Router();
@@ -23,5 +29,19 @@ router.post(
 
 // Lấy danh sách giao dịch sổ quỹ từ SQLite
 router.get('/transactions', getDebtTransactions);
+
+// Tạo mới phiếu thu / phiếu chi sổ quỹ (Giám đốc, Kế toán trưởng, Thu ngân, Nhân viên)
+router.post(
+  '/transactions',
+  requireRole('DIRECTOR', 'CHIEF_ACCOUNTANT', 'SALES_CASHIER', 'STAFF'),
+  createCashTransaction
+);
+
+// Xóa phiếu thu / chi sổ quỹ (Giám đốc, Kế toán trưởng)
+router.delete(
+  '/transactions/:id',
+  requireRole('DIRECTOR', 'CHIEF_ACCOUNTANT'),
+  deleteCashTransaction
+);
 
 export default router;

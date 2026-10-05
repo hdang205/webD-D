@@ -2,7 +2,5 @@
   "name": "Remix Hệ Thống Quản Lý Cửa Hàng Thời Trang",
   "description": "Hệ thống quản lý cửa hàng thời trang: bán lẻ \u0026 sỉ, tồn kho mẫu mã size màu, hóa đơn bán mua, công nợ khách hàng \u0026 xưởng may, sổ quỹ thu chi, báo cáo doanh thu tài chính.",
   "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "majorCapabilities": []
 }

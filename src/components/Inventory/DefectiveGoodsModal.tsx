@@ -10,6 +10,7 @@ import {
   Flame, 
   Search 
 } from 'lucide-react';
+import { Dropdown } from '../Common/Dropdown';
 import { InventoryProduct, InventoryService } from '../../services/inventoryService';
 import { AuthUser } from '../../types/accounting';
 import { formatNumber, formatCurrency } from '../../utils/formatters';
@@ -187,17 +188,18 @@ export const DefectiveGoodsModal: React.FC<DefectiveGoodsModalProps> = ({
                 />
               </div>
 
-              <select
+              <Dropdown
                 value={selectedProductId}
                 onChange={e => setSelectedProductId(e.target.value)}
-                className="w-full bg-white border border-pink-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-amber-500"
+                className="w-full bg-white border-pink-200 font-medium text-slate-800"
+                searchPlaceholder="Tìm kiếm sản phẩm lỗi..."
               >
                 {filteredProducts.map(p => (
                   <option key={p.id} value={p.id}>
                     [{p.code}] {p.name} - Tồn hiện tại: {p.currentStock ?? p.openingQuantity ?? 0} {p.unit}
                   </option>
                 ))}
-              </select>
+              </Dropdown>
             </div>
           </div>
 

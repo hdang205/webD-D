@@ -20,6 +20,7 @@ export interface CreateSalePayload {
   customerCash?: number;
   paymentMethod?: 'CASH' | 'BANK' | 'DEBT';
   note?: string;
+  createdBy?: string;
 }
 
 export interface SaleResponse {
@@ -54,5 +55,9 @@ export const SaleService = {
 
   async addPayment(id: string, payment: { amount: number; date?: string; paymentFund?: string; note?: string }): Promise<any> {
     return apiClient.post(`/api/sales/${encodeURIComponent(id)}/payments`, payment);
+  },
+
+  async delete(id: string): Promise<any> {
+    return apiClient.delete(`/api/sales/${encodeURIComponent(id)}`);
   }
 };
