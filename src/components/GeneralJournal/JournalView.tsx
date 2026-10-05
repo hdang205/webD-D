@@ -8,6 +8,7 @@ import {
   Filter 
 } from 'lucide-react';
 import { JournalEntry, Account } from '../../types/accounting';
+import { TableContainer } from '../Common/TableContainer';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { exportToExcel } from '../../utils/excelExport';
 import { JournalEntryModal } from './JournalEntryModal';
@@ -119,10 +120,9 @@ export const JournalView: React.FC<JournalViewProps> = ({
       </div>
 
       {/* Journal Table */}
-      <div className="bg-white border border-rose-100/80 rounded-2xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-rose-50/50 text-slate-700 font-semibold border-b border-rose-100">
+      <TableContainer>
+        <table className="w-full text-left text-xs text-slate-700">
+          <thead className="bg-[#fdf2f4] text-slate-700 font-semibold border-b border-rose-100">
               <tr>
                 <th className="py-3 px-4 w-28">Mã Bút Toán</th>
                 <th className="py-3 px-4 w-28">Ngày Hạch Toán</th>
@@ -197,8 +197,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
               )}
             </tbody>
           </table>
-        </div>
-      </div>
+      </TableContainer>
 
       {/* Manual Entry Modal */}
       <JournalEntryModal

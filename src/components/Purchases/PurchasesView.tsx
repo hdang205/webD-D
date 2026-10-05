@@ -15,6 +15,7 @@ import {
   Eye
 } from 'lucide-react';
 import { Invoice, Partner, InventoryItem, AuthUser } from '../../types/accounting';
+import { TableContainer } from '../Common/TableContainer';
 import { formatCurrency, formatDate } from '../../utils/accountingEngine';
 import { exportToExcel } from '../../utils/excelExport';
 import { CreatePurchaseModal } from './CreatePurchaseModal';
@@ -230,10 +231,9 @@ export const PurchasesView: React.FC<PurchasesViewProps> = ({
       </div>
 
       {/* Purchase Invoices Table */}
-      <div className="bg-white border border-rose-100/80 rounded-2xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-rose-50/50 text-slate-700 font-semibold border-b border-rose-100">
+      <TableContainer>
+        <table className="w-full text-left text-xs text-slate-700">
+          <thead className="bg-[#fdf2f4] text-slate-700 font-semibold border-b border-rose-100">
               <tr>
                 <th className="py-3 px-4 w-28">Số HĐ Nhập</th>
                 <th className="py-3 px-4 w-24">Ngày Mua</th>
@@ -350,8 +350,7 @@ export const PurchasesView: React.FC<PurchasesViewProps> = ({
               )}
             </tbody>
           </table>
-        </div>
-      </div>
+      </TableContainer>
 
       {/* Invoice Detail Modal */}
       <InvoiceDetailModal

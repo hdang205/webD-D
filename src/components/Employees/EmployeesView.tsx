@@ -24,6 +24,7 @@ import {
   CreditCard
 } from 'lucide-react';
 import { Dropdown } from '../Common/Dropdown';
+import { TableContainer } from '../Common/TableContainer';
 import { Employee, EmployeeDepartment, EmployeeStatus, Invoice, CashTransaction } from '../../types/accounting';
 import { EmployeeModal } from './EmployeeModal';
 import { EmployeeDetailModal } from './EmployeeDetailModal';
@@ -316,7 +317,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
 
         {/* TAB 1: DANH SÁCH NHÂN VIÊN */}
         {activeTab === 'list' && (
-          <div className="overflow-x-auto">
+          <div className="table-scroll-container custom-scrollbar">
             {filteredEmployees.length === 0 ? (
               <div className="p-12 text-center text-slate-400">
                 <Users className="w-12 h-12 mx-auto mb-3 text-pink-200" />
@@ -326,7 +327,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
             ) : (
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/80 text-slate-500 font-bold border-b border-slate-200/80">
+                  <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                     <th className="py-3 px-4">Nhân Viên & Mã</th>
                     <th className="py-3 px-4">Phòng Ban & Vị Trí</th>
                     <th className="py-3 px-4">Liên Hệ (SĐT / Email)</th>
@@ -504,7 +505,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
             </div>
 
             {/* Payroll Table */}
-            <div className="overflow-x-auto border border-slate-200 rounded-2xl">
+            <TableContainer maxHeight="max-h-[500px]">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
@@ -567,7 +568,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                   </tr>
                 </tfoot>
               </table>
-            </div>
+            </TableContainer>
 
           </div>
         )}

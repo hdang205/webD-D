@@ -27,6 +27,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Dropdown } from '../Common/Dropdown';
+import { TableContainer } from '../Common/TableContainer';
 import { 
   Account, 
   JournalEntry, 
@@ -1232,7 +1233,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="table-scroll-container custom-scrollbar">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100">
                   <tr>
@@ -1318,7 +1319,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="table-scroll-container custom-scrollbar">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100">
                   <tr>
@@ -1410,7 +1411,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="table-scroll-container custom-scrollbar">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100">
                   <tr>
@@ -1505,7 +1506,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               </h4>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="table-scroll-container custom-scrollbar">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100">
                   <tr>
@@ -1627,7 +1628,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="table-scroll-container custom-scrollbar">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100">
                     <tr>

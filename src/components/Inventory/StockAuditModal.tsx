@@ -545,7 +545,7 @@ export const StockAuditModal: React.FC<StockAuditModalProps> = ({
             </div>
 
             <div className="border border-pink-100 rounded-2xl overflow-hidden bg-white shadow-xs">
-              <div className="overflow-x-auto max-h-[380px]">
+              <div className="overflow-x-auto overflow-y-auto max-h-[380px] custom-scrollbar">
                 <table className="w-full text-left border-collapse">
                   <thead className="bg-[#fbf8ff] text-[#4e4447] text-[11px] font-bold border-b border-pink-100 sticky top-0 z-10">
                     <tr>

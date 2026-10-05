@@ -24,6 +24,49 @@
   background: #a93054;
 }
 
+/* Custom Slim Boutique Scrollbar Class */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(244, 242, 255, 0.7);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1c3c6;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a93054;
+}
+
+/* Standardized Table Scroll Container with Sticky Header */
+.table-scroll-container {
+  overflow-y: auto;
+  overflow-x: auto;
+  position: relative;
+  max-height: clamp(420px, calc(100vh - 280px), 620px);
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll-container thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table-scroll-container thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-clip: padding-box;
+}
+
+.table-scroll-container thead tr {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
 /* Standardized D&D Fashion ERP Select & Dropdown Baseline */
 select {
   appearance: none;

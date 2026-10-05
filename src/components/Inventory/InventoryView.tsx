@@ -22,6 +22,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { Dropdown } from '../Common/Dropdown';
+import { TableContainer } from '../Common/TableContainer';
 import { InventoryItem, InventoryLog, Partner, AuthUser } from '../../types/accounting';
 import { formatCurrency, formatNumber, formatDate } from '../../utils/formatters';
 import { exportToExcel } from '../../utils/excelExport';
@@ -827,9 +828,8 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
 
       {/* 1. HIỂN THỊ TỒN KHO - Tab 1: Kho Hàng & Tồn Kho Thực Tế */}
       {activeTab === 'STOCK' && (
-        <div className="bg-white border border-pink-100 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+        <TableContainer>
+          <table className="w-full text-left text-xs">
               <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100">
                 <tr>
                   <th className="py-3 px-4">Mã Sản Phẩm</th>
@@ -953,8 +953,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                 )}
               </tbody>
             </table>
-          </div>
-        </div>
+        </TableContainer>
       )}
 
       {/* 2.1. TAB KIỂM KHO (STOCK AUDITS) */}
@@ -1016,9 +1015,8 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
           </div>
 
           {/* Audits Table */}
-          <div className="bg-white border border-pink-100 rounded-2xl overflow-hidden shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+          <TableContainer>
+            <table className="w-full text-left text-xs border-collapse">
                 <thead className="bg-[#fbf8ff] text-[#4e4447] font-bold text-[11px] border-b border-pink-100">
                   <tr>
                     <th className="py-3 px-4">Mã Phiếu</th>
@@ -1102,8 +1100,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                   )}
                 </tbody>
               </table>
-            </div>
-          </div>
+          </TableContainer>
         </div>
       )}
 
@@ -1166,9 +1163,8 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
           </div>
 
           {/* Defects Table */}
-          <div className="bg-white border border-pink-100 rounded-2xl overflow-hidden shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+          <TableContainer>
+            <table className="w-full text-left text-xs border-collapse">
                 <thead className="bg-[#fbf8ff] text-[#4e4447] font-bold text-[11px] border-b border-pink-100">
                   <tr>
                     <th className="py-3 px-4">Mã Phiếu</th>
@@ -1230,16 +1226,14 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                   )}
                 </tbody>
               </table>
-            </div>
-          </div>
+          </TableContainer>
         </div>
       )}
 
       {/* 7. LỊCH SỬ NHẬP XUẤT KHO - Tab 2: Lịch Sử Chi Tiết Biến Động */}
       {activeTab === 'HISTORY' && (
-        <div className="bg-white border border-pink-100 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+        <TableContainer>
+          <table className="w-full text-left text-xs">
               <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100">
                 <tr>
                   <th className="py-3 px-4">Thời Gian</th>
@@ -1338,15 +1332,13 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                 )}
               </tbody>
             </table>
-          </div>
-        </div>
+        </TableContainer>
       )}
 
       {/* Tab 3: Danh Sách Phiếu Nhập Kho (Tương thích) */}
       {activeTab === 'IMPORT_VOUCHERS' && (
-        <div className="bg-white border border-pink-100 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+        <TableContainer>
+          <table className="w-full text-left text-xs">
               <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100">
                 <tr>
                   <th className="py-3 px-4">Số Phiếu Nhập</th>
@@ -1406,15 +1398,13 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                 )}
               </tbody>
             </table>
-          </div>
-        </div>
+        </TableContainer>
       )}
 
       {/* Tab 4: Danh Sách Phiếu Xuất Kho (Tương thích) */}
       {activeTab === 'EXPORT_VOUCHERS' && (
-        <div className="bg-white border border-pink-100 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+        <TableContainer>
+          <table className="w-full text-left text-xs">
               <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100">
                 <tr>
                   <th className="py-3 px-4">Số Phiếu Xuất</th>
@@ -1474,8 +1464,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                 )}
               </tbody>
             </table>
-          </div>
-        </div>
+        </TableContainer>
       )}
 
       {/* Stock Adjustment Modal */}

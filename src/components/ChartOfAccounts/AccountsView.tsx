@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ListTree, Search, Plus, Eye, BookOpen } from 'lucide-react';
 import { Dropdown } from '../Common/Dropdown';
+import { TableContainer } from '../Common/TableContainer';
 import { Account, JournalEntry } from '../../types/accounting';
 import { formatCurrency } from '../../utils/formatters';
 
@@ -89,55 +90,53 @@ export const AccountsView: React.FC<AccountsViewProps> = ({
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-rose-100/80 rounded-2xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-rose-50/50 text-slate-700 font-semibold border-b border-rose-100">
-              <tr>
-                <th className="py-3 px-4">Số Hiệu TK</th>
-                <th className="py-3 px-4">Tên Tài Khoản Kế Toán</th>
-                <th className="py-3 px-4">Phân Loại TK</th>
-                <th className="py-3 px-4 text-right">Dư Nợ Đầu Kỳ</th>
-                <th className="py-3 px-4 text-right">Dư Có Đầu Kỳ</th>
-                <th className="py-3 px-4 text-center">Xem Sổ Cái</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-rose-50">
-              {filteredAccounts.map(acc => {
-                const isChild = acc.level > 1;
-                return (
-                  <tr key={acc.code} className={`hover:bg-pink-50/30 transition ${isChild ? 'bg-slate-50/40' : 'bg-white'}`}>
-                    <td className={`py-3 px-4 font-mono font-bold ${isChild ? 'pl-8 text-slate-600 text-[11px]' : 'text-[#a93054] text-xs'}`}>
-                      {acc.code}
-                    </td>
-                    <td className={`py-3 px-4 ${isChild ? 'text-slate-600 font-normal' : 'text-slate-800 font-bold'}`}>
-                      {acc.name}
-                    </td>
-                    <td className="py-3 px-4">
-                      {getAccountTypeBadge(acc.type)}
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono font-medium text-slate-700">
-                      {acc.openingDebit ? formatCurrency(acc.openingDebit) : '-'}
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono font-medium text-slate-700">
-                      {acc.openingCredit ? formatCurrency(acc.openingCredit) : '-'}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => onOpenAccountLedger(acc.code)}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#a93054] hover:text-[#fb6f92] bg-pink-50 hover:bg-pink-100/80 px-2.5 py-1 rounded-lg transition cursor-pointer border border-pink-200/60"
-                      >
-                        <BookOpen className="w-3.5 h-3.5" />
-                        <span>Xem Sổ Cái</span>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <TableContainer>
+        <table className="w-full text-left text-xs text-slate-700">
+          <thead className="bg-[#fdf2f4] text-slate-700 font-semibold border-b border-rose-100">
+            <tr>
+              <th className="py-3 px-4">Số Hiệu TK</th>
+              <th className="py-3 px-4">Tên Tài Khoản Kế Toán</th>
+              <th className="py-3 px-4">Phân Loại TK</th>
+              <th className="py-3 px-4 text-right">Dư Nợ Đầu Kỳ</th>
+              <th className="py-3 px-4 text-right">Dư Có Đầu Kỳ</th>
+              <th className="py-3 px-4 text-center">Xem Sổ Cái</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-rose-50">
+            {filteredAccounts.map(acc => {
+              const isChild = acc.level > 1;
+              return (
+                <tr key={acc.code} className={`hover:bg-pink-50/30 transition ${isChild ? 'bg-slate-50/40' : 'bg-white'}`}>
+                  <td className={`py-3 px-4 font-mono font-bold ${isChild ? 'pl-8 text-slate-600 text-[11px]' : 'text-[#a93054] text-xs'}`}>
+                    {acc.code}
+                  </td>
+                  <td className={`py-3 px-4 ${isChild ? 'text-slate-600 font-normal' : 'text-slate-800 font-bold'}`}>
+                    {acc.name}
+                  </td>
+                  <td className="py-3 px-4">
+                    {getAccountTypeBadge(acc.type)}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono font-medium text-slate-700">
+                    {acc.openingDebit ? formatCurrency(acc.openingDebit) : '-'}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono font-medium text-slate-700">
+                    {acc.openingCredit ? formatCurrency(acc.openingCredit) : '-'}
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <button
+                      onClick={() => onOpenAccountLedger(acc.code)}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#a93054] hover:text-[#fb6f92] bg-pink-50 hover:bg-pink-100/80 px-2.5 py-1 rounded-lg transition cursor-pointer border border-pink-200/60"
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>Xem Sổ Cái</span>
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </TableContainer>
 
     </div>
   );

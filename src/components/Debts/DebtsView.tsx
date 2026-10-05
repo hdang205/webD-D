@@ -11,6 +11,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import { Dropdown } from '../Common/Dropdown';
+import { TableContainer } from '../Common/TableContainer';
 import { Partner, PartnerType, Invoice, CashTransaction } from '../../types/accounting';
 import { formatCurrency } from '../../utils/formatters';
 import { exportToExcel } from '../../utils/excelExport';
@@ -282,9 +283,8 @@ export const DebtsView: React.FC<DebtsViewProps> = ({
       </div>
 
       {/* Partners Debt Table */}
-      <div className="bg-white border border-pink-100 rounded-2xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-[#181a2e]">
+      <TableContainer>
+        <table className="w-full text-left text-xs text-[#181a2e]">
             <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100">
               <tr>
                 <th className="py-3 px-4">Mã ĐT</th>
@@ -357,8 +357,7 @@ export const DebtsView: React.FC<DebtsViewProps> = ({
               )}
             </tbody>
           </table>
-        </div>
-      </div>
+      </TableContainer>
 
       {/* Add Partner Modal */}
       {isAddModalOpen && (

@@ -29,6 +29,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { Dropdown } from '../Common/Dropdown';
+import { TableContainer } from '../Common/TableContainer';
 import { 
   StockRequisition, 
   RequisitionItem, 
@@ -538,10 +539,9 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
       </div>
 
       {/* Main Table List */}
-      <div className="bg-white rounded-2xl border border-rose-100 shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-rose-50/70 text-slate-800 font-bold border-b border-rose-100">
+      <TableContainer>
+        <table className="w-full text-left text-xs text-slate-700">
+          <thead className="bg-[#fdf2f4] text-slate-800 font-bold border-b border-rose-100">
               <tr>
                 <th className="py-3 px-4">Mã Phiếu & Ngày</th>
                 <th className="py-3 px-4">Người Đề Xuất & Bộ Phận</th>
@@ -710,8 +710,7 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
               )}
             </tbody>
           </table>
-        </div>
-      </div>
+      </TableContainer>
 
       {/* ================= MODAL: TẠO PHIẾU ĐỀ XUẤT MỚI ================= */}
       {showCreateModal && (
@@ -827,9 +826,9 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
                   </button>
                 </div>
 
-                <div className="border border-rose-100 rounded-2xl overflow-hidden">
+                <TableContainer maxHeight="max-h-[320px]">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-rose-50/50 text-slate-700 font-bold border-b border-rose-100">
+                    <thead className="bg-[#fdf2f4] text-slate-700 font-bold border-b border-rose-100">
                       <tr>
                         <th className="py-2.5 px-3">Chọn Từ Kho Hoặc Nhập Mới</th>
                         <th className="py-2.5 px-2 text-center w-20">Size</th>
@@ -938,7 +937,7 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
                       </tr>
                     </tfoot>
                   </table>
-                </div>
+                </TableContainer>
               </div>
 
               {/* Ghi chú thêm */}
@@ -1038,9 +1037,9 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
             )}
 
             {/* Items Table */}
-            <div className="border border-rose-100 rounded-2xl overflow-hidden">
+            <TableContainer maxHeight="max-h-[320px]">
               <table className="w-full text-left text-xs">
-                <thead className="bg-rose-50/60 font-bold text-slate-800 border-b border-rose-100">
+                <thead className="bg-[#fdf2f4] font-bold text-slate-800 border-b border-rose-100">
                   <tr>
                     <th className="py-2.5 px-3">Mã & Tên Sản Phẩm</th>
                     <th className="py-2.5 px-2 text-center">Size</th>
@@ -1066,7 +1065,7 @@ export const RequisitionsView: React.FC<RequisitionsViewProps> = ({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableContainer>
 
             {/* Actions */}
             <div className="flex items-center justify-between pt-4 border-t border-rose-100">

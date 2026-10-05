@@ -21,6 +21,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Dropdown } from '../Common/Dropdown';
+import { TableContainer } from '../Common/TableContainer';
 import { Partner, Invoice, CustomerTier } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/accountingEngine';
 import { InvoiceDetailModal } from '../Invoices/InvoiceDetailModal';
@@ -376,10 +377,9 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
       </div>
 
       {/* Customer Table */}
-      <div className="bg-white border border-rose-100/80 rounded-2xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-rose-50/50 text-slate-700 font-semibold border-b border-rose-100">
+      <TableContainer>
+        <table className="w-full text-left text-xs text-slate-700">
+          <thead className="bg-[#fdf2f4] text-slate-700 font-semibold border-b border-rose-100">
               <tr>
                 <th className="py-3 px-4 w-28">Mã KH</th>
                 <th className="py-3 px-4">Tên Khách Hàng</th>
@@ -483,8 +483,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
               )}
             </tbody>
           </table>
-        </div>
-      </div>
+      </TableContainer>
 
       {/* Customer Purchase History Modal */}
       {selectedCustomerHistory && (

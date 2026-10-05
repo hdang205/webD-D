@@ -20,6 +20,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Partner, Invoice } from '../../types/accounting';
+import { TableContainer } from '../Common/TableContainer';
 import { formatCurrency, formatDate } from '../../utils/accountingEngine';
 import { InvoiceDetailModal } from '../Invoices/InvoiceDetailModal';
 import { exportToExcel } from '../../utils/excelExport';
@@ -338,10 +339,9 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
       </div>
 
       {/* Supplier Table */}
-      <div className="bg-white border border-rose-100/80 rounded-2xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-rose-50/50 text-slate-700 font-semibold border-b border-rose-100">
+      <TableContainer>
+        <table className="w-full text-left text-xs text-slate-700">
+          <thead className="bg-[#fdf2f4] text-slate-700 font-semibold border-b border-rose-100">
               <tr>
                 <th className="py-3 px-4 w-28">Mã NCC</th>
                 <th className="py-3 px-4">Tên Nhà Cung Cấp / Xưởng May</th>
@@ -444,8 +444,7 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
               )}
             </tbody>
           </table>
-        </div>
-      </div>
+      </TableContainer>
 
       {/* Supplier Products & Invoices History Modal */}
       {selectedSupplierHistory && (
@@ -504,9 +503,9 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
                 ) : supplierProductsList.length === 0 ? (
                   <p className="text-xs text-slate-400 text-center py-8">Nhà cung cấp này chưa có sản phẩm liên kết nào.</p>
                 ) : (
-                  <div className="border border-slate-200 rounded-xl overflow-hidden">
+                  <TableContainer maxHeight="max-h-[350px]">
                     <table className="w-full text-left text-xs border-collapse">
-                      <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                      <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                         <tr>
                           <th className="p-2 w-10 text-center">#</th>
                           <th className="p-2">Sản phẩm</th>
@@ -536,7 +535,7 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </TableContainer>
                 )}
               </div>
             )}

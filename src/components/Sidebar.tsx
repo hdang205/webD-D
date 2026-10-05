@@ -166,10 +166,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     id={`tab-btn-${item.id}`}
                     onClick={() => onSelectTab(item.id)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer whitespace-nowrap ${isActive
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : item.highlight
-                          ? 'bg-rose-50/80 text-[#a93054] hover:bg-rose-100/80 font-bold border border-rose-200/60'
-                          : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : item.highlight
+                        ? 'bg-rose-50/80 text-[#a93054] hover:bg-rose-100/80 font-bold border border-rose-200/60'
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                       }`}
                   >
                     <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-pink-400' : item.highlight ? 'text-[#a93054]' : 'text-slate-500'}`} />
@@ -192,7 +192,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="mt-auto pt-3 border-t border-slate-200 hidden md:block px-1 text-[11px]">
         <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-center">
           <p className="text-[10px] font-bold text-slate-700">D&D FASHION ERP</p>
-          <p className="text-[9px] text-slate-400 mt-0.5">Phân quyền theo vai trò (RBAC)</p>
         </div>
       </div>
     </aside>

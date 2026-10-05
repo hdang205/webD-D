@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Printer, Plus, Trash2, PackagePlus, PackageMinus } from 'lucide-react';
 import { Dropdown } from '../Common/Dropdown';
+import { TableContainer } from '../Common/TableContainer';
 import { InventoryItem, InventoryLog, InventoryMovementType, Partner } from '../../types/accounting';
 import { getCurrentISODate, formatCurrency } from '../../utils/formatters';
 import { numberToVietnameseWords } from '../../utils/numberToWords';
@@ -353,9 +354,9 @@ export const StockVoucherModal: React.FC<StockVoucherModalProps> = ({
               </button>
             </div>
 
-            <div className="border border-pink-100 rounded-xl overflow-x-auto bg-white shadow-xs">
+            <TableContainer maxHeight="max-h-[320px]">
               <table className="w-full text-left text-xs min-w-[700px]">
-                <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100">
+                <thead className="bg-[#f4f2ff] text-[#4e4447] font-semibold border-b border-pink-100 sticky top-0 z-10">
                   <tr>
                     <th className="p-2.5 w-10 text-center">STT</th>
                     <th className="p-2.5 w-44">Chọn Mẫu Hàng</th>
@@ -454,7 +455,7 @@ export const StockVoucherModal: React.FC<StockVoucherModalProps> = ({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableContainer>
           </div>
 
           {/* Grand Total & In-Words Display */}

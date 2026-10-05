@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Save, Printer, Plus, Trash2, Receipt, Sparkles } from 'lucide-react';
 import { Dropdown } from '../Common/Dropdown';
+import { TableContainer } from '../Common/TableContainer';
 import { 
   Invoice, 
   InvoiceType, 
@@ -457,9 +458,9 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
               </button>
             </div>
 
-            <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+            <TableContainer maxHeight="max-h-[320px]">
               <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 sticky top-0 z-10">
                   <tr>
                     <th className="p-2.5 w-10 text-center">#</th>
                     <th className="p-2.5">Sản phẩm thời trang</th>
@@ -541,7 +542,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableContainer>
           </div>
 
           {/* Totals Summary & Payment Configuration */}

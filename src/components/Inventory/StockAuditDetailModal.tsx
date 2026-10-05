@@ -3,6 +3,7 @@ import { X, ClipboardCheck, CheckCircle2, TrendingDown, TrendingUp, Download, Pr
 import { StockAudit } from '../../services/inventoryService';
 import { formatDate, formatNumber, formatCurrency } from '../../utils/formatters';
 import { exportToExcel } from '../../utils/excelExport';
+import { TableContainer } from '../Common/TableContainer';
 
 interface StockAuditDetailModalProps {
   audit: StockAudit | null;
@@ -144,9 +145,9 @@ export const StockAuditDetailModal: React.FC<StockAuditDetailModalProps> = ({
           </div>
 
           {/* Items Table */}
-          <div className="border border-pink-100 rounded-2xl overflow-hidden shadow-xs">
+          <TableContainer maxHeight="max-h-[340px]">
             <table className="w-full text-left border-collapse">
-              <thead className="bg-[#fbf8ff] text-[#4e4447] text-[11px] font-bold border-b border-pink-100">
+              <thead className="bg-[#fbf8ff] text-[#4e4447] text-[11px] font-bold border-b border-pink-100 sticky top-0 z-10">
                 <tr>
                   <th className="py-2.5 px-3 w-10 text-center">STT</th>
                   <th className="py-2.5 px-3">Mã & Tên Sản Phẩm</th>
@@ -209,7 +210,7 @@ export const StockAuditDetailModal: React.FC<StockAuditDetailModalProps> = ({
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableContainer>
 
         </div>
 

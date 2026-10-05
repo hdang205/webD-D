@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Save, Plus, Trash2, BookOpenCheck } from 'lucide-react';
 import { Dropdown } from '../Common/Dropdown';
+import { TableContainer } from '../Common/TableContainer';
 import { JournalEntry, JournalDetail, Account } from '../../types/accounting';
 import { getCurrentISODate, formatCurrency } from '../../utils/formatters';
 
@@ -161,9 +162,9 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
               </button>
             </div>
 
-            <div className="border border-rose-100 rounded-xl overflow-hidden bg-rose-50/20">
+            <TableContainer maxHeight="max-h-[280px]">
               <table className="w-full text-left text-xs">
-                <thead className="bg-rose-50/70 text-slate-700 font-semibold">
+                <thead className="bg-[#fdf2f4] text-slate-700 font-semibold sticky top-0 z-10">
                   <tr>
                     <th className="py-2.5 px-3">Tài Khoản Kế Toán</th>
                     <th className="py-2.5 px-3 text-right w-36">Phát Sinh Nợ</th>
@@ -220,7 +221,7 @@ export const JournalEntryModal: React.FC<JournalEntryModalProps> = ({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableContainer>
           </div>
 
           {/* Balancing Check Footer */}

@@ -27,6 +27,7 @@ import {
 import { formatCurrency, formatNumber, getCurrentISODate } from '../../utils/formatters';
 import { ProductService, SupplierService, CategoryService } from '../../services/masterDataService';
 import { Dropdown } from '../Common/Dropdown';
+import { TableContainer } from '../Common/TableContainer';
 
 interface PurchaseItemRow {
   productId: string;
@@ -712,9 +713,9 @@ export const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
               )}
             </div>
 
-            <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+            <TableContainer maxHeight="max-h-[340px]">
               <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 sticky top-0 z-10">
                   <tr>
                     <th className="p-2.5 w-10 text-center">#</th>
                     <th className="p-2.5">Sản phẩm</th>
@@ -794,7 +795,7 @@ export const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
                   )}
                 </tbody>
               </table>
-            </div>
+            </TableContainer>
           </div>
 
           {/* Section 4: Thanh toán & Ghi chú */}

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Invoice, AuthUser } from '../../types/accounting';
 import { formatCurrency, formatDate } from '../../utils/formatters';
+import { TableContainer } from '../Common/TableContainer';
 
 interface InvoiceDetailModalProps {
   invoice: Invoice | null;
@@ -172,9 +173,9 @@ export const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
               <span className="text-[11px] text-[#6c595f]">Số dòng: {invoice.items?.length || 0}</span>
             </div>
 
-            <div className="overflow-x-auto">
+            <TableContainer maxHeight="max-h-[320px]" hasBorder={false}>
               <table className="w-full text-left text-xs text-[#181a2e]">
-                <thead className="bg-pink-50/50 text-[#6c595f] font-semibold border-b border-pink-100">
+                <thead className="bg-[#fdf2f4] text-[#6c595f] font-semibold border-b border-pink-100 sticky top-0 z-10">
                   <tr>
                     <th className="py-2.5 px-3 w-10 text-center">STT</th>
                     <th className="py-2.5 px-3">Mã & Tên Sản Phẩm</th>
@@ -210,7 +211,7 @@ export const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableContainer>
           </div>
 
           {/* Financial Totals & Accounting Breakdowns */}

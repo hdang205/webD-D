@@ -782,7 +782,8 @@ Em xin phép lấy số đo vòng eo & chiều cao của Chị để lập ngay 
           </div>
 
           {/* Logs List */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="table-scroll-container custom-scrollbar pr-1 border-0! bg-transparent!">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {careLogs
               .filter(l => {
                 const matchSearch = 
@@ -845,6 +846,7 @@ Em xin phép lấy số đo vòng eo & chiều cao của Chị để lập ngay 
                   </div>
                 </div>
               ))}
+            </div>
           </div>
         </div>
       )}
@@ -852,7 +854,8 @@ Em xin phép lấy số đo vòng eo & chiều cao của Chị để lập ngay 
       {/* ================= TAB 3: LỊCH NHẮC CHĂM SÓC KHÁCH VIP ================= */}
       {activeTab === 'REMINDERS' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="table-scroll-container custom-scrollbar pr-1 border-0! bg-transparent!">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {careReminders.map(rem => {
               const isDone = rem.status === 'DONE';
               return (
@@ -914,13 +917,15 @@ Em xin phép lấy số đo vòng eo & chiều cao của Chị để lập ngay 
                 </div>
               );
             })}
+            </div>
           </div>
         </div>
       )}
 
       {/* ================= TAB 4: THƯ VIỆN KỊCH BẢN MẪU BÁN HÀNG ================= */}
       {activeTab === 'SCRIPTS' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="table-scroll-container custom-scrollbar pr-1 border-0! bg-transparent!">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {scripts.map(script => (
             <div
               key={script.id}
@@ -968,6 +973,7 @@ Em xin phép lấy số đo vòng eo & chiều cao của Chị để lập ngay 
               </div>
             </div>
           ))}
+          </div>
         </div>
       )}
 

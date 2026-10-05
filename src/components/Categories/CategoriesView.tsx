@@ -14,6 +14,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { Category, AuthUser } from '../../types/accounting.js';
+import { TableContainer } from '../Common/TableContainer';
 import { CategoryService } from '../../services/masterDataService.js';
 
 interface CategoriesViewProps {
@@ -201,10 +202,9 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({
       </div>
 
       {/* Bảng Danh mục */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/60 text-slate-400 border-b border-slate-800 text-[11px] font-bold uppercase tracking-wider">
+      <TableContainer variant="dark">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 text-[11px] font-bold uppercase tracking-wider">
               <tr>
                 <th className="px-5 py-3.5">Mã Danh Mục</th>
                 <th className="px-5 py-3.5">Tên Nhóm Hàng</th>
@@ -279,8 +279,7 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({
               )}
             </tbody>
           </table>
-        </div>
-      </div>
+      </TableContainer>
 
       {/* Modal Thêm / Sửa Danh Mục */}
       {isModalOpen && (
