@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from './hooks/useTheme';
 import { Header } from './components/Header';
 import { Sidebar, TabKey } from './components/Sidebar';
 import { POSView } from './components/POS/POSView';
@@ -73,6 +74,9 @@ import {
 } from './utils/accountingEngine';
 
 export default function App() {
+  // Theme (Light / Dark) – persisted to localStorage
+  const [theme, toggleTheme] = useTheme();
+
   // Navigation State: default to Dashboard for ERP enterprise management, with instant POS access
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>({ period: 'THIS_MONTH' });
@@ -1201,6 +1205,8 @@ export default function App() {
         onLockScreen={() => setIsScreenLocked(true)}
         onFastSwitchUser={handleFastSwitchUser}
         onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* Mobile Add to Home Screen Prompt Banner */}

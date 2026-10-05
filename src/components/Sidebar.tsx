@@ -148,6 +148,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside id="app-sidebar" className="hidden md:flex md:w-64 bg-white border border-slate-200 p-3 rounded-2xl shrink-0 flex-col justify-between overflow-y-auto shadow-xs max-h-[calc(100vh-80px)] sticky top-16">
       <div className="flex flex-col gap-4 w-full">
 
+        {/* Brand Header with Logo */}
+        <div className="flex items-center gap-3 px-2 py-1.5 border-b border-slate-100 pb-3">
+          <img src="/logo.png" alt="D&D Fashion Logo" className="w-10 h-10 object-contain rounded-xl border border-rose-100 shadow-2xs bg-white p-0.5" />
+          <div className="min-w-0 flex-1">
+            <h2 className="font-extrabold text-sm text-slate-900 tracking-tight truncate">D&D FASHION</h2>
+            <p className="text-[10px] text-slate-400 font-medium">Quản trị Thời trang ERP</p>
+          </div>
+        </div>
+
         {visibleSections.map((section, sIdx) => (
           <div key={sIdx} className="space-y-1">
             <div className="px-2 py-0.5 flex items-center justify-between">

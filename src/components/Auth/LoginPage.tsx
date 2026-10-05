@@ -88,10 +88,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         {/* Card Đăng Nhập Chính */}
         <div className="bg-white border border-rose-100 rounded-3xl p-8 shadow-xl space-y-6">
           
-          {/* Header Theo Yêu Cầu Mục 16 */}
+          {/* Header Theo Yêu Cầu */}
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 bg-gradient-to-tr from-[#fb6f92] to-[#a93054] text-white rounded-2xl flex items-center justify-center mx-auto shadow-md">
-              <ShieldCheck className="w-9 h-9" />
+            <div className="w-20 h-20 bg-white rounded-3xl p-1.5 border border-rose-100 shadow-md flex items-center justify-center mx-auto overflow-hidden">
+              <img src="/logo.png" alt="D&D Fashion Logo" className="w-full h-full object-contain rounded-2xl" />
             </div>
             <div>
               <h1 className="text-2xl font-extrabold text-[#181a2e] tracking-tight">

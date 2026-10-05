@@ -78,14 +78,17 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({
           
           {/* Company Info Header */}
           <div className="flex justify-between items-start pb-3">
-            <div className="space-y-0.5">
-              <h2 className="font-extrabold text-base text-slate-900 uppercase tracking-tight">
-                {companyInfo.name || 'CỬA HÀNG THỜI TRANG D&D'}
-              </h2>
-              <p className="text-xs text-slate-600">Địa chỉ: {companyInfo.address}</p>
-              <p className="text-xs text-slate-600">
-                Mã số thuế: <strong>{companyInfo.taxCode}</strong> | Điện thoại: {companyInfo.phone}
-              </p>
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="D&D Fashion" className="w-12 h-12 object-contain rounded-lg border border-slate-200 bg-white p-0.5" />
+              <div className="space-y-0.5">
+                <h2 className="font-extrabold text-base text-slate-900 uppercase tracking-tight">
+                  {companyInfo.name || 'CỬA HÀNG THỜI TRANG D&D'}
+                </h2>
+                <p className="text-xs text-slate-600">Địa chỉ: {companyInfo.address}</p>
+                <p className="text-xs text-slate-600">
+                  Mã số thuế: <strong>{companyInfo.taxCode}</strong> | Điện thoại: {companyInfo.phone}
+                </p>
+              </div>
             </div>
             <div className="text-right text-xs font-mono text-slate-700 space-y-0.5 shrink-0">
               <p className="font-bold">{getTemplateCode()}</p>
