@@ -150,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Brand Header with Logo */}
         <div className="flex items-center gap-3 px-2 py-1.5 border-b border-slate-100 pb-3">
-          <img src="/logo.png" alt="D&D Fashion Logo" className="w-10 h-10 object-contain rounded-xl border border-rose-100 shadow-2xs bg-white p-0.5" />
+          <img src="/logo.png" alt="D&D Fashion Logo" className="w-10 h-10 object-contain rounded-full border border-rose-100 shadow-2xs bg-white p-0.5 shrink-0" />
           <div className="min-w-0 flex-1">
             <h2 className="font-extrabold text-sm text-slate-900 tracking-tight truncate">D&D FASHION</h2>
             <p className="text-[10px] text-slate-400 font-medium">Quản trị Thời trang ERP</p>

@@ -347,8 +347,8 @@ export const POSView: React.FC<POSViewProps> = ({
       {/* POS Top Control Banner */}
       <div className="bg-gradient-to-r from-[#181a2e] to-[#361726] text-white px-6 py-4 rounded-3xl mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg border border-rose-900/40">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-white p-1 rounded-2xl flex items-center justify-center shadow-xs border border-rose-200/50 overflow-hidden">
-            <img src="/logo.png" alt="D&D Fashion" className="w-full h-full object-contain rounded-xl" />
+          <div className="w-11 h-11 bg-white p-1 rounded-full flex items-center justify-center shadow-xs border border-rose-200/50 overflow-hidden shrink-0">
+            <img src="/logo.png" alt="D&D Fashion" className="w-full h-full object-contain rounded-full" />
           </div>
           <div>
             <div className="flex items-center gap-2">

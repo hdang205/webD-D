@@ -1,18 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Settings, 
-  Lock,
-  LogOut,
-  ChevronDown,
-  KeyRound,
-  Menu,
-  Sun,
-  Moon,
+  Lock, 
+  LogOut, 
+  ChevronDown, 
+  KeyRound, 
+  Menu 
 } from 'lucide-react';
 import { CompanyInfo, PeriodFilter, AuthUser } from '../types/accounting';
 import { TabKey } from './Sidebar';
 import { getDefaultTabForRole } from '../utils/rbac';
-import { Theme } from '../hooks/useTheme';
 
 interface HeaderProps {
   companyInfo: CompanyInfo;
@@ -33,8 +30,6 @@ interface HeaderProps {
   onOpenMobileDrawer?: () => void;
   onLockScreen?: () => void;
   onFastSwitchUser?: (username: string) => void;
-  theme?: Theme;
-  onToggleTheme?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -46,8 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   onOpenChangePassword,
   onOpenMobileDrawer,
-  theme = 'light',
-  onToggleTheme,
 }) => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -63,20 +56,18 @@ export const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const isDark = theme === 'dark';
-
   return (
     <header id="app-header" className="bg-slate-900 border-b border-slate-800 text-white px-4 py-2.5 sticky top-0 z-30 shadow-md">
       <div className="flex items-center justify-between gap-3 max-w-7xl mx-auto">
         
-        {/* Left: Logo & App Title & Active Tab */}
+        {/* Left: Logo (Rounded Full) & App Title & Active Tab */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => onSelectTab(getDefaultTabForRole(currentUser?.role))}
-            className="p-1 bg-white rounded-xl shadow-xs flex items-center justify-center cursor-pointer hover:opacity-95 transition active:scale-95 border border-slate-700 overflow-hidden"
+            className="p-1 bg-white rounded-full shadow-xs flex items-center justify-center cursor-pointer hover:opacity-95 transition active:scale-95 border border-slate-700 overflow-hidden shrink-0"
             title="Về Trang Chủ Phân Quyền"
           >
-            <img src="/logo.png" alt="D&D Fashion Logo" className="w-7 h-7 object-contain rounded-lg" />
+            <img src="/logo.png" alt="D&D Fashion Logo" className="w-7 h-7 object-contain rounded-full" />
           </button>
           
           <div className="flex items-center gap-2">
@@ -93,28 +84,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Right: Theme Toggle, User Profile, Settings, Mobile Menu */}
+        {/* Right: User Profile, Settings, Mobile Menu */}
         <div className="flex items-center gap-2">
-
-          {/* Light / Dark Toggle */}
-          {onToggleTheme && (
-            <button
-              id="btn-toggle-theme"
-              onClick={onToggleTheme}
-              title={isDark ? 'Chuyển chế độ sáng' : 'Chuyển chế độ tối'}
-              className={`relative p-1.5 rounded-xl border transition cursor-pointer flex items-center gap-1.5 text-xs font-semibold
-                ${isDark
-                  ? 'bg-slate-700 border-slate-600 text-amber-300 hover:bg-slate-600'
-                  : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-amber-300'
-                }`}
-            >
-              {isDark ? (
-                <Sun className="w-4 h-4" />
-              ) : (
-                <Moon className="w-4 h-4" />
-              )}
-            </button>
-          )}
 
           {/* User Profile Pill & Dropdown Menu */}
           {currentUser ? (

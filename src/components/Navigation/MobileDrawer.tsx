@@ -145,8 +145,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
         {/* Drawer Header */}
         <div className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-white p-0.5 border border-slate-700 flex items-center justify-center shadow-xs overflow-hidden">
-              <img src="/logo.png" alt="D&D Fashion" className="w-full h-full object-contain rounded-lg" />
+            <div className="w-8 h-8 rounded-full bg-white p-0.5 border border-slate-700 flex items-center justify-center shadow-xs overflow-hidden shrink-0">
+              <img src="/logo.png" alt="D&D Fashion" className="w-full h-full object-contain rounded-full" />
             </div>
             <div>
               <h3 className="font-bold text-sm text-white">D&D Fashion ERP</h3>

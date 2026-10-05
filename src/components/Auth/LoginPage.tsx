@@ -90,8 +90,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           
           {/* Header Theo Yêu Cầu */}
           <div className="text-center space-y-2">
-            <div className="w-20 h-20 bg-white rounded-3xl p-1.5 border border-rose-100 shadow-md flex items-center justify-center mx-auto overflow-hidden">
-              <img src="/logo.png" alt="D&D Fashion Logo" className="w-full h-full object-contain rounded-2xl" />
+            <div className="w-20 h-20 bg-white rounded-full p-1.5 border border-rose-100 shadow-md flex items-center justify-center mx-auto overflow-hidden">
+              <img src="/logo.png" alt="D&D Fashion Logo" className="w-full h-full object-contain rounded-full" />
             </div>
             <div>
               <h1 className="text-2xl font-extrabold text-[#181a2e] tracking-tight">

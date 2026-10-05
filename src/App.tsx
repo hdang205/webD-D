@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme } from './hooks/useTheme';
 import { Header } from './components/Header';
 import { Sidebar, TabKey } from './components/Sidebar';
 import { POSView } from './components/POS/POSView';
@@ -74,9 +73,6 @@ import {
 } from './utils/accountingEngine';
 
 export default function App() {
-  // Theme (Light / Dark) – persisted to localStorage
-  const [theme, toggleTheme] = useTheme();
-
   // Navigation State: default to Dashboard for ERP enterprise management, with instant POS access
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>({ period: 'THIS_MONTH' });
@@ -154,16 +150,16 @@ export default function App() {
     setActiveTab('login');
   };
 
-  // Global hotkeys listener
+  // Global hotkeys listener: F1 (POS), F2 (Đề Xuất), F3/F4 (Khóa Máy)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'F2') {
+      if (e.key === 'F1') {
         e.preventDefault();
         setActiveTab('pos');
-      } else if (e.key === 'F3') {
+      } else if (e.key === 'F2') {
         e.preventDefault();
         setActiveTab('requisitions');
-      } else if (e.key === 'F4') {
+      } else if (e.key === 'F3' || e.key === 'F4') {
         e.preventDefault();
         setIsScreenLocked(true);
       }
@@ -1205,8 +1201,6 @@ export default function App() {
         onLockScreen={() => setIsScreenLocked(true)}
         onFastSwitchUser={handleFastSwitchUser}
         onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
-        theme={theme}
-        onToggleTheme={toggleTheme}
       />
 
       {/* Mobile Add to Home Screen Prompt Banner */}
@@ -1642,9 +1636,9 @@ export default function App() {
           <span className="text-emerald-400 font-sans">● Máy In Bill POS: Sẵn Sàng</span>
           <span className="text-slate-600">•</span>
           <span className="text-slate-300">Phím tắt:</span>
-          <span className="bg-slate-800 px-1.5 py-0.5 rounded text-pink-300 border border-slate-700">[F2] Thu Ngân POS</span>
-          <span className="bg-slate-800 px-1.5 py-0.5 rounded text-pink-300 border border-slate-700">[F3] Đề Xuất</span>
-          <span className="bg-slate-800 px-1.5 py-0.5 rounded text-amber-300 border border-slate-700">[F4] Khóa Máy</span>
+          <span className="bg-slate-800 px-1.5 py-0.5 rounded text-pink-300 border border-slate-700">[F1] Thu Ngân POS</span>
+          <span className="bg-slate-800 px-1.5 py-0.5 rounded text-pink-300 border border-slate-700">[F2] Đề Xuất</span>
+          <span className="bg-slate-800 px-1.5 py-0.5 rounded text-amber-300 border border-slate-700">[F3] Khóa Máy</span>
         </div>
       </footer>
 
