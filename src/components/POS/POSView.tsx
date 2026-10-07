@@ -22,12 +22,17 @@ import {
   AlertCircle,
   CheckCircle2,
   MapPin,
-  Mail
+  Mail,
+  Store,
+  ClipboardCheck,
+  Package,
+  Grid
 } from 'lucide-react';
 import { Dropdown } from '../Common/Dropdown';
 import { InventoryItem, Partner, Invoice, InvoiceItem, CustomerTier } from '../../types/accounting';
 import { formatCurrency } from '../../utils/accountingEngine';
 import { CustomerService } from '../../services/masterDataService';
+import { TabKey } from '../Sidebar';
 
 interface POSViewProps {
   inventory: InventoryItem[];
@@ -48,6 +53,10 @@ interface POSViewProps {
   }) => void;
   onNavigateToERP: () => void;
   onAddCustomer?: (customerData: Partial<Partner>) => Promise<Partner>;
+  onSelectTab?: (tab: TabKey) => void;
+  unpaidInvoiceCount?: number;
+  pendingRequisitionsCount?: number;
+  lowStockCount?: number;
 }
 
 export const POSView: React.FC<POSViewProps> = ({
@@ -55,7 +64,11 @@ export const POSView: React.FC<POSViewProps> = ({
   partners,
   onCompletePOSSale,
   onNavigateToERP,
-  onAddCustomer
+  onAddCustomer,
+  onSelectTab,
+  unpaidInvoiceCount,
+  pendingRequisitionsCount,
+  lowStockCount
 }) => {
   // Search & Filter
   const [searchProduct, setSearchProduct] = useState('');
@@ -345,29 +358,83 @@ export const POSView: React.FC<POSViewProps> = ({
     <div className="w-full bg-[#fbf8ff] min-h-[calc(100vh-140px)]">
       
       {/* POS Top Control Banner */}
-      <div className="bg-gradient-to-r from-[#181a2e] to-[#361726] text-white px-6 py-4 rounded-3xl mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg border border-rose-900/40">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-white p-1 rounded-full flex items-center justify-center shadow-xs border border-rose-200/50 overflow-hidden shrink-0">
+      <div className="bg-gradient-to-r from-[#181a2e] via-[#2a1727] to-[#361726] text-white px-4 py-2.5 rounded-3xl mb-6 flex items-center justify-between gap-4 shadow-lg border border-rose-900/40">
+        
+        {/* Left Side: Logo & Desktop Navigation Buttons */}
+        <div className="flex items-center gap-3 w-full">
+          <div className="w-9 h-9 bg-white p-1 rounded-full flex items-center justify-center shadow-xs border border-rose-200/50 overflow-hidden shrink-0">
             <img src="/logo.png" alt="D&D Fashion" className="w-full h-full object-contain rounded-full" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold">Bán Hàng POS Quầy</h2>
-              <span className="text-[10px] font-bold bg-emerald-500 text-white px-2 py-0.5 rounded-full animate-pulse">
-                LIVE
-              </span>
-            </div>
-            <p className="text-[11px] text-pink-200">D&D Fashion Store Workstation</p>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onNavigateToERP}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#fb6f92] hover:bg-[#a93054] text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
-          >
-            <span>Hệ Thống Quản Trị Kế Toán ERP</span>
-          </button>
+          {/* Desktop Quick Task Navigation Buttons (Synchronized with Mobile Tasks) */}
+          {onSelectTab && (
+            <div className="hidden sm:flex flex-wrap items-center gap-1.5 bg-slate-900/80 p-1.5 rounded-2xl border border-white/10 shadow-inner">
+              <button
+                type="button"
+                onClick={() => onSelectTab('pos')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition bg-[#fb6f92] text-white shadow-xs cursor-pointer"
+                title="Màn hình Thu Ngân Bán POS"
+              >
+                <Store className="w-3.5 h-3.5" />
+                <span>Bán POS</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onSelectTab('sales')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition relative cursor-pointer"
+                title="Quản lý Hóa Đơn & Đơn Bán Hàng"
+              >
+                <ShoppingBag className="w-3.5 h-3.5 text-pink-300" />
+                <span>Đơn Hàng</span>
+                {unpaidInvoiceCount && unpaidInvoiceCount > 0 ? (
+                  <span className="bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-full font-mono shadow-xs border border-slate-900">
+                    {unpaidInvoiceCount > 99 ? '99+' : unpaidInvoiceCount}
+                  </span>
+                ) : null}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onSelectTab('requisitions')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition relative cursor-pointer"
+                title="Tạo & Theo dõi Phiếu Đề Xuất Nhập Xuất Hàng"
+              >
+                <ClipboardCheck className="w-3.5 h-3.5 text-amber-300" />
+                <span>Đề Xuất</span>
+                {pendingRequisitionsCount && pendingRequisitionsCount > 0 ? (
+                  <span className="bg-amber-500 text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-full font-mono shadow-xs border border-slate-900">
+                    {pendingRequisitionsCount > 99 ? '99+' : pendingRequisitionsCount}
+                  </span>
+                ) : null}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onSelectTab('inventory')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition relative cursor-pointer"
+                title="Kiểm tra Tồn Kho & Nhập Xuất Vật Tư"
+              >
+                <Package className="w-3.5 h-3.5 text-emerald-300" />
+                <span>Kho Hàng</span>
+                {lowStockCount && lowStockCount > 0 ? (
+                  <span className="bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-full font-mono shadow-xs border border-slate-900">
+                    {lowStockCount > 99 ? '99+' : lowStockCount}
+                  </span>
+                ) : null}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onSelectTab('categories')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                title="Quản lý Danh Mục & Nhóm Hàng Thời Trang"
+              >
+                <Grid className="w-3.5 h-3.5 text-sky-300" />
+                <span>Danh Mục</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="TechSphereX AI-drawio-kit" version="24.0.0" type="device">
+  <diagram id="webd-d-erd" name="ERD Database Schema">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="2300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b style='font-size: 18px;'&gt;SƠ ĐỒ ENTITY RELATIONSHIP DIAGRAM (ERD) - DỰ ÁN webD-D&lt;/b&gt;&lt;br&gt;&lt;span style='font-size: 13px; color: #475569;'&gt;Hệ thống Quản lý Bán hàng, Kho vật tư, Kế toán Thu Chi &amp;amp; Chăm sóc Khách hàng (SQLite / Node.js &amp;amp; React)&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Segoe UI;" vertex="1" parent="1">
+          <mxGeometry x="700" y="30" width="800" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-company_info" value="&lt;b style='font-size: 13px;'&gt;company_info&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: INTEGER&lt;br&gt;name: TEXT&lt;br&gt;tax_code: TEXT&lt;br&gt;address: TEXT&lt;br&gt;phone: TEXT&lt;br&gt;email: TEXT&lt;br&gt;bank_account: TEXT&lt;br&gt;bank_name: TEXT&lt;br&gt;director_name: TEXT&lt;br&gt;chief_accountant: TEXT&lt;br&gt;treasurer_name: TEXT&lt;br&gt;accounting_standard: TEXT&lt;br&gt;fiscal_year: INTEGER&lt;br&gt;created_at: TEXT&lt;br&gt;updated_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#f5f5f5;strokeColor=#666666;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="120" width="240" height="330" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-accounts" value="&lt;b style='font-size: 13px;'&gt;accounts&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; code: TEXT&lt;br&gt;name: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; parent_code: TEXT&lt;br&gt;type: TEXT&lt;br&gt;level: INTEGER&lt;br&gt;is_detail: INTEGER&lt;br&gt;opening_debit: REAL&lt;br&gt;opening_credit: REAL&lt;br&gt;description: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="700" width="240" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-categories" value="&lt;b style='font-size: 13px;'&gt;categories&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;code: TEXT&lt;br&gt;name: TEXT&lt;br&gt;description: TEXT&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="120" width="220" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-products" value="&lt;b style='font-size: 13px;'&gt;products&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;code: TEXT&lt;br&gt;name: TEXT&lt;br&gt;unit: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; category_id: TEXT&lt;br&gt;size: TEXT&lt;br&gt;color: TEXT&lt;br&gt;barcode: TEXT&lt;br&gt;image_url: TEXT&lt;br&gt;cost_price: REAL&lt;br&gt;selling_price: REAL&lt;br&gt;opening_quantity: INTEGER&lt;br&gt;opening_value: REAL&lt;br&gt;current_stock: INTEGER&lt;br&gt;min_stock_level: INTEGER&lt;br&gt;description: TEXT&lt;br&gt;created_at: TEXT&lt;br&gt;updated_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1580" y="120" width="260" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-partners" value="&lt;b style='font-size: 13px;'&gt;partners&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;code: TEXT&lt;br&gt;name: TEXT&lt;br&gt;type: TEXT&lt;br&gt;tax_code: TEXT&lt;br&gt;phone: TEXT&lt;br&gt;address: TEXT&lt;br&gt;email: TEXT&lt;br&gt;tier: TEXT&lt;br&gt;credit_limit: REAL&lt;br&gt;bank_account: TEXT&lt;br&gt;bank_name: TEXT&lt;br&gt;opening_debt_debit: REAL&lt;br&gt;opening_debt_credit: REAL&lt;br&gt;notes: TEXT&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="980" y="120" width="260" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-supplier_products" value="&lt;b style='font-size: 13px;'&gt;supplier_products&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; supplier_id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; product_id: TEXT&lt;br&gt;supplier_product_code: TEXT&lt;br&gt;last_purchase_price: REAL&lt;br&gt;is_active: INTEGER&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1900" y="120" width="240" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-users" value="&lt;b style='font-size: 13px;'&gt;users&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;username: TEXT&lt;br&gt;password_hash: TEXT&lt;br&gt;name: TEXT&lt;br&gt;role: TEXT&lt;br&gt;role_title: TEXT&lt;br&gt;email: TEXT&lt;br&gt;phone: TEXT&lt;br&gt;avatar: TEXT&lt;br&gt;branch: TEXT&lt;br&gt;is_active: INTEGER&lt;br&gt;created_at: TEXT&lt;br&gt;updated_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#f8cecc;strokeColor=#b85450;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="120" width="240" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-employees" value="&lt;b style='font-size: 13px;'&gt;employees&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;code: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; user_id: TEXT&lt;br&gt;name: TEXT&lt;br&gt;gender: TEXT&lt;br&gt;birthday: TEXT&lt;br&gt;id_card_number: TEXT&lt;br&gt;phone: TEXT&lt;br&gt;email: TEXT&lt;br&gt;address: TEXT&lt;br&gt;department: TEXT&lt;br&gt;position: TEXT&lt;br&gt;role: TEXT&lt;br&gt;branch: TEXT&lt;br&gt;avatar: TEXT&lt;br&gt;start_date: TEXT&lt;br&gt;base_salary: REAL&lt;br&gt;allowance: REAL&lt;br&gt;commission_rate: REAL&lt;br&gt;insurance_salary: REAL&lt;br&gt;bank_account: TEXT&lt;br&gt;bank_name: TEXT&lt;br&gt;status: TEXT&lt;br&gt;notes: TEXT&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#f8cecc;strokeColor=#b85450;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="120" width="260" height="520" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-invoices" value="&lt;b style='font-size: 13px;'&gt;invoices&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;code: TEXT&lt;br&gt;invoice_symbol: TEXT&lt;br&gt;date: TEXT&lt;br&gt;due_date: TEXT&lt;br&gt;type: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; partner_id: TEXT&lt;br&gt;subtotal: REAL&lt;br&gt;discount_total: REAL&lt;br&gt;vat_total: REAL&lt;br&gt;grand_total: REAL&lt;br&gt;paid_amount: REAL&lt;br&gt;status: TEXT&lt;br&gt;note: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; created_by: TEXT&lt;br&gt;created_at: TEXT&lt;br&gt;updated_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="700" width="260" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-invoice_items" value="&lt;b style='font-size: 13px;'&gt;invoice_items&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; invoice_id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; product_id: TEXT&lt;br&gt;item_code: TEXT&lt;br&gt;item_name: TEXT&lt;br&gt;unit: TEXT&lt;br&gt;quantity: INTEGER&lt;br&gt;unit_price: REAL&lt;br&gt;discount_rate: REAL&lt;br&gt;discount_amount: REAL&lt;br&gt;vat_rate: REAL&lt;br&gt;vat_amount: REAL&lt;br&gt;total_amount: REAL" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="700" width="240" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-cash_transactions" value="&lt;b style='font-size: 13px;'&gt;cash_transactions&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;code: TEXT&lt;br&gt;date: TEXT&lt;br&gt;type: TEXT&lt;br&gt;person_name: TEXT&lt;br&gt;person_address: TEXT&lt;br&gt;reason: TEXT&lt;br&gt;amount: REAL&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; opposite_account_code: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; fund_account_code: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; partner_id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; invoice_id: TEXT&lt;br&gt;invoice_ref: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; created_by: TEXT&lt;br&gt;created_by_name: TEXT&lt;br&gt;category: TEXT&lt;br&gt;note: TEXT&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="980" y="700" width="260" height="400" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-inventory_logs" value="&lt;b style='font-size: 13px;'&gt;inventory_logs&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;code: TEXT&lt;br&gt;date: TEXT&lt;br&gt;type: TEXT&lt;br&gt;invoice_ref: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; invoice_id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; partner_id: TEXT&lt;br&gt;partner_name: TEXT&lt;br&gt;deliverer_or_receiver: TEXT&lt;br&gt;warehouse_name: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; stock_account_code: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; opposite_account_code: TEXT&lt;br&gt;total_value: REAL&lt;br&gt;note: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; created_by: TEXT&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1180" width="260" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-inventory_log_items" value="&lt;b style='font-size: 13px;'&gt;inventory_log_items&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; inventory_log_id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; product_id: TEXT&lt;br&gt;movement_type: TEXT&lt;br&gt;item_code: TEXT&lt;br&gt;item_name: TEXT&lt;br&gt;unit: TEXT&lt;br&gt;quantity: INTEGER&lt;br&gt;unit_price: REAL&lt;br&gt;total_amount: REAL" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="1180" width="240" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-stock_requisitions" value="&lt;b style='font-size: 13px;'&gt;stock_requisitions&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;code: TEXT&lt;br&gt;date: TEXT&lt;br&gt;type: TEXT&lt;br&gt;urgency: TEXT&lt;br&gt;reason: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; requester_id: TEXT&lt;br&gt;requester_name: TEXT&lt;br&gt;requester_role: TEXT&lt;br&gt;department: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; suggested_supplier_id: TEXT&lt;br&gt;suggested_supplier_name: TEXT&lt;br&gt;total_estimated_amount: REAL&lt;br&gt;status: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; approver_id: TEXT&lt;br&gt;approver_name: TEXT&lt;br&gt;approval_date: TEXT&lt;br&gt;approval_notes: TEXT&lt;br&gt;created_document_ref: TEXT&lt;br&gt;notes: TEXT&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="1180" width="260" height="444" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-requisition_items" value="&lt;b style='font-size: 13px;'&gt;requisition_items&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; requisition_id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; product_id: TEXT&lt;br&gt;item_code: TEXT&lt;br&gt;item_name: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; category_id: TEXT&lt;br&gt;size: TEXT&lt;br&gt;color: TEXT&lt;br&gt;unit: TEXT&lt;br&gt;current_stock: INTEGER&lt;br&gt;requested_qty: INTEGER&lt;br&gt;approved_qty: INTEGER&lt;br&gt;estimated_unit_price: REAL&lt;br&gt;total_estimated: REAL&lt;br&gt;note: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="980" y="1180" width="240" height="330" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-journal_entries" value="&lt;b style='font-size: 13px;'&gt;journal_entries&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;code: TEXT&lt;br&gt;date: TEXT&lt;br&gt;description: TEXT&lt;br&gt;document_ref: TEXT&lt;br&gt;document_type: TEXT&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="700" width="240" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-journal_details" value="&lt;b style='font-size: 13px;'&gt;journal_details&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; journal_entry_id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; account_code: TEXT&lt;br&gt;account_name: TEXT&lt;br&gt;debit_amount: REAL&lt;br&gt;credit_amount: REAL" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="700" width="240" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-customer_care_logs" value="&lt;b style='font-size: 13px;'&gt;customer_care_logs&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;date: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; partner_id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; staff_id: TEXT&lt;br&gt;channel: TEXT&lt;br&gt;purpose: TEXT&lt;br&gt;height_cm: REAL&lt;br&gt;weight_kg: REAL&lt;br&gt;bust_cm: REAL&lt;br&gt;waist_cm: REAL&lt;br&gt;hips_cm: REAL&lt;br&gt;body_shape: TEXT&lt;br&gt;recommended_size: TEXT&lt;br&gt;style_preferences: TEXT&lt;br&gt;style_notes: TEXT&lt;br&gt;customer_feedback: TEXT&lt;br&gt;action_taken: TEXT&lt;br&gt;next_appointment_date: TEXT&lt;br&gt;status: TEXT&lt;br&gt;priority: TEXT&lt;br&gt;satisfaction_rating: INTEGER&lt;br&gt;notes: TEXT&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="980" y="1680" width="260" height="482" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-care_reminders" value="&lt;b style='font-size: 13px;'&gt;care_reminders&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;type: TEXT&lt;br&gt;title: TEXT&lt;br&gt;description: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; partner_id: TEXT&lt;br&gt;due_date: TEXT&lt;br&gt;status: TEXT&lt;br&gt;voucher_code: TEXT&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="1680" width="240" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-stock_audits" value="&lt;b style='font-size: 13px;'&gt;stock_audits&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;code: TEXT&lt;br&gt;date: TEXT&lt;br&gt;auditor_name: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; auditor_id: TEXT&lt;br&gt;reason: TEXT&lt;br&gt;status: TEXT&lt;br&gt;total_items: INTEGER&lt;br&gt;total_diff: INTEGER&lt;br&gt;matched_count: INTEGER&lt;br&gt;shortage_count: INTEGER&lt;br&gt;surplus_count: INTEGER&lt;br&gt;note: TEXT&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="1180" width="240" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-stock_audit_items" value="&lt;b style='font-size: 13px;'&gt;stock_audit_items&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; audit_id: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; product_id: TEXT&lt;br&gt;item_code: TEXT&lt;br&gt;item_name: TEXT&lt;br&gt;unit: TEXT&lt;br&gt;system_stock: INTEGER&lt;br&gt;actual_stock: INTEGER&lt;br&gt;difference: INTEGER&lt;br&gt;status: TEXT&lt;br&gt;cost_price: REAL&lt;br&gt;difference_value: REAL&lt;br&gt;note: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1580" y="1180" width="240" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="ent-defective_goods" value="&lt;b style='font-size: 13px;'&gt;defective_goods&lt;/b&gt;&lt;hr style='margin: 4px 0;'&gt;&lt;b style='color:#b85450;'&gt;PK&lt;/b&gt; id: TEXT&lt;br&gt;code: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; product_id: TEXT&lt;br&gt;item_code: TEXT&lt;br&gt;item_name: TEXT&lt;br&gt;unit: TEXT&lt;br&gt;quantity: INTEGER&lt;br&gt;reason: TEXT&lt;br&gt;action_type: TEXT&lt;br&gt;action_title: TEXT&lt;br&gt;note: TEXT&lt;br&gt;handler_name: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; handler_id: TEXT&lt;br&gt;date: TEXT&lt;br&gt;cost_price: REAL&lt;br&gt;total_loss: REAL&lt;br&gt;status: TEXT&lt;br&gt;&lt;b style='color:#6c8ebf;'&gt;FK&lt;/b&gt; inventory_log_id: TEXT&lt;br&gt;created_at: TEXT" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;spacingTop=6;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Segoe UI;fontSize=11;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1900" y="1180" width="260" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-1-products-categories" value="N   1 (category_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-products" target="ent-categories">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-2-supplier_products-partners" value="N   1 (supplier_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-supplier_products" target="ent-partners">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-3-supplier_products-products" value="N   1 (product_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-supplier_products" target="ent-products">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-4-employees-users" value="N   1 (user_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-employees" target="ent-users">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-5-invoices-partners" value="N   1 (partner_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-invoices" target="ent-partners">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-6-invoices-users" value="N   1 (created_by)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-invoices" target="ent-users">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-7-invoice_items-invoices" value="N   1 (invoice_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-invoice_items" target="ent-invoices">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-8-invoice_items-products" value="N   1 (product_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-invoice_items" target="ent-products">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-9-cash_transactions-accounts" value="N   1 (opposite_account_code)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-cash_transactions" target="ent-accounts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-10-cash_transactions-accounts" value="N   1 (fund_account_code)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-cash_transactions" target="ent-accounts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-11-cash_transactions-partners" value="N   1 (partner_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-cash_transactions" target="ent-partners">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-12-cash_transactions-invoices" value="N   1 (invoice_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-cash_transactions" target="ent-invoices">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-13-cash_transactions-users" value="N   1 (created_by)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-cash_transactions" target="ent-users">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-14-inventory_logs-invoices" value="N   1 (invoice_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-inventory_logs" target="ent-invoices">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-15-inventory_logs-partners" value="N   1 (partner_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-inventory_logs" target="ent-partners">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-16-inventory_logs-accounts" value="N   1 (stock_account_code)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-inventory_logs" target="ent-accounts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-17-inventory_logs-accounts" value="N   1 (opposite_account_code)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-inventory_logs" target="ent-accounts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-18-inventory_logs-users" value="N   1 (created_by)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-inventory_logs" target="ent-users">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-19-inventory_log_items-inventory_logs" value="N   1 (inventory_log_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-inventory_log_items" target="ent-inventory_logs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-20-inventory_log_items-products" value="N   1 (product_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-inventory_log_items" target="ent-products">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-21-stock_requisitions-employees" value="N   1 (requester_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-stock_requisitions" target="ent-employees">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-22-stock_requisitions-partners" value="N   1 (suggested_supplier_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-stock_requisitions" target="ent-partners">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-23-stock_requisitions-employees" value="N   1 (approver_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-stock_requisitions" target="ent-employees">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-24-requisition_items-stock_requisitions" value="N   1 (requisition_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-requisition_items" target="ent-stock_requisitions">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-25-requisition_items-products" value="N   1 (product_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-requisition_items" target="ent-products">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-26-requisition_items-categories" value="N   1 (category_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-requisition_items" target="ent-categories">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-27-journal_details-journal_entries" value="N   1 (journal_entry_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-journal_details" target="ent-journal_entries">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-28-journal_details-accounts" value="N   1 (account_code)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-journal_details" target="ent-accounts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-29-customer_care_logs-partners" value="N   1 (partner_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-customer_care_logs" target="ent-partners">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-30-customer_care_logs-employees" value="N   1 (staff_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-customer_care_logs" target="ent-employees">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-31-care_reminders-partners" value="N   1 (partner_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-care_reminders" target="ent-partners">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-32-stock_audits-users" value="N   1 (auditor_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-stock_audits" target="ent-users">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-33-stock_audit_items-stock_audits" value="N   1 (audit_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-stock_audit_items" target="ent-stock_audits">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-34-stock_audit_items-products" value="N   1 (product_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-stock_audit_items" target="ent-products">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-35-defective_goods-products" value="N   1 (product_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-defective_goods" target="ent-products">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-36-defective_goods-users" value="N   1 (handler_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-defective_goods" target="ent-users">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-37-defective_goods-inventory_logs" value="N   1 (inventory_log_id)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERmany;endArrow=ERone;startFill=0;endFill=0;fontFamily=Segoe UI;fontSize=10;strokeColor=#475569;strokeWidth=1.5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ent-defective_goods" target="ent-inventory_logs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-box" value="&amp;lt;b style=&#x27;font-size: 13px;&#x27;&amp;gt;Chú thích Phân vùng &amp;amp;amp; Màu sắc (Legend)&amp;lt;/b&amp;gt;&amp;lt;hr style=&#x27;margin: 4px 0;&#x27;&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;verticalAlign=top;fontFamily=Segoe UI;fontSize=11;align=left;spacingLeft=10;spacingTop=6;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1680" width="460" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-box-36" value="" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="legend-box">
+          <mxGeometry x="14" y="36" width="28" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-txt-36" value="Cấu hình hệ thống (Company Info)" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Segoe UI;fontSize=11;" vertex="1" parent="legend-box">
+          <mxGeometry x="52" y="34" width="390" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-box-64" value="" style="rounded=0;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="legend-box">
+          <mxGeometry x="14" y="64" width="28" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-txt-64" value="Quản trị Người dùng &amp; Nhân sự (Users, Employees)" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Segoe UI;fontSize=11;" vertex="1" parent="legend-box">
+          <mxGeometry x="52" y="62" width="390" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-box-92" value="" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="legend-box">
+          <mxGeometry x="14" y="92" width="28" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-txt-92" value="Danh mục Hàng hóa, Nguồn cung &amp; Đối tác (Products, Partners)" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Segoe UI;fontSize=11;" vertex="1" parent="legend-box">
+          <mxGeometry x="52" y="90" width="390" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-box-120" value="" style="rounded=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="legend-box">
+          <mxGeometry x="14" y="120" width="28" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-txt-120" value="Hóa đơn, Thu Chi &amp; Sổ cái Kế toán (Invoices, Cash, Accounts)" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Segoe UI;fontSize=11;" vertex="1" parent="legend-box">
+          <mxGeometry x="52" y="118" width="390" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-box-148" value="" style="rounded=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="legend-box">
+          <mxGeometry x="14" y="148" width="28" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-txt-148" value="Quản lý Kho, Vật tư, Yêu cầu &amp; Kiểm kê (Inventory, Audits)" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Segoe UI;fontSize=11;" vertex="1" parent="legend-box">
+          <mxGeometry x="52" y="146" width="390" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-box-176" value="" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="legend-box">
+          <mxGeometry x="14" y="176" width="28" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-txt-176" value="Chăm sóc Khách hàng &amp; CRM (Care Logs, Reminders)" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Segoe UI;fontSize=11;" vertex="1" parent="legend-box">
+          <mxGeometry x="52" y="174" width="390" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

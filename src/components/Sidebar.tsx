@@ -108,14 +108,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'categories' as TabKey, label: 'Danh Mục Hàng', icon: ListTree },
         { id: 'customers' as TabKey, label: 'Khách Hàng', icon: Users, badge: customerCount },
         { id: 'suppliers' as TabKey, label: 'Nhà Cung Cấp', icon: Building2, badge: supplierCount },
-        { id: 'employees' as TabKey, label: 'Người Dùng (Nhân Sự)', icon: UserCheck, badge: employeeCount, badgeColor: 'bg-indigo-600' },
+        { id: 'employees' as TabKey, label: 'Nhân Viên', icon: UserCheck, badge: employeeCount, badgeColor: 'bg-indigo-600' },
       ]
     },
     {
       title: 'GIAO DỊCH',
       items: [
         { id: 'sales' as TabKey, label: 'Bán Hàng (Hóa Đơn)', icon: ShoppingBag },
-        { id: 'pos' as TabKey, label: 'Bán Hàng POS Quầy', icon: Store, highlight: true },
+        { id: 'pos' as TabKey, label: 'Bán Hàng POS', icon: Store, highlight: true },
         { id: 'purchases' as TabKey, label: 'Nhập Hàng Xưởng', icon: Truck, badge: unpaidInvoiceCount > 0 ? unpaidInvoiceCount : undefined, badgeColor: 'bg-rose-600' },
         { id: 'requisitions' as TabKey, label: 'Đề Xuất Nhập/Xuất', icon: ClipboardCheck, badge: pendingRequisitionsCount > 0 ? pendingRequisitionsCount : undefined, badgeColor: 'bg-amber-500' },
       ]

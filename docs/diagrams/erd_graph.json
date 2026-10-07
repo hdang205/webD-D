@@ -1,0 +1,383 @@
+{
+  "direction": "TB",
+  "nodes": [
+    {
+      "id": "company_info",
+      "label": "company_info\nPK id: INTEGER\nname: TEXT\ntax_code: TEXT\naddress: TEXT\nphone: TEXT\nemail: TEXT\nbank_account: TEXT\nbank_name: TEXT\ndirector_name: TEXT\nchief_accountant: TEXT\ntreasurer_name: TEXT\naccounting_standard: TEXT\nfiscal_year: INTEGER\ncreated_at: TEXT\nupdated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 210,
+      "height": 330
+    },
+    {
+      "id": "accounts",
+      "label": "accounts\nPK code: TEXT\nname: TEXT\nFK parent_code: TEXT\ntype: TEXT\nlevel: INTEGER\nis_detail: INTEGER\nopening_debit: REAL\nopening_credit: REAL\ndescription: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 170,
+      "height": 210
+    },
+    {
+      "id": "categories",
+      "label": "categories\nPK id: TEXT\ncode: TEXT\nname: TEXT\ndescription: TEXT\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 160,
+      "height": 130
+    },
+    {
+      "id": "products",
+      "label": "products\nPK id: TEXT\ncode: TEXT\nname: TEXT\nunit: TEXT\nFK category_id: TEXT\nsize: TEXT\ncolor: TEXT\nbarcode: TEXT\nimage_url: TEXT\ncost_price: REAL\nselling_price: REAL\nopening_quantity: INTEGER\nopening_value: REAL\ncurrent_stock: INTEGER\nmin_stock_level: INTEGER\ndescription: TEXT\ncreated_at: TEXT\nupdated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 210,
+      "height": 390
+    },
+    {
+      "id": "partners",
+      "label": "partners\nPK id: TEXT\ncode: TEXT\nname: TEXT\ntype: TEXT\ntax_code: TEXT\nphone: TEXT\naddress: TEXT\nemail: TEXT\ntier: TEXT\ncredit_limit: REAL\nbank_account: TEXT\nbank_name: TEXT\nopening_debt_debit: REAL\nopening_debt_credit: REAL\nnotes: TEXT\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 210,
+      "height": 350
+    },
+    {
+      "id": "supplier_products",
+      "label": "supplier_products\nPK id: TEXT\nFK supplier_id: TEXT\nFK product_id: TEXT\nsupplier_product_code: TEXT\nlast_purchase_price: REAL\nis_active: INTEGER\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 220,
+      "height": 170
+    },
+    {
+      "id": "users",
+      "label": "users\nPK id: TEXT\nusername: TEXT\npassword_hash: TEXT\nname: TEXT\nrole: TEXT\nrole_title: TEXT\nemail: TEXT\nphone: TEXT\navatar: TEXT\nbranch: TEXT\nis_active: INTEGER\ncreated_at: TEXT\nupdated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 170,
+      "height": 290
+    },
+    {
+      "id": "employees",
+      "label": "employees\nPK id: TEXT\ncode: TEXT\nFK user_id: TEXT\nname: TEXT\ngender: TEXT\nbirthday: TEXT\nid_card_number: TEXT\nphone: TEXT\nemail: TEXT\naddress: TEXT\ndepartment: TEXT\nposition: TEXT\nrole: TEXT\nbranch: TEXT\navatar: TEXT\nstart_date: TEXT\nbase_salary: REAL\nallowance: REAL\ncommission_rate: REAL\ninsurance_salary: REAL\nbank_account: TEXT\nbank_name: TEXT\nstatus: TEXT\nnotes: TEXT\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 190,
+      "height": 530
+    },
+    {
+      "id": "invoices",
+      "label": "invoices\nPK id: TEXT\ncode: TEXT\ninvoice_symbol: TEXT\ndate: TEXT\ndue_date: TEXT\ntype: TEXT\nFK partner_id: TEXT\nsubtotal: REAL\ndiscount_total: REAL\nvat_total: REAL\ngrand_total: REAL\npaid_amount: REAL\nstatus: TEXT\nnote: TEXT\nFK created_by: TEXT\ncreated_at: TEXT\nupdated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 170,
+      "height": 370
+    },
+    {
+      "id": "invoice_items",
+      "label": "invoice_items\nPK id: TEXT\nFK invoice_id: TEXT\nFK product_id: TEXT\nitem_code: TEXT\nitem_name: TEXT\nunit: TEXT\nquantity: INTEGER\nunit_price: REAL\ndiscount_rate: REAL\ndiscount_amount: REAL\nvat_rate: REAL\nvat_amount: REAL\ntotal_amount: REAL",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 180,
+      "height": 290
+    },
+    {
+      "id": "cash_transactions",
+      "label": "cash_transactions\nPK id: TEXT\ncode: TEXT\ndate: TEXT\ntype: TEXT\nperson_name: TEXT\nperson_address: TEXT\nreason: TEXT\namount: REAL\nFK opposite_account_code: TEXT\nFK fund_account_code: TEXT\nFK partner_id: TEXT\nFK invoice_id: TEXT\ninvoice_ref: TEXT\nFK created_by: TEXT\ncreated_by_name: TEXT\ncategory: TEXT\nnote: TEXT\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 240,
+      "height": 390
+    },
+    {
+      "id": "inventory_logs",
+      "label": "inventory_logs\nPK id: TEXT\ncode: TEXT\ndate: TEXT\ntype: TEXT\ninvoice_ref: TEXT\nFK invoice_id: TEXT\nFK partner_id: TEXT\npartner_name: TEXT\ndeliverer_or_receiver: TEXT\nwarehouse_name: TEXT\nFK stock_account_code: TEXT\nFK opposite_account_code: TEXT\ntotal_value: REAL\nnote: TEXT\nFK created_by: TEXT\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 240,
+      "height": 350
+    },
+    {
+      "id": "inventory_log_items",
+      "label": "inventory_log_items\nPK id: TEXT\nFK inventory_log_id: TEXT\nFK product_id: TEXT\nmovement_type: TEXT\nitem_code: TEXT\nitem_name: TEXT\nunit: TEXT\nquantity: INTEGER\nunit_price: REAL\ntotal_amount: REAL",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 210,
+      "height": 230
+    },
+    {
+      "id": "stock_requisitions",
+      "label": "stock_requisitions\nPK id: TEXT\ncode: TEXT\ndate: TEXT\ntype: TEXT\nurgency: TEXT\nreason: TEXT\nFK requester_id: TEXT\nrequester_name: TEXT\nrequester_role: TEXT\ndepartment: TEXT\nFK suggested_supplier_id: TEXT\nsuggested_supplier_name: TEXT\ntotal_estimated_amount: REAL\nstatus: TEXT\nFK approver_id: TEXT\napprover_name: TEXT\napproval_date: TEXT\napproval_notes: TEXT\ncreated_document_ref: TEXT\nnotes: TEXT\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 240,
+      "height": 450
+    },
+    {
+      "id": "requisition_items",
+      "label": "requisition_items\nPK id: TEXT\nFK requisition_id: TEXT\nFK product_id: TEXT\nitem_code: TEXT\nitem_name: TEXT\nFK category_id: TEXT\nsize: TEXT\ncolor: TEXT\nunit: TEXT\ncurrent_stock: INTEGER\nrequested_qty: INTEGER\napproved_qty: INTEGER\nestimated_unit_price: REAL\ntotal_estimated: REAL\nnote: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 220,
+      "height": 330
+    },
+    {
+      "id": "journal_entries",
+      "label": "journal_entries\nPK id: TEXT\ncode: TEXT\ndate: TEXT\ndescription: TEXT\ndocument_ref: TEXT\ndocument_type: TEXT\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 170,
+      "height": 170
+    },
+    {
+      "id": "journal_details",
+      "label": "journal_details\nPK id: TEXT\nFK journal_entry_id: TEXT\nFK account_code: TEXT\naccount_name: TEXT\ndebit_amount: REAL\ncredit_amount: REAL",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 210,
+      "height": 150
+    },
+    {
+      "id": "customer_care_logs",
+      "label": "customer_care_logs\nPK id: TEXT\ndate: TEXT\nFK partner_id: TEXT\nFK staff_id: TEXT\nchannel: TEXT\npurpose: TEXT\nheight_cm: REAL\nweight_kg: REAL\nbust_cm: REAL\nwaist_cm: REAL\nhips_cm: REAL\nbody_shape: TEXT\nrecommended_size: TEXT\nstyle_preferences: TEXT\nstyle_notes: TEXT\ncustomer_feedback: TEXT\naction_taken: TEXT\nnext_appointment_date: TEXT\nstatus: TEXT\npriority: TEXT\nsatisfaction_rating: INTEGER\nnotes: TEXT\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 230,
+      "height": 490
+    },
+    {
+      "id": "care_reminders",
+      "label": "care_reminders\nPK id: TEXT\ntype: TEXT\ntitle: TEXT\ndescription: TEXT\nFK partner_id: TEXT\ndue_date: TEXT\nstatus: TEXT\nvoucher_code: TEXT\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 170,
+      "height": 210
+    },
+    {
+      "id": "stock_audits",
+      "label": "stock_audits\nPK id: TEXT\ncode: TEXT\ndate: TEXT\nauditor_name: TEXT\nFK auditor_id: TEXT\nreason: TEXT\nstatus: TEXT\ntotal_items: INTEGER\ntotal_diff: INTEGER\nmatched_count: INTEGER\nshortage_count: INTEGER\nsurplus_count: INTEGER\nnote: TEXT\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 200,
+      "height": 310
+    },
+    {
+      "id": "stock_audit_items",
+      "label": "stock_audit_items\nPK id: TEXT\nFK audit_id: TEXT\nFK product_id: TEXT\nitem_code: TEXT\nitem_name: TEXT\nunit: TEXT\nsystem_stock: INTEGER\nactual_stock: INTEGER\ndifference: INTEGER\nstatus: TEXT\ncost_price: REAL\ndifference_value: REAL\nnote: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 190,
+      "height": 290
+    },
+    {
+      "id": "defective_goods",
+      "label": "defective_goods\nPK id: TEXT\ncode: TEXT\nFK product_id: TEXT\nitem_code: TEXT\nitem_name: TEXT\nunit: TEXT\nquantity: INTEGER\nreason: TEXT\naction_type: TEXT\naction_title: TEXT\nnote: TEXT\nhandler_name: TEXT\nFK handler_id: TEXT\ndate: TEXT\ncost_price: REAL\ntotal_loss: REAL\nstatus: TEXT\nFK inventory_log_id: TEXT\ncreated_at: TEXT",
+      "style": "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+      "width": 210,
+      "height": 410
+    }
+  ],
+  "edges": [
+    {
+      "source": "products",
+      "target": "categories",
+      "label": "category_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "supplier_products",
+      "target": "partners",
+      "label": "supplier_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "supplier_products",
+      "target": "products",
+      "label": "product_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "employees",
+      "target": "users",
+      "label": "user_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "invoices",
+      "target": "partners",
+      "label": "partner_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "invoices",
+      "target": "users",
+      "label": "created_by",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "invoice_items",
+      "target": "invoices",
+      "label": "invoice_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "invoice_items",
+      "target": "products",
+      "label": "product_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "cash_transactions",
+      "target": "accounts",
+      "label": "opposite_account_code",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "cash_transactions",
+      "target": "accounts",
+      "label": "fund_account_code",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "cash_transactions",
+      "target": "partners",
+      "label": "partner_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "cash_transactions",
+      "target": "invoices",
+      "label": "invoice_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "cash_transactions",
+      "target": "users",
+      "label": "created_by",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "inventory_logs",
+      "target": "invoices",
+      "label": "invoice_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "inventory_logs",
+      "target": "partners",
+      "label": "partner_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "inventory_logs",
+      "target": "accounts",
+      "label": "stock_account_code",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "inventory_logs",
+      "target": "accounts",
+      "label": "opposite_account_code",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "inventory_logs",
+      "target": "users",
+      "label": "created_by",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "inventory_log_items",
+      "target": "inventory_logs",
+      "label": "inventory_log_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "inventory_log_items",
+      "target": "products",
+      "label": "product_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "stock_requisitions",
+      "target": "employees",
+      "label": "requester_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "stock_requisitions",
+      "target": "partners",
+      "label": "suggested_supplier_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "stock_requisitions",
+      "target": "employees",
+      "label": "approver_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "requisition_items",
+      "target": "stock_requisitions",
+      "label": "requisition_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "requisition_items",
+      "target": "products",
+      "label": "product_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "requisition_items",
+      "target": "categories",
+      "label": "category_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "journal_details",
+      "target": "journal_entries",
+      "label": "journal_entry_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "journal_details",
+      "target": "accounts",
+      "label": "account_code",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "customer_care_logs",
+      "target": "partners",
+      "label": "partner_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "customer_care_logs",
+      "target": "employees",
+      "label": "staff_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "care_reminders",
+      "target": "partners",
+      "label": "partner_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "stock_audits",
+      "target": "users",
+      "label": "auditor_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "stock_audit_items",
+      "target": "stock_audits",
+      "label": "audit_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "stock_audit_items",
+      "target": "products",
+      "label": "product_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "defective_goods",
+      "target": "products",
+      "label": "product_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "defective_goods",
+      "target": "users",
+      "label": "handler_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    },
+    {
+      "source": "defective_goods",
+      "target": "inventory_logs",
+      "label": "inventory_log_id",
+      "style": "edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontSize=11;labelBackgroundColor=#ffffff;startArrow=ERmany;startFill=0;endArrow=ERone;endFill=0;"
+    }
+  ]
+}

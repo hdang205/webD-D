@@ -1218,6 +1218,10 @@ export default function App() {
               onCompletePOSSale={handleCompletePOSSale}
               onNavigateToERP={() => setActiveTab(getDefaultTabForRole(currentUser?.role))}
               onAddCustomer={handleAddCustomerFromPOS}
+              onSelectTab={setActiveTab}
+              unpaidInvoiceCount={unpaidInvoicesCount}
+              pendingRequisitionsCount={requisitions.filter(r => r.status === 'PENDING').length}
+              lowStockCount={lowStockCount}
             />
           ) : (
             <AccessRestricted
@@ -1632,13 +1636,15 @@ export default function App() {
           </span>
         </div>
 
-        <div className="flex items-center gap-3 font-mono text-[10px] text-slate-400 flex-wrap">
+        <div className="flex items-center gap-2 font-mono text-[10px] text-slate-400 flex-wrap">
           <span className="text-emerald-400 font-sans">● Máy In Bill POS: Sẵn Sàng</span>
           <span className="text-slate-600">•</span>
-          <span className="text-slate-300">Phím tắt:</span>
-          <span className="bg-slate-800 px-1.5 py-0.5 rounded text-pink-300 border border-slate-700">[F1] Thu Ngân POS</span>
-          <span className="bg-slate-800 px-1.5 py-0.5 rounded text-pink-300 border border-slate-700">[F2] Đề Xuất</span>
-          <span className="bg-slate-800 px-1.5 py-0.5 rounded text-amber-300 border border-slate-700">[F3] Khóa Máy</span>
+          <span className="text-slate-300">Nút chuyển nhanh:</span>
+          <button type="button" onClick={() => setActiveTab('pos')} className="bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-pink-300 border border-slate-700 cursor-pointer transition font-bold">[F1] Bán POS</button>
+          <button type="button" onClick={() => setActiveTab('sales')} className="bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-slate-200 hover:text-pink-300 border border-slate-700 cursor-pointer transition font-bold">Đơn Hàng</button>
+          <button type="button" onClick={() => setActiveTab('requisitions')} className="bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-amber-300 border border-slate-700 cursor-pointer transition font-bold">[F2] Đề Xuất</button>
+          <button type="button" onClick={() => setActiveTab('inventory')} className="bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-emerald-300 border border-slate-700 cursor-pointer transition font-bold">Kho Hàng</button>
+          <button type="button" onClick={() => setIsScreenLocked(true)} className="bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-rose-300 border border-slate-700 cursor-pointer transition font-bold">[F3] Khóa Máy</button>
         </div>
       </footer>
 

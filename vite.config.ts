@@ -16,6 +16,7 @@ export default defineConfig(() => {
       },
     },
     server: {
+      allowedHosts: true as const,
       proxy: {
         '/api': {
           target: 'http://127.0.0.1:3000',

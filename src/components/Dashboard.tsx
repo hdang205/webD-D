@@ -295,8 +295,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </span>
                   <span className="text-xs font-bold text-purple-600 shrink-0 ml-0.5">₫</span>
                 </div>
-                <p className="text-[11px] text-purple-600 mt-1 whitespace-nowrap overflow-hidden">
-                  Giá trị theo giá vốn xưởng
+                <p className="text-[11px] text-purple-600 mt-1 whitespace-nowrap overflow-hidden text-ellipsis" title="Giá trị tính theo giá vốn xưởng">
+                  Theo giá vốn xưởng
                 </p>
               </div>
             </div>
