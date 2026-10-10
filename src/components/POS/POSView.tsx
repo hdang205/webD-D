@@ -252,11 +252,13 @@ export const POSView: React.FC<POSViewProps> = ({
     if (p) {
       setCustomCustomerName(p.name);
       setCustomCustomerPhone(p.phone || '');
-      // Auto discount if VIP
-      if (p.partnerCategory === 'VIP') {
+      // Auto discount based on customer tier
+      if (p.tier === 'DIAMOND' || p.tier === 'GOLD') {
         setDiscountPercent(10);
-      } else {
+      } else if (p.tier === 'SILVER') {
         setDiscountPercent(5);
+      } else {
+        setDiscountPercent(0);
       }
     }
   };

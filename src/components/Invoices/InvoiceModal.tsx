@@ -10,6 +10,7 @@ import {
   InventoryItem 
 } from '../../types/accounting';
 import { getCurrentISODate, formatCurrency } from '../../utils/formatters';
+import { calculateLineItemTotals } from '../../utils/accountingEngine';
 
 interface InvoiceModalProps {
   isOpen: boolean;
@@ -85,21 +86,22 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
       const updated = [...items];
       const existing = updated[existingIndex];
       const newQty = existing.quantity + (updated[index].quantity || 1);
-      
       const unitPrice = type === 'SALES' ? selectedProd.sellingPrice : selectedProd.costPrice;
-      const discountAmount = (newQty * unitPrice * existing.discountRate) / 100;
-      const amountBeforeVat = (newQty * unitPrice) - discountAmount;
-      const vatAmount = (amountBeforeVat * existing.vatRate) / 100;
+      const calc = calculateLineItemTotals({
+        quantity: newQty,
+        unitPrice,
+        discountRate: existing.discountRate,
+        vatRate: existing.vatRate
+      });
 
       updated[existingIndex] = {
         ...existing,
         quantity: newQty,
-        discountAmount,
-        vatAmount,
-        totalAmount: amountBeforeVat + vatAmount
+        discountAmount: calc.discountAmount,
+        vatAmount: calc.vatAmount,
+        totalAmount: calc.totalAmount
       };
 
-      // Nếu đây là dòng mới thêm hoặc dòng duy nhất, xóa hoặc reset dòng hiện tại
       if (updated.length > 1) {
         setItems(updated.filter((_, idx) => idx !== index));
       } else {
@@ -112,9 +114,12 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
     const updated = [...items];
     const unitPrice = type === 'SALES' ? selectedProd.sellingPrice : selectedProd.costPrice;
     const quantity = updated[index].quantity || 1;
-    const discountAmount = (quantity * unitPrice * updated[index].discountRate) / 100;
-    const amountBeforeVat = (quantity * unitPrice) - discountAmount;
-    const vatAmount = (amountBeforeVat * updated[index].vatRate) / 100;
+    const calc = calculateLineItemTotals({
+      quantity,
+      unitPrice,
+      discountRate: updated[index].discountRate,
+      vatRate: updated[index].vatRate
+    });
 
     updated[index] = {
       ...updated[index],
@@ -123,9 +128,9 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
       itemName: selectedProd.name,
       unit: selectedProd.unit,
       unitPrice,
-      discountAmount,
-      vatAmount,
-      totalAmount: amountBeforeVat + vatAmount,
+      discountAmount: calc.discountAmount,
+      vatAmount: calc.vatAmount,
+      totalAmount: calc.totalAmount,
     };
     setItems(updated);
   };
@@ -138,21 +143,25 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
     // Cảnh báo tồn kho ngay khi nhập số lượng nếu là bán hàng
     if (type === 'SALES' && item.itemId) {
       const prod = inventory.find(i => i.id === item.itemId);
-      if (prod && quantity > prod.openingQuantity) {
-        alert(`Sản phẩm [${prod.name}] (mã ${prod.code}) chỉ còn ${prod.openingQuantity} sản phẩm, không thể bán ${quantity} sản phẩm.`);
+      const stockAvailable = prod ? (prod.openingQuantity ?? (prod as any).currentStock ?? 0) : 0;
+      if (prod && quantity > stockAvailable) {
+        alert(`Sản phẩm [${prod.name}] (mã ${prod.code}) chỉ còn ${stockAvailable} sản phẩm, không thể bán ${quantity} sản phẩm.`);
       }
     }
 
-    const discountAmount = (quantity * item.unitPrice * item.discountRate) / 100;
-    const amountBeforeVat = (quantity * item.unitPrice) - discountAmount;
-    const vatAmount = (amountBeforeVat * item.vatRate) / 100;
+    const calc = calculateLineItemTotals({
+      quantity,
+      unitPrice: item.unitPrice,
+      discountRate: item.discountRate,
+      vatRate: item.vatRate
+    });
 
     updated[index] = {
       ...item,
       quantity,
-      discountAmount,
-      vatAmount,
-      totalAmount: amountBeforeVat + vatAmount,
+      discountAmount: calc.discountAmount,
+      vatAmount: calc.vatAmount,
+      totalAmount: calc.totalAmount,
     };
     setItems(updated);
   };
@@ -161,16 +170,19 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
     const updated = [...items];
     const item = updated[index];
     const unitPrice = Math.max(0, price);
-    const discountAmount = (item.quantity * unitPrice * item.discountRate) / 100;
-    const amountBeforeVat = (item.quantity * unitPrice) - discountAmount;
-    const vatAmount = (amountBeforeVat * item.vatRate) / 100;
+    const calc = calculateLineItemTotals({
+      quantity: item.quantity,
+      unitPrice,
+      discountRate: item.discountRate,
+      vatRate: item.vatRate
+    });
 
     updated[index] = {
       ...item,
       unitPrice,
-      discountAmount,
-      vatAmount,
-      totalAmount: amountBeforeVat + vatAmount,
+      discountAmount: calc.discountAmount,
+      vatAmount: calc.vatAmount,
+      totalAmount: calc.totalAmount,
     };
     setItems(updated);
   };
@@ -179,16 +191,19 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
     const updated = [...items];
     const item = updated[index];
     const discountRate = Math.min(100, Math.max(0, rate));
-    const discountAmount = (item.quantity * item.unitPrice * discountRate) / 100;
-    const amountBeforeVat = (item.quantity * item.unitPrice) - discountAmount;
-    const vatAmount = (amountBeforeVat * item.vatRate) / 100;
+    const calc = calculateLineItemTotals({
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      discountRate,
+      vatRate: item.vatRate
+    });
 
     updated[index] = {
       ...item,
       discountRate,
-      discountAmount,
-      vatAmount,
-      totalAmount: amountBeforeVat + vatAmount,
+      discountAmount: calc.discountAmount,
+      vatAmount: calc.vatAmount,
+      totalAmount: calc.totalAmount,
     };
     setItems(updated);
   };

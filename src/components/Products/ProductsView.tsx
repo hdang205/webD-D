@@ -250,7 +250,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
@@ -286,19 +286,23 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
 
     const openingVal = formData.openingQuantity * formData.costPrice;
 
-    if (editingItem && onUpdateItem) {
-      onUpdateItem({
-        ...editingItem,
-        ...formData,
-        openingValue: openingVal,
-      });
-    } else {
-      onAddItem({
-        ...formData,
-        openingValue: openingVal,
-      });
+    try {
+      if (editingItem && onUpdateItem) {
+        await onUpdateItem({
+          ...editingItem,
+          ...formData,
+          openingValue: openingVal,
+        });
+      } else {
+        await onAddItem({
+          ...formData,
+          openingValue: openingVal,
+        });
+      }
+      setIsModalOpen(false);
+    } catch (err: any) {
+      setFormError(err.message || 'Có lỗi xảy ra khi lưu mẫu sản phẩm.');
     }
-    setIsModalOpen(false);
   };
 
   const handleCopy = (code: string) => {

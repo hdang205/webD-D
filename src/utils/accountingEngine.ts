@@ -387,3 +387,52 @@ export function calculateProfitAndLoss(
     netProfitAfterTax,
   };
 }
+
+export interface LineItemCalculationInput {
+  quantity: number;
+  unitPrice: number;
+  discountRate?: number;
+  vatRate?: number;
+}
+
+export interface LineItemCalculationResult {
+  quantity: number;
+  unitPrice: number;
+  rawTotal: number;
+  discountRate: number;
+  discountAmount: number;
+  amountBeforeVat: number;
+  vatRate: number;
+  vatAmount: number;
+  totalAmount: number;
+}
+
+/**
+ * Standardized Financial Item Calculation Helper for D&D Fashion ERP
+ * Handles item pricing, trade discounts, VAT, and line totals consistently across Front & Backend.
+ */
+export function calculateLineItemTotals(input: LineItemCalculationInput): LineItemCalculationResult {
+  const quantity = Math.max(0, Number(input.quantity) || 0);
+  const unitPrice = Math.max(0, Number(input.unitPrice) || 0);
+  const discountRate = Math.min(100, Math.max(0, Number(input.discountRate) || 0));
+  const vatRate = Math.max(0, Number(input.vatRate) || 0);
+
+  const rawTotal = quantity * unitPrice;
+  const discountAmount = Math.round((rawTotal * discountRate) / 100);
+  const amountBeforeVat = rawTotal - discountAmount;
+  const vatAmount = Math.round((amountBeforeVat * vatRate) / 100);
+  const totalAmount = amountBeforeVat + vatAmount;
+
+  return {
+    quantity,
+    unitPrice,
+    rawTotal,
+    discountRate,
+    discountAmount,
+    amountBeforeVat,
+    vatRate,
+    vatAmount,
+    totalAmount,
+  };
+}
+

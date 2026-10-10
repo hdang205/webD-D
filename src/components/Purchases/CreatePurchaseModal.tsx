@@ -25,6 +25,7 @@ import {
   AuthUser 
 } from '../../types/accounting';
 import { formatCurrency, formatNumber, getCurrentISODate } from '../../utils/formatters';
+import { calculateLineItemTotals } from '../../utils/accountingEngine';
 import { ProductService, SupplierService, CategoryService } from '../../services/masterDataService';
 import { Dropdown } from '../Common/Dropdown';
 import { TableContainer } from '../Common/TableContainer';
@@ -239,25 +240,20 @@ export const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
     setItems(prev => {
       const next = [...prev];
       const row = { ...next[index], [field]: value };
+      const calc = calculateLineItemTotals({
+        quantity: row.quantity,
+        unitPrice: row.unitPrice,
+        discountRate: row.discountRate,
+        vatRate: row.vatRate
+      });
 
-      const qty = Math.max(1, Number(row.quantity) || 1);
-      const price = Math.max(0, Number(row.unitPrice) || 0);
-      const discRate = Math.min(100, Math.max(0, Number(row.discountRate) || 0));
-      const vatRate = Math.max(0, Number(row.vatRate) || 0);
-
-      const rawTotal = qty * price;
-      const discountAmount = Math.round((rawTotal * discRate) / 100);
-      const afterDiscount = rawTotal - discountAmount;
-      const vatAmount = Math.round((afterDiscount * vatRate) / 100);
-      const totalAmount = afterDiscount + vatAmount;
-
-      row.quantity = qty;
-      row.unitPrice = price;
-      row.discountRate = discRate;
-      row.discountAmount = discountAmount;
-      row.vatRate = vatRate;
-      row.vatAmount = vatAmount;
-      row.totalAmount = totalAmount;
+      row.quantity = Math.max(1, calc.quantity);
+      row.unitPrice = calc.unitPrice;
+      row.discountRate = calc.discountRate;
+      row.discountAmount = calc.discountAmount;
+      row.vatRate = calc.vatRate;
+      row.vatAmount = calc.vatAmount;
+      row.totalAmount = calc.totalAmount;
 
       next[index] = row;
       return next;

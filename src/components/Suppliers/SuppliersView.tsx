@@ -149,7 +149,7 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
@@ -190,25 +190,29 @@ export const SuppliersView: React.FC<SuppliersViewProps> = ({
       }
     }
 
-    if (editingPartner && onUpdatePartner) {
-      onUpdatePartner({
-        ...editingPartner,
-        ...formData,
-        name: cleanName,
-        phone: cleanPhone,
-        type: 'SUPPLIER',
-        openingDebtDebit: 0,
-      });
-    } else {
-      onAddPartner({
-        ...formData,
-        name: cleanName,
-        phone: cleanPhone,
-        type: 'SUPPLIER',
-        openingDebtDebit: 0,
-      });
+    try {
+      if (editingPartner && onUpdatePartner) {
+        await onUpdatePartner({
+          ...editingPartner,
+          ...formData,
+          name: cleanName,
+          phone: cleanPhone,
+          type: 'SUPPLIER',
+          openingDebtDebit: 0,
+        });
+      } else {
+        await onAddPartner({
+          ...formData,
+          name: cleanName,
+          phone: cleanPhone,
+          type: 'SUPPLIER',
+          openingDebtDebit: 0,
+        });
+      }
+      setIsModalOpen(false);
+    } catch (err: any) {
+      setFormError(err.message || 'Có lỗi xảy ra khi lưu nhà cung cấp.');
     }
-    setIsModalOpen(false);
   };
 
   const handleExportCSV = () => {

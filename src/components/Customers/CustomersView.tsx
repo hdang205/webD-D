@@ -135,7 +135,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
@@ -176,25 +176,29 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
       }
     }
 
-    if (editingPartner && onUpdatePartner) {
-      onUpdatePartner({
-        ...editingPartner,
-        ...formData,
-        name: cleanName,
-        phone: cleanPhone,
-        type: 'CUSTOMER',
-        openingDebtCredit: 0,
-      });
-    } else {
-      onAddPartner({
-        ...formData,
-        name: cleanName,
-        phone: cleanPhone,
-        type: 'CUSTOMER',
-        openingDebtCredit: 0,
-      });
+    try {
+      if (editingPartner && onUpdatePartner) {
+        await onUpdatePartner({
+          ...editingPartner,
+          ...formData,
+          name: cleanName,
+          phone: cleanPhone,
+          type: 'CUSTOMER',
+          openingDebtCredit: 0,
+        });
+      } else {
+        await onAddPartner({
+          ...formData,
+          name: cleanName,
+          phone: cleanPhone,
+          type: 'CUSTOMER',
+          openingDebtCredit: 0,
+        });
+      }
+      setIsModalOpen(false);
+    } catch (err: any) {
+      setFormError(err.message || 'Có lỗi xảy ra khi lưu thông tin khách hàng.');
     }
-    setIsModalOpen(false);
   };
 
   const getTierBadge = (tier?: CustomerTier) => {

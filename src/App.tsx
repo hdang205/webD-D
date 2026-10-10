@@ -72,78 +72,67 @@ import {
   generateAutoJournalEntryFromStockVoucher
 } from './utils/accountingEngine';
 
+import { useToast } from './hooks/useToast';
+import { useAuthSession } from './hooks/useAuthSession';
+import { useERPData } from './hooks/useERPData';
+
 export default function App() {
   // Navigation State: default to Dashboard for ERP enterprise management, with instant POS access
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>({ period: 'THIS_MONTH' });
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
-  // User Auth State
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
-  const [logoutMessage, setLogoutMessage] = useState<string | null>(null);
-  const [isScreenLocked, setIsScreenLocked] = useState(false);
-  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-  const [unlockPassword, setUnlockPassword] = useState('');
-  const [unlockError, setUnlockError] = useState(false);
+  // Global Toast Notifications
+  const { toasts, showToast, dismissToast } = useToast();
 
-  // Global Toast Notifications State
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  // User Auth & Session State Hook
+  const {
+    currentUser,
+    setCurrentUser,
+    isAuthLoading,
+    logoutMessage,
+    setLogoutMessage,
+    isScreenLocked,
+    setIsScreenLocked,
+    isChangePasswordOpen,
+    setIsChangePasswordOpen,
+    unlockPassword,
+    setUnlockPassword,
+    unlockError,
+    setUnlockError,
+    handleLogout,
+    handleLogin,
+  } = useAuthSession(setActiveTab, showToast);
 
-  const showToast = (message: string, type: ToastType = 'info', duration: number = 4000) => {
-    const id = `toast_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    setToasts(prev => [...prev, { id, message, type, duration }]);
-  };
-
-  const dismissToast = (id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  };
-
-  // Khôi phục phiên làm việc khi khởi động qua GET /api/auth/me
-  useEffect(() => {
-    let isMounted = true;
-    async function restoreSession() {
-      try {
-        const user = await authService.getCurrentUser();
-        if (isMounted) {
-          setCurrentUser(user);
-          if (user) {
-            setActiveTab(getDefaultTabForRole(user.role));
-          } else {
-            setActiveTab('login');
-          }
-        }
-      } catch {
-        if (isMounted) {
-          setCurrentUser(null);
-          setActiveTab('login');
-        }
-      } finally {
-        if (isMounted) {
-          setIsAuthLoading(false);
-        }
-      }
-    }
-    restoreSession();
-    return () => { isMounted = false; };
-  }, []);
-
-  const handleLogout = async () => {
-    const userName = currentUser?.name || 'Người dùng';
-    await authService.logout();
-    setCurrentUser(null);
-    setLogoutMessage(`Đã đăng xuất tài khoản ${userName} an toàn khỏi hệ thống.`);
-    showToast(`Đã đăng xuất tài khoản ${userName} an toàn.`, 'info');
-    setActiveTab('login');
-  };
-
-  const handleLogin = (user: AuthUser) => {
-    setCurrentUser(user);
-    setLogoutMessage(null);
-    setIsScreenLocked(false);
-    showToast(`Đăng nhập thành công! Chào mừng ${user.name} (${user.roleTitle})`, 'success');
-    setActiveTab(getDefaultTabForRole(user.role));
-  };
+  // Core ERP Master Data Hook
+  const {
+    companyInfo,
+    setCompanyInfo,
+    accounts,
+    setAccounts,
+    partners,
+    setPartners,
+    employees,
+    setEmployees,
+    inventory,
+    setInventory,
+    invoices,
+    setInvoices,
+    inventoryLogs,
+    setInventoryLogs,
+    cashTransactions,
+    setCashTransactions,
+    journalEntries,
+    setJournalEntries,
+    requisitions,
+    setRequisitions,
+    careLogs,
+    setCareLogs,
+    careReminders,
+    setCareReminders,
+    reloadProducts,
+    reloadInvoicesAndLogs,
+  } = useERPData(currentUser);
 
   // Khi người dùng muốn đổi vai trò: Yêu cầu đăng nhập xác thực tài khoản mới
   const handleFastSwitchUser = (_targetUsername: string) => {
@@ -168,22 +157,6 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Core Data States – chỉ khởi tạo từ localStorage cho data KHÔNG có API backend
-  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>(StorageService.getCompanyInfo);
-  const [accounts, setAccounts] = useState<Account[]>(StorageService.getAccounts);
-  // Data có API backend – khởi tạo rỗng, sẽ được load từ API sau khi đăng nhập
-  const [partners, setPartners] = useState<Partner[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [inventoryLogs, setInventoryLogs] = useState<InventoryLog[]>([]);
-  // Data chưa có API backend – vẫn dùng localStorage
-  const [cashTransactions, setCashTransactions] = useState<CashTransaction[]>(StorageService.getCashTransactions);
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(StorageService.getJournalEntries);
-  const [requisitions, setRequisitions] = useState<StockRequisition[]>(StorageService.getRequisitions);
-  const [careLogs, setCareLogs] = useState<CustomerCareLog[]>(StorageService.getCareLogs);
-  const [careReminders, setCareReminders] = useState<CareReminder[]>(StorageService.getCareReminders);
-
   // Modals state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [printDoc, setPrintDoc] = useState<{ 
@@ -194,97 +167,6 @@ export default function App() {
   // Quick Action Modals
   const [quickCashModal, setQuickCashModal] = useState<{ open: boolean; type: TransactionType }>({ open: false, type: 'CASH_RECEIPT' });
   const [quickInvoiceModal, setQuickInvoiceModal] = useState<{ open: boolean; type: InvoiceType }>({ open: false, type: 'SALES' });
-
-  // Sync về localStorage
-  useEffect(() => { StorageService.saveCompanyInfo(companyInfo); }, [companyInfo]);
-  useEffect(() => { StorageService.saveAccounts(accounts); }, [accounts]);
-  useEffect(() => { StorageService.saveCashTransactions(cashTransactions); }, [cashTransactions]);
-  useEffect(() => { StorageService.saveJournalEntries(journalEntries); }, [journalEntries]);
-  useEffect(() => { StorageService.saveRequisitions(requisitions); }, [requisitions]);
-  useEffect(() => { StorageService.saveCareLogs(careLogs); }, [careLogs]);
-  useEffect(() => { StorageService.saveCareReminders(careReminders); }, [careReminders]);
-  useEffect(() => { if (partners && partners.length > 0) StorageService.savePartners(partners); }, [partners]);
-  useEffect(() => { if (inventory && inventory.length > 0) StorageService.saveInventory(inventory); }, [inventory]);
-  useEffect(() => { if (employees && employees.length > 0) StorageService.saveEmployees(employees); }, [employees]);
-  useEffect(() => { if (invoices && invoices.length > 0) StorageService.saveInvoices(invoices); }, [invoices]);
-
-  // Tải Master Data từ SQLite REST API (tự động fallback sang dữ liệu khởi tạo nếu chạy trên Static Hosting như Vercel)
-  useEffect(() => {
-    if (!currentUser) return;
-
-    // 1. Tải sản phẩm từ SQLite
-    ProductService.getAll()
-      .then(items => { 
-        if (items && Array.isArray(items)) {
-          setInventory(items);
-          StorageService.saveInventory(items);
-        } else {
-          setInventory(StorageService.getInventory());
-        }
-      })
-      .catch(() => setInventory(StorageService.getInventory()));
-
-    // 2. Tải đối tác (Khách hàng & Nhà cung cấp) từ SQLite (dùng kết quả thật từ SQLite làm nguồn chuẩn)
-    Promise.all([
-      CustomerService.getAll().catch(() => []),
-      SupplierService.getAll().catch(() => [])
-    ]).then(([custs, supps]) => {
-      const map = new Map<string, Partner>();
-      (custs || []).forEach(c => { if (c && c.id && c.name) map.set(c.id, c); });
-      (supps || []).forEach(s => { if (s && s.id && s.name) map.set(s.id, s); });
-      const merged = Array.from(map.values());
-      if (merged.length > 0) {
-        setPartners(merged);
-        StorageService.savePartners(merged);
-      } else {
-        setPartners(StorageService.getPartners());
-      }
-    }).catch(() => setPartners(StorageService.getPartners()));
-
-    // 3. Tải nhân sự từ SQLite
-    EmployeeService.getAll()
-      .then(emps => { 
-        if (emps && Array.isArray(emps)) {
-          setEmployees(emps); 
-          StorageService.saveEmployees(emps);
-        } else {
-          setEmployees(StorageService.getEmployees());
-        }
-      })
-      .catch(() => setEmployees(StorageService.getEmployees()));
-
-    // 4. Tải hóa đơn mua hàng & bán hàng từ SQLite
-    Promise.all([
-      PurchaseService.getAll().catch(() => []),
-      SaleService.getAll().catch(() => [])
-    ]).then(([purchases, sales]) => {
-      const allInvoices = [...(sales || []), ...(purchases || [])];
-      setInvoices(allInvoices);
-      StorageService.saveInvoices(allInvoices);
-    }).catch(() => setInvoices(StorageService.getInvoices()));
-
-    // 5. Tải phiếu nhập xuất kho từ SQLite
-    InventoryService.getLogs()
-      .then(res => {
-        if (res?.logs && Array.isArray(res.logs)) {
-          setInventoryLogs(res.logs);
-          StorageService.saveInventoryLogs(res.logs);
-        } else {
-          setInventoryLogs(StorageService.getInventoryLogs());
-        }
-      })
-      .catch(() => setInventoryLogs(StorageService.getInventoryLogs()));
-
-    // 6. Tải giao dịch thu chi sổ quỹ từ SQLite
-    DebtService.getTransactions()
-      .then(txs => {
-        if (txs && Array.isArray(txs)) {
-          setCashTransactions(txs);
-          StorageService.saveCashTransactions(txs);
-        }
-      })
-      .catch(() => {});
-  }, [currentUser]);
 
   // Handler: POS Sale Completion
   const handleCompletePOSSale = async (saleData: {

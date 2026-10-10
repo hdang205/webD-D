@@ -123,7 +123,7 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
       setError('Vui lòng nhập họ và tên nhân viên');
@@ -136,12 +136,16 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
       return;
     }
 
-    if (isEditing && initialEmployee) {
-      onSave({ ...formData, id: initialEmployee.id });
-    } else {
-      onSave(formData);
+    try {
+      if (isEditing && initialEmployee) {
+        await onSave({ ...formData, id: initialEmployee.id });
+      } else {
+        await onSave(formData);
+      }
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Có lỗi xảy ra khi lưu nhân sự.');
     }
-    onClose();
   };
 
   return (
